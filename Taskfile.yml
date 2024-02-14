@@ -1,0 +1,25 @@
+version: '3'
+
+includes:
+  dev: Taskfile.dev.yml
+  build: Taskfile.build.yml
+  package: Taskfile.package.yml
+
+tasks:
+  default: task --list-all
+
+  test:
+    desc: 'Runs test for the project'
+    cmds:
+      - task dev:test
+
+  lint:
+    desc: 'Runs golangcli-lint for project files'
+    cmds:
+      - task dev:lint
+
+  fix:
+    desc: 'Runs golangcli-lint for project files'
+    cmds:
+      - task dev:fmt
+      - task dev:lint:fix

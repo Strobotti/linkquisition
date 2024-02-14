@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Exec=linkquisition %u
+Name=Linkquisition
+Icon=linkquisition
+Categories=GNOME;GTK;Network;WebBrowser;
+MimeType=x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true

@@ -1,0 +1,19 @@
+version: '3'
+
+vars:
+  VERSION:
+    sh: echo ${VERSION:-0.0.0}
+
+tasks:
+  debian-amd64:
+    cmds:
+      - task build:linux-amd64
+      - mkdir -p dist
+      - mkdir -p package/debian-amd64/usr/bin package/debian-amd64/DEBIAN package/debian-amd64/usr/share/applications package/debian-amd64/usr/share/pixmaps
+      - cp bin/linkquisition-linux-amd64 package/debian-amd64/usr/bin/linkquisition
+      - cp templates/DEBIAN/control.tpl package/debian-amd64/DEBIAN/control
+      - cp templates/linkquisition.desktop package/debian-amd64/usr/share/applications/linkquisition.desktop
+      - cp Icon.png package/debian-amd64/usr/share/pixmaps/linkquisition.png
+      - sed -i 's/{{ "{{" }}VERSION{{ "}}" }}/{{.VERSION}}/g' package/debian-amd64/DEBIAN/control
+      - sed -i 's/{{ "{{" }}ARCH{{ "}}" }}/amd64/g' package/debian-amd64/DEBIAN/control
+      - dpkg-deb --build package/debian-amd64 dist/linkquisition-amd64.deb

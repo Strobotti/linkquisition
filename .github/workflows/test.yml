@@ -1,0 +1,32 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21.6'
+
+    - name: Install Task
+      run: |
+        curl -sL https://taskfile.dev/install.sh | sh
+
+    - name: Run Tests
+      run: task test
+
+    - name: Install golangci-lint
+      run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.42.1
+
+    - name: Run Lint
+      run: task lint

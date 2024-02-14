@@ -1,0 +1,35 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: linux-amd64
+
+  binary:
+    internal: true
+    vars:
+      OUTPUT: '{{default "linkquisition" .OUTPUT}}'
+      TARGET: '{{default "linux" .TARGET}}'
+      VERSION:
+        sh: echo ${VERSION:-v0.0.0}
+      OPTIONS: '{{default "" .DEVOPTIONS}}'
+    cmds:
+      - GOOS={{.TARGET}} go build -tags release -ldflags '-X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} cmd/*.go
+      - echo "bin/{{.OUTPUT}}{{exeExt}} created successfully"
+    sources:
+      - ./**/*.go
+      - go.mod
+      - go.sum
+    generates:
+      - bin/{{.OUTPUT}}{{exeExt}}
+
+  linux-amd64:
+    cmds:
+      - task: binary
+        vars:
+          OUTPUT: "linkquisition-linux-amd64"
+          TARGET: "linux"
+
+  clean:
+    cmds:
+      - rm -rf bin/*

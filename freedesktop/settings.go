@@ -1,0 +1,89 @@
+package freedesktop
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+
+	"github.com/strobotti/linkquisition"
+)
+
+var _ linkquisition.SettingsService = (*SettingsService)(nil)
+
+type SettingsService struct {
+	BrowserService linkquisition.BrowserService
+}
+
+func (s *SettingsService) GetConfigFilePath() string {
+	return s.GetConfigFolderPath() + "config.json"
+}
+
+func (s *SettingsService) GetConfigFolderPath() string {
+	// get the user's home directory
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ".config/linkquisition/"
+	}
+
+	return home + "/.config/linkquisition/"
+}
+
+func (s *SettingsService) ReadSettings() (*linkquisition.Settings, error) {
+	data, err := os.ReadFile(s.GetConfigFilePath())
+	if err != nil {
+		return nil, fmt.Errorf("unable to open config-file `%s` for reading: %v", s.GetConfigFilePath(), err)
+	}
+
+	var settings = &linkquisition.Settings{}
+
+	if err := json.Unmarshal(data, settings); err != nil {
+		return nil, fmt.Errorf("unable to parse the config-file `%s`: %v", s.GetConfigFilePath(), err)
+	}
+
+	return settings, nil
+}
+
+func (s *SettingsService) IsConfigured() bool {
+	_, err := os.Stat(s.GetConfigFilePath())
+
+	return !errors.Is(err, os.ErrNotExist)
+}
+
+func (s *SettingsService) ScanBrowsers() error {
+	var oldSettings *linkquisition.Settings
+
+	if !s.IsConfigured() {
+		oldSettings = &linkquisition.Settings{}
+	} else {
+		var err error
+		if oldSettings, err = s.ReadSettings(); err != nil {
+			return fmt.Errorf("failed to scan browsers: %v", err)
+		}
+	}
+
+	browsers, err := s.BrowserService.GetAvailableBrowsers()
+	if err != nil {
+		return fmt.Errorf("failed to scan browsers: %v", err)
+	}
+
+	newSettings := oldSettings.UpdateWithBrowsers(browsers).NormalizeBrowsers()
+
+	// ensure the directory exists
+	//nolint:gomnd
+	if errMkdir := os.MkdirAll(s.GetConfigFolderPath(), 0700); errMkdir != nil {
+		return fmt.Errorf("failed to scan browsers: %v", errMkdir)
+	}
+
+	data, err := json.MarshalIndent(newSettings, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to scan browsers: %v", err)
+	}
+
+	//nolint:gomnd
+	if err := os.WriteFile(s.GetConfigFilePath(), data, 0600); err != nil {
+		return fmt.Errorf("failed to scan browsers: %v", err)
+	}
+
+	return nil
+}

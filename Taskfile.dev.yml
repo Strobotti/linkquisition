@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  watch:
+    cmds:
+      - task build --watch
+
+  test:
+    cmds:
+      - go test -v ./...
+
+  lint:
+    cmds:
+      - set -euo pipefail && golangci-lint run --issues-exit-code 1 --sort-results --out-format code-climate | tee gl-code-quality-report.json | jq -r '.[] | "\(.location.path):\(.location.lines.begin) \(.description)"'
+
+  lint:fix:
+    cmds:
+      - set -euo pipefail && golangci-lint run --fix  --issues-exit-code 1 --sort-results --out-format code-climate | tee gl-code-quality-report.json | jq -r '.[] | "\(.location.path):\(.location.lines.begin) \(.description)"'
+
+  fmt:
+    cmds:
+      - gofmt -s -w ./

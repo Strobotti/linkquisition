@@ -1,0 +1,6 @@
+.*
+!.git*
+/bin/
+/package/
+/dist/
+gl-code-quality-report.json
