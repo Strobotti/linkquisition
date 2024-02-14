@@ -15,6 +15,10 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
+      - name: Install some build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:

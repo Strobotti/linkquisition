@@ -2,7 +2,6 @@ package linkquisition
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -50,7 +49,6 @@ func (s *BrowserSettings) MatchesUrl(url string) bool {
 				return true
 			}
 		case BrowserMatchTypeSite:
-			fmt.Printf("url: %s, site: %s\n", url, s.Matches[i].Value)
 			if matchSite(url, s.Matches[i].Value) {
 				return true
 			}
