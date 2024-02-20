@@ -9,6 +9,11 @@
 ### Requirements
 
 - Taskfile (https://taskfile.dev/#/installation)
+- Build-dependencies:
+  ```shell
+  sudo apt-get update && sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
+  ```
+
 
 ### Building
 
