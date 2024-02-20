@@ -2,6 +2,7 @@ package linkquisition
 
 import (
 	"errors"
+	"log/slog"
 	"regexp"
 	"strings"
 )
@@ -59,6 +60,7 @@ func (s *BrowserSettings) MatchesUrl(url string) bool {
 }
 
 type Settings struct {
+	LogLevel string            `json:"logLevel,omitempty"`
 	Browsers []BrowserSettings `json:"browsers"`
 }
 
@@ -180,4 +182,32 @@ type SettingsService interface {
 
 	// ScanBrowsers scans (or re-scans) the system for available browsers and creates/updates the config-file
 	ScanBrowsers() error
+
+	// GetLogFilePath returns the path to the config-file
+	GetLogFilePath() string
+
+	// GetLogFolderPath returns the path to the config-file
+	GetLogFolderPath() string
+}
+
+func GetDefaultSettings() *Settings {
+	return &Settings{
+		LogLevel: "info",
+		Browsers: nil,
+	}
+}
+
+func MapSettingsLogLevelToSlog(logLevel string) slog.Level {
+	switch logLevel {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "warn":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }

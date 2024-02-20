@@ -4,16 +4,17 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/strobotti/linkquisition"
+	"gopkg.in/alessio/shellescape.v1"
 	"log"
 	"os/exec"
 	"strings"
-
-	"github.com/strobotti/linkquisition"
 )
 
 var _ linkquisition.BrowserService = (*BrowserService)(nil)
 
 type BrowserService struct {
+	App                 linkquisition.Application
 	XdgService          *XdgService
 	DesktopEntryService *DesktopEntryService
 }
@@ -104,18 +105,19 @@ func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 	return nil
 }
 
-func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.Browser) error {
+func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Browser) error {
+	u = shellescape.Quote(u)
+
 	command := browser.Command
+	command = strings.ReplaceAll(command, "%u", u)
+	command = strings.ReplaceAll(command, "%U", u)
 
-	command = strings.ReplaceAll(command, "%u", url)
-	command = strings.ReplaceAll(command, "%U", url)
-
-	fmt.Printf("Opening URL `%s` with browser `%s` using command `%s`\n", url, browser.Name, command)
+	b.App.GetLogger().Info(fmt.Sprintf("Opening URL `%s` with browser `%s` using command `%s`", u, browser.Name, command))
 
 	// now just execute the damn command
 	cmd := exec.Command("sh", "-c", command)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to open URL `%s` with browser `%s`: %v", url, browser.Name, err)
+		return fmt.Errorf("failed to open URL `%s` with browser `%s`: %v", u, browser.Name, err)
 	}
 
 	return nil

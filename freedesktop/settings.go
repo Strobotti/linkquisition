@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -16,17 +17,35 @@ type SettingsService struct {
 }
 
 func (s *SettingsService) GetConfigFilePath() string {
-	return s.GetConfigFolderPath() + "config.json"
+	return filepath.Join(s.GetConfigFolderPath(), "config.json")
 }
 
 func (s *SettingsService) GetConfigFolderPath() string {
 	// get the user's home directory
-	home, err := os.UserHomeDir()
+	configDir, err := os.UserConfigDir()
 	if err != nil {
-		return ".config/linkquisition/"
+		return ".config"
 	}
 
-	return home + "/.config/linkquisition/"
+	return filepath.Join(configDir, "linkquisition")
+}
+
+func (s *SettingsService) GetLogFilePath() string {
+	return filepath.Join(s.GetLogFolderPath(), "linkquisition.log")
+}
+
+func (s *SettingsService) GetLogFolderPath() string {
+	stateDir, isset := os.LookupEnv("XDG_STATE_HOME")
+	if isset {
+		return filepath.Join(stateDir, "linkquisition")
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err == nil {
+		return filepath.Join(homeDir, ".local", "state", "linkquisition")
+	}
+
+	return filepath.Join(os.TempDir(), "linkquisition")
 }
 
 func (s *SettingsService) ReadSettings() (*linkquisition.Settings, error) {
