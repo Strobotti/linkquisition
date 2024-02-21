@@ -45,11 +45,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
-      - uses: go-semantic-release/action@v1
-        with:
-          hooks: goreleaser
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install Task
         uses: arduino/setup-task@v2
         with:
@@ -58,12 +53,8 @@ jobs:
       - name: Package
         run: |
           task package:debian-amd64
-      - name: Upload Debian Package
-        uses: actions/upload-release-asset@v1.0.2
+      - uses: go-semantic-release/action@v1
+        with:
+          hooks: goreleaser
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/linkquisition-amd64.deb
-          asset_name: linkquisition-${{ github.event.release.tag_name }}-amd64.deb
-          asset_content_type: application/vnd.debian.binary-package
