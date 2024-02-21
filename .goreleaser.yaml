@@ -1,6 +1,8 @@
 builds:
   - goos:
       - linux
+    env:
+      - CGO_ENABLED=0
     main: ./cmd/
     flags:
       - -trimpath
