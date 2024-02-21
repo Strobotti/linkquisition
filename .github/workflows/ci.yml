@@ -41,6 +41,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.21.6'
+      - name: Install some build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
       - uses: go-semantic-release/action@v1
         with:
           hooks: goreleaser
