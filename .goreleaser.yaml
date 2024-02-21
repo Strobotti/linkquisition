@@ -1,0 +1,13 @@
+builds:
+  - targets:
+      - linux_amd64
+    main: ./cmd/
+    flags:
+      - -trimpath
+      - -buildvcs=false
+    ldflags:
+      - -extldflags '-static'
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commitSHA={{.FullCommit}}
+      - -X main.buildDate={{.Date}}

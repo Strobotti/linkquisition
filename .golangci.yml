@@ -1,0 +1,171 @@
+# for more rules @see https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
+# this file is the default setting from here https://github.com/golangci/golangci-lint/blob/master/.golangci.yml
+# output has been added
+# mock/testdata is added to skip_dirs
+
+linters-settings:
+  depguard:
+    rules:
+      main:
+        deny:
+          # logging is allowed only by logutils.Log, logrus
+          # is allowed to use only in logutils package
+          - pkg: "github.com/sirupsen/logrus"
+            desc: "logging is allowed only by logutils.Log"
+  dupl:
+    threshold: 100
+  funlen:
+    lines: 100
+    statements: 50
+  gci:
+    local-prefixes: gitlab.dev.verkkokauppa.com/verkkokauppa/go-utils
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+    ignore-tests: true
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport # https://github.com/go-critic/go-critic/issues/845
+      - ifElseChain
+      - octalLiteral
+      - whyNoLint
+      - wrapperFunc
+  gocyclo:
+    min-complexity: 15
+  goimports:
+    local-prefixes: gitlab.dev.verkkokauppa.com/verkkokauppa/go-utils
+  gomnd:
+    settings:
+      mnd:
+        # don't include the "operation" and "assign"
+        checks:
+          - argument
+          - case
+          - condition
+          - return
+  govet:
+    check-shadowing: true
+    settings:
+      printf:
+        funcs:
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+  lll:
+    line-length: 140
+  maligned:
+    suggest-new: true
+  misspell:
+    locale: US
+  nolintlint:
+    allow-unused: false # report any unused nolint directives
+    require-explanation: false # don't require an explanation for nolint directives
+    require-specific: false # don't require nolint directives to be specific about which linter is being skipped
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - exportloopref
+    - exhaustive
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - gomnd
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+
+  # don't enable:
+  # - asciicheck
+  # - scopelint
+  # - gochecknoglobals
+  # - gocognit
+  # - godot
+  # - godox
+  # - goerr113
+  # - interfacer
+  # - maligned
+  # - nestif
+  # - prealloc
+  # - testpackage
+  # - revive
+  # - wsl
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gomnd
+        - funlen
+        - lll
+        - dupl
+        - noctx
+
+    - linters:
+        - stylecheck
+      text: "ST1003:"
+
+    - linters:
+        - lll
+      source: "^\\s*// "
+
+run:
+  build-tags:
+    - gingonic
+  skip-dirs:
+    - mock/testdata
+    - internal/cache
+    - internal/renameio
+    - internal/robustio
+
+
+output:
+  # colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
+  # default is "colored-line-number"
+  format: colored-line-number
+  # print lines of code with issue, default is true
+  print-issued-lines: true
+
+  # print linter name in the end of issue text, default is true
+  print-linter-name: true
+
+  # make issues output unique by line, default is true
+  uniq-by-line: true
+
+  # add a prefix to the output file references; default is no prefix
+  path-prefix: ""
+
+  # sorts results by: filepath, line and column
+  sort-results: false

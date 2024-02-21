@@ -1,6 +1,8 @@
 .*
 *.log
 !.git*
+!.goreleaser.yaml
+!.golangci.yml
 /bin/
 /package/
 /dist/
