@@ -1,6 +1,8 @@
 builds:
   - goos:
       - linux
+    targets:
+      - linux-amd64
     env:
       - CGO_ENABLED=0
     main: ./cmd/
