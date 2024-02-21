@@ -1,0 +1,43 @@
+name: Deployment
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  dist_linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.6'
+
+      - name: Install some build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package
+        run: |
+          task package:debian-amd64
+
+      - name: Upload
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/linkquisition-amd64.deb
+          asset_name: linkquisition-${{ github.event.release.tag_name }}-amd64.deb
+          asset_content_type: application/vnd.debian.binary-package
