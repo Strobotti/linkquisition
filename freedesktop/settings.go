@@ -10,6 +10,8 @@ import (
 	"github.com/strobotti/linkquisition"
 )
 
+var configDirPerms = 0700
+
 var _ linkquisition.SettingsService = (*SettingsService)(nil)
 
 type SettingsService struct {
@@ -69,6 +71,19 @@ func (s *SettingsService) IsConfigured() bool {
 	return !errors.Is(err, os.ErrNotExist)
 }
 
+func (s *SettingsService) GetSettings() *linkquisition.Settings {
+	if !s.IsConfigured() {
+		return linkquisition.GetDefaultSettings()
+	}
+
+	settings, err := s.ReadSettings()
+	if err != nil {
+		return linkquisition.GetDefaultSettings()
+	}
+
+	return settings
+}
+
 func (s *SettingsService) ScanBrowsers() error {
 	var oldSettings *linkquisition.Settings
 
@@ -89,8 +104,7 @@ func (s *SettingsService) ScanBrowsers() error {
 	newSettings := oldSettings.UpdateWithBrowsers(browsers).NormalizeBrowsers()
 
 	// ensure the directory exists
-	//nolint:gomnd
-	if errMkdir := os.MkdirAll(s.GetConfigFolderPath(), 0700); errMkdir != nil {
+	if errMkdir := os.MkdirAll(s.GetConfigFolderPath(), os.FileMode(configDirPerms)); errMkdir != nil {
 		return fmt.Errorf("failed to scan browsers: %v", errMkdir)
 	}
 

@@ -33,7 +33,7 @@ func TestBrowserSettings_MatchesUrl(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "site does not match even the domain is the same",
+			name: "site does not match if the subdomain is different",
 			settings: BrowserSettings{
 				Name:    "Firefox",
 				Command: "firefox",
@@ -47,6 +47,91 @@ func TestBrowserSettings_MatchesUrl(t *testing.T) {
 				},
 			},
 			url:      "https://example.com/path/is/here",
+			expected: false,
+		},
+		{
+			name: "domain matches",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Hidden:  false,
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{
+					{
+						Type:  BrowserMatchTypeDomain,
+						Value: "example.com",
+					},
+				},
+			},
+			url:      "https://example.com/path/is/here",
+			expected: true,
+		},
+		{
+			name: "domain matches, without path",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Hidden:  false,
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{
+					{
+						Type:  BrowserMatchTypeDomain,
+						Value: "example.com",
+					},
+				},
+			},
+			url:      "https://example.com",
+			expected: true,
+		},
+		{
+			name: "domain matches even if the subdomain is different",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Hidden:  false,
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{
+					{
+						Type:  BrowserMatchTypeDomain,
+						Value: "example.com",
+					},
+				},
+			},
+			url:      "https://sub.example.com/path/is/here",
+			expected: true,
+		},
+		{
+			name: "domain matches even if the subdomain is different, without path",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Hidden:  false,
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{
+					{
+						Type:  BrowserMatchTypeDomain,
+						Value: "example.com",
+					},
+				},
+			},
+			url:      "https://sub.example.com",
+			expected: true,
+		},
+		{
+			name: "domain does not match",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Hidden:  false,
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{
+					{
+						Type:  BrowserMatchTypeDomain,
+						Value: "example.com",
+					},
+				},
+			},
+			url:      "https://www.example.org/path/is/here",
 			expected: false,
 		},
 	} {

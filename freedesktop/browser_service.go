@@ -4,17 +4,18 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/strobotti/linkquisition"
-	"gopkg.in/alessio/shellescape.v1"
 	"log"
 	"os/exec"
 	"strings"
+
+	"gopkg.in/alessio/shellescape.v1"
+
+	"github.com/strobotti/linkquisition"
 )
 
 var _ linkquisition.BrowserService = (*BrowserService)(nil)
 
 type BrowserService struct {
-	App                 linkquisition.Application
 	XdgService          *XdgService
 	DesktopEntryService *DesktopEntryService
 }
@@ -111,8 +112,6 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 	command := browser.Command
 	command = strings.ReplaceAll(command, "%u", u)
 	command = strings.ReplaceAll(command, "%U", u)
-
-	b.App.GetLogger().Info(fmt.Sprintf("Opening URL `%s` with browser `%s` using command `%s`", u, browser.Name, command))
 
 	// now just execute the damn command
 	cmd := exec.Command("sh", "-c", command)

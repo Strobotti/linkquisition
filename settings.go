@@ -32,10 +32,12 @@ type BrowserSettings struct {
 	Matches []BrowserMatch `json:"matches"`
 }
 
-func (s *BrowserSettings) MatchesUrl(url string) bool {
-	matchSite := func(url, site string) bool {
+func (s *BrowserSettings) MatchesUrl(u string) bool {
+	uu := NewURL(u)
+
+	matchSite := func(u, site string) bool {
 		re := regexp.MustCompile(`^https?://([^/]+)(/|$)`)
-		match := re.FindStringSubmatch(url)
+		match := re.FindStringSubmatch(u)
 		if len(match) > 1 {
 			return strings.EqualFold(match[1], site)
 		}
@@ -46,11 +48,17 @@ func (s *BrowserSettings) MatchesUrl(url string) bool {
 	for i := range s.Matches {
 		switch s.Matches[i].Type {
 		case BrowserMatchTypeRegex:
-			if matches, _ := regexp.MatchString(s.Matches[i].Value, url); matches {
+			if matches, _ := regexp.MatchString(s.Matches[i].Value, u); matches {
 				return true
 			}
+		case BrowserMatchTypeDomain:
+			if domain, err := uu.GetDomain(); err == nil {
+				if strings.EqualFold(domain, s.Matches[i].Value) {
+					return true
+				}
+			}
 		case BrowserMatchTypeSite:
-			if matchSite(url, s.Matches[i].Value) {
+			if matchSite(u, s.Matches[i].Value) {
 				return true
 			}
 		}
@@ -160,9 +168,9 @@ func (s *Settings) GetSelectableBrowsers() []Browser {
 	return browsers
 }
 
-func (s *Settings) GetMatchingBrowser(url string) (*Browser, error) {
+func (s *Settings) GetMatchingBrowser(u string) (*Browser, error) {
 	for i := range s.Browsers {
-		if s.Browsers[i].MatchesUrl(url) {
+		if s.Browsers[i].MatchesUrl(u) {
 			return &Browser{
 				Name:    s.Browsers[i].Name,
 				Command: s.Browsers[i].Command,
@@ -176,6 +184,9 @@ func (s *Settings) GetMatchingBrowser(url string) (*Browser, error) {
 type SettingsService interface {
 	// IsConfigured returns true if the settings have been configured (i.e. the config-file exists)
 	IsConfigured() bool
+
+	// GetSettings returns the settings, either from the config-file or the default settings
+	GetSettings() *Settings
 
 	// ReadSettings reads the config-file and returns the settings
 	ReadSettings() (*Settings, error)
