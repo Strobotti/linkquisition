@@ -45,14 +45,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
-      - name: Install Task
-        uses: arduino/setup-task@v2
-        with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Package
-        run: |
-          task package:debian-amd64
       - uses: go-semantic-release/action@v1
         with:
           hooks: goreleaser

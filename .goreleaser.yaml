@@ -1,6 +1,6 @@
 builds:
-  - targets:
-      - linux_amd64
+  - goos:
+      - linux
     main: ./cmd/
     flags:
       - -trimpath
@@ -10,3 +10,18 @@ builds:
       - -X main.version={{.Version}}
       - -X main.commitSHA={{.FullCommit}}
       - -X main.buildDate={{.Date}}
+
+nfpms:
+  - package_name: linkquisition
+    homepage: https://www.strobotti.com
+    maintainer: Juha Jantunen <juha@strobotti.com>
+    description: |-
+      Linkquisition is a browser-picker tool for opening links in a specific browser.
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    priority: optional
+
+sboms:
+  - artifacts: archive
