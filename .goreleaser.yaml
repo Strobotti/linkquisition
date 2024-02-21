@@ -1,7 +1,5 @@
 builds:
-  - goos:
-      - linux
-    targets:
+  - targets:
       - linux-amd64
     env:
       - CGO_ENABLED=0
