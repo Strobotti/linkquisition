@@ -1,9 +1,9 @@
 name: Deployment
 
 on:
-  release:
-    types:
-      - created
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   dist_linux:
