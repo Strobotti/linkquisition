@@ -50,3 +50,15 @@ jobs:
           hooks: goreleaser
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Package
+        run: |
+          task package:debian-amd64
+      - name: Upload Debian Package
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/linkquisition-amd64.deb
+          asset_name: linkquisition-${{ github.event.release.tag_name }}-amd64.deb
+          asset_content_type: application/vnd.debian.binary-package
