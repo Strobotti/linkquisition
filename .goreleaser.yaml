@@ -6,7 +6,6 @@ builds:
       - -trimpath
       - -buildvcs=false
     ldflags:
-      - -extldflags '-static'
       - -s -w
       - -X main.version={{.Version}}
       - -X main.commitSHA={{.FullCommit}}
