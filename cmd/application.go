@@ -116,7 +116,6 @@ func (a *Application) Run(_ context.Context) error {
 			}
 		}
 		browsers = a.SettingsService.GetSettings().GetSelectableBrowsers()
-		fmt.Printf("found %d browsers configured to be selected\n", len(browsers))
 	} else if browsers, err = a.BrowserService.GetAvailableBrowsers(); err != nil {
 		return err
 	} else {
