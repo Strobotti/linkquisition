@@ -26,6 +26,10 @@ nfpms:
       - rpm
     bindir: /usr/bin
     priority: optional
+    contents:
+      - src: package/linux
+        dst: /
+        type: tree
 
 sboms:
   - artifacts: archive
