@@ -26,6 +26,8 @@ nfpms:
       - rpm
     bindir: /usr/bin
     priority: optional
+    dependencies:
+      - libgl1
     contents:
       - src: package/linux
         dst: /
