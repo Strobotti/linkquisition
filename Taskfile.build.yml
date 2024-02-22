@@ -14,7 +14,7 @@ tasks:
         sh: echo ${VERSION:-v0.0.0}
       OPTIONS: '{{default "" .DEVOPTIONS}}'
     cmds:
-      - GOOS={{.TARGET}} go build -tags release -ldflags '-X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} cmd/*.go
+      - CGO_ENABLED=1 GOOS={{.TARGET}} go build -tags release -ldflags '-X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} cmd/*.go
       - echo "bin/{{.OUTPUT}}{{exeExt}} created successfully"
     sources:
       - ./**/*.go
