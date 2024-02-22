@@ -8,7 +8,7 @@ tasks:
   linux:
     cmds:
       - mkdir -p package/linux/usr/share/applications package/linux/usr/share/pixmaps
-      - cp Icon.png package/debian-amd64/usr/share/pixmaps/linkquisition.png
+      - cp Icon.png package/linux/usr/share/pixmaps/linkquisition.png
       - cp templates/linkquisition.desktop package/linux/usr/share/applications/linkquisition.desktop
 
   debian-amd64:
