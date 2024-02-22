@@ -3,16 +3,14 @@ name: CI
 on:
   push:
     branches: [main]
-  pull_request:
 
 jobs:
-  test:
+  publish:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-
       - uses: actions/checkout@v4
 
       - name: Install Go
@@ -36,7 +34,7 @@ jobs:
         run: task test
 
       - name: Package files for Linux
-        run: task package_linux
+        run: task package:linux
 
       - uses: go-semantic-release/action@v1
         with:
