@@ -1,4 +1,4 @@
-<img style="float: left; margin-right: 10px" src="Icon.png" width="142" height="142"  alt="Linkquisition" />
+<img src="Icon.png" width="142" height="142" alt="Linkquisition" align="left"/>
 
 # Linkquisition
 
