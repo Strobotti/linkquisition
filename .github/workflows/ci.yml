@@ -21,6 +21,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
+        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
     - name: Install Task
       uses: arduino/setup-task@v2
