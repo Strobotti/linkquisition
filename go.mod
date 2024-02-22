@@ -1,10 +1,11 @@
 module github.com/strobotti/linkquisition
 
-go 1.21.6
+go 1.21
 
 require (
 	fyne.io/fyne/v2 v2.4.3
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/net v0.17.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/ini.v1 v1.67.0
 )
@@ -32,7 +33,6 @@ require (
 	github.com/yuin/goldmark v1.5.5 // indirect
 	golang.org/x/image v0.11.0 // indirect
 	golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda // indirect
-	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
