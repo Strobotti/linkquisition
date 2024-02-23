@@ -1,6 +1,6 @@
-<img src="Icon.png" width="142" height="142" alt="Linkquisition" align="left"/>
-
 # Linkquisition
+
+![](https://raw.githubusercontent.com/Strobotti/linkquisition/gh-pages/badges/coverage.svg)
 
 Linkquisition is a fast, configurable browser-picker for Linux desktop written in Go.
 
@@ -141,6 +141,8 @@ task package:deb # results in dist/linkquisition_0.0.0_amd64.deb
 - [ ] Add support for more platforms
 - [ ] Add support for more architectures
 - [ ] Add support for more package-formats
+
+<img src="Icon.png" width="142" height="142" alt="Linkquisition" align="left"/>
 
 With the above list the most interesting feature for me personally is the plugins -feature, as it would allow for
 doing some more complex processing of the URL before opening it in a browser. For example, I could write a plugin that
