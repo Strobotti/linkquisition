@@ -1,13 +1,53 @@
 version: '3'
 
+vars:
+  COVERAGE_DIR_LAST: "{{.PWD}}/test/coverage.last"
+  COVERAGE_DIR_LATEST: "{{.PWD}}/test/coverage.latest"
+  COVERAGE_HTML: "{{.COVERAGE_DIR_LATEST}}/index.html"
+  COVERAGE_XML: "{{.COVERAGE_DIR_LATEST}}/coverage.xml"
+
 tasks:
+  setup-test:
+    internal: true
+    cmds:
+      - go install github.com/boumenot/gocover-cobertura@latest
+      - mkdir -p {{.COVERAGE_DIR_LAST}}
+      - mkdir -p {{.COVERAGE_DIR_LATEST}}
+      - rm -rfv {{.COVERAGE_DIR_LAST}}/*
+      - cmd: cp -r {{.COVERAGE_DIR_LATEST}}/* {{.COVERAGE_DIR_LAST}}
+        ignore_error: true
+
+  test-cobertura:
+    status:
+      - which gocover-cobertura
+    cmds:
+      - defer: echo "gocover-cobertura is not available. Please install it or make sure it is in your PATH."
+      - exit 1
+
   watch:
     cmds:
       - task build --watch
 
   test:
     cmds:
-      - go test -v ./...
+      - task: setup-test
+      - task: test-cobertura
+      - go test -covermode=atomic -coverprofile="{{.COVERAGE_DIR_LATEST}}/coverage.txt" -v ./...
+      - gocover-cobertura < {{.COVERAGE_DIR_LATEST}}/coverage.txt > {{.COVERAGE_XML}}
+      - go tool cover -html="{{.COVERAGE_DIR_LATEST}}/coverage.txt" -o {{.COVERAGE_HTML}}
+      - task: coverage-test-result
+
+  coverage-test-result:
+    internal: true
+    vars:
+      LAST_COVERAGE:
+        sh: if [ -f {{.COVERAGE_DIR_LAST}}/coverage.xml ]; then sed -E '/^<coverage/!d;s/^.+line-rate="([0-9\.]+)".+/\1/' {{.COVERAGE_DIR_LAST}}/coverage.xml; else echo "0"; fi
+      LATEST_COVERAGE:
+        sh: sed -E '/^<coverage/!d;s/^.+line-rate="([0-9\.]+)".+/\1/' {{.COVERAGE_XML}} || 0
+    cmds:
+      - |
+        awk "BEGIN {printf(\"Total coverage: %.2f%%\n\", {{.LATEST_COVERAGE}}*100)}"
+        if [ -f {{.COVERAGE_DIR_LAST}}/coverage.xml ]; then awk "BEGIN {printf(\"Change from previous run: %.2f%%\n\", {{.LATEST_COVERAGE}}*100-{{.LAST_COVERAGE}}*100)}"; fi
 
   lint:
     cmds:
