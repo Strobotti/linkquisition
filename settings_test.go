@@ -134,6 +134,40 @@ func TestBrowserSettings_MatchesUrl(t *testing.T) {
 			url:      "https://www.example.org/path/is/here",
 			expected: false,
 		},
+		{
+			name: "regex matches",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Hidden:  false,
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{
+					{
+						Type:  BrowserMatchTypeRegex,
+						Value: `^https?://github\.com/Strobotti/`,
+					},
+				},
+			},
+			url:      "https://github.com/Strobotti/linkquisition",
+			expected: true,
+		},
+		{
+			name: "regex does not match",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Hidden:  false,
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{
+					{
+						Type:  BrowserMatchTypeRegex,
+						Value: `^https?://github\.com/Strobotti/`,
+					},
+				},
+			},
+			url:      "https://github.com/",
+			expected: false,
+		},
 	} {
 		t.Run(
 			tt.name, func(t *testing.T) {
