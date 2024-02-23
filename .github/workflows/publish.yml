@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -45,7 +46,7 @@ jobs:
       - name: Make Coverage Badge
         uses: action-badges/cobertura-coverage-xml-badges@0.3.0
         with:
-          file-name: ./badges/coverage.svg
-          badge-branch: gh-pages
+          file-name: './badges/coverage.svg'
+          badge-branch: 'gh-pages'
+          coverage-file-name: './test/coverage.latest/coverage.xml'
           github-token: '${{ secrets.GITHUB_TOKEN }}'
-          coverage-file-name: ./test/coverage.latest/coverage.xml
