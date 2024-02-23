@@ -46,7 +46,7 @@ jobs:
       - name: Make Coverage Badge
         uses: action-badges/cobertura-coverage-xml-badges@0.3.0
         with:
-          file-name: badges/coverage.svg
+          file-name: coverage.svg
           badge-branch: gh-pages
           coverage-file-name: test/coverage.latest/coverage.xml
           github-token: ${{ secrets.GITHUB_TOKEN }}

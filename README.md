@@ -1,6 +1,6 @@
 # Linkquisition
 
-![](https://raw.githubusercontent.com/Strobotti/linkquisition/gh-pages/badges/coverage.svg)
+![coverage](https://raw.githubusercontent.com/Strobotti/linkquisition/gh-pages/.badges/main/coverage.svg)
 
 Linkquisition is a fast, configurable browser-picker for Linux desktop written in Go.
 
