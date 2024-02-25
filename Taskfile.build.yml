@@ -30,6 +30,11 @@ tasks:
           OUTPUT: "linkquisition-linux-amd64"
           TARGET: "linux"
 
+  plugins:
+    cmds:
+      - mkdir -p package/linux/usr/lib/linkquisition/plugins
+      - go build -buildmode=plugin -o package/linux/usr/lib/linkquisition/plugins/unwrap.so ./plugins/unwrap/unwrap.go
+
   clean:
     cmds:
       - rm -rf bin/*

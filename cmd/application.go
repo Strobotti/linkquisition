@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/url"
 	"os"
+	"path/filepath"
+	"plugin"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -24,7 +26,9 @@ type Application struct {
 	XdgService      freedesktop.XdgService
 	BrowserService  linkquisition.BrowserService
 	SettingsService linkquisition.SettingsService
-	Logger          *slog.Logger
+
+	Logger  *slog.Logger
+	plugins []linkquisition.Plugin
 }
 
 func NewApplication() *Application {
@@ -42,15 +46,63 @@ func NewApplication() *Application {
 
 	logger := setupLogger(settingsService)
 
+	pluginServiceProvider := linkquisition.NewPluginServiceProvider(logger, settingsService.GetSettings())
+
 	a := &Application{
 		Fapp:            fapp,
 		BrowserService:  browserService,
 		SettingsService: settingsService,
-
-		Logger: logger,
+		Logger:          logger,
+		plugins:         setupPlugins(settingsService, pluginServiceProvider, logger),
 	}
 
 	return a
+}
+
+func setupPlugins(
+	settingsService linkquisition.SettingsService,
+	pluginServiceProvider linkquisition.PluginServiceProvider,
+	logger *slog.Logger,
+) []linkquisition.Plugin {
+	settings := settingsService.GetSettings()
+	var plugins []linkquisition.Plugin
+
+	for _, pluginSettings := range settings.Plugins {
+		pluginPath := pluginSettings.Path
+		if !strings.HasSuffix(pluginPath, ".so") {
+			pluginPath += ".so"
+		}
+
+		if _, err := os.Stat(pluginPath); err != nil {
+			pluginPathToCheck := filepath.Join(settingsService.GetPluginFolderPath(), pluginPath)
+			if _, err := os.Stat(pluginPathToCheck); err == nil {
+				pluginPath = pluginPathToCheck
+			} else {
+				logger.Error("Error loading plugin", "plugin", pluginSettings.Path, "error", err.Error())
+				continue
+			}
+		}
+
+		plug, err := plugin.Open(pluginPath)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
+
+		symbol, err := plug.Lookup("Plugin")
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
+		var p linkquisition.Plugin
+		p, ok := symbol.(linkquisition.Plugin)
+		if !ok {
+			fmt.Printf("unexpected type from module symbol: %T\n", symbol)
+		} else {
+			p.Setup(pluginServiceProvider, pluginSettings.Settings)
+			plugins = append(plugins, p)
+		}
+	}
+
+	return plugins
 }
 
 func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
@@ -108,9 +160,13 @@ func (a *Application) Run(_ context.Context) error {
 		return nil
 	}
 
+	for _, plug := range a.plugins {
+		urlToOpen = plug.ModifyUrl(urlToOpen)
+	}
+
 	if a.SettingsService.IsConfigured() {
 		if browser, matchErr := a.SettingsService.GetSettings().GetMatchingBrowser(urlToOpen); matchErr == nil {
-			a.Logger.Debug("found a matching browser-rule for browser `%s` with URL `%s`\n", browser.Name, urlToOpen)
+			a.Logger.Debug(fmt.Sprintf("found a matching browser-rule for browser `%s` with URL `%s`", browser.Name, urlToOpen))
 			if a.BrowserService.OpenUrlWithBrowser(urlToOpen, browser) == nil {
 				return nil
 			}

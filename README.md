@@ -133,9 +133,13 @@ The following command will build a `.deb` package in the `dist` directory:
 task package:deb # results in dist/linkquisition_0.0.0_amd64.deb
 ```
 
+## Experimental plugin-system
+
+See [plugins](./plugins/README.md) for more information.
+
 ## TODO
 
-- [ ] Add support for plugins
+- [X] Add support for plugins
 - [ ] Add support for translations
 - [ ] Add support for browser icons
 - [ ] Add support for more platforms
@@ -148,7 +152,7 @@ With the above list the most interesting feature for me personally is the plugin
 doing some more complex processing of the URL before opening it in a browser. For example, I could write a plugin that
 strips any tracking parameters from the URL before opening it in the browser.
 
-I also would like to have a plugin that checks if the opened url is a Microsoft Defender (Evergreen) URL and then, with
+~~I also would like to have a plugin that checks if the opened url is a Microsoft Defender (Evergreen) URL and then, with
 matching rules, opens the actual url (baked in the "evergreen-assets URL") in a browser. This way all the internal
 links in my company could be opened directly in the browser, but the external links would still go through the Defender
-URL.
+URL.~~ See [Unwrap](./plugins/unwrap/unwrap.go) -plugin for more information.

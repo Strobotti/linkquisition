@@ -50,6 +50,10 @@ func (s *SettingsService) GetLogFolderPath() string {
 	return filepath.Join(os.TempDir(), "linkquisition")
 }
 
+func (s *SettingsService) GetPluginFolderPath() string {
+	return "/usr/lib/linkquisition/plugins"
+}
+
 func (s *SettingsService) ReadSettings() (*linkquisition.Settings, error) {
 	data, err := os.ReadFile(s.GetConfigFilePath())
 	if err != nil {
