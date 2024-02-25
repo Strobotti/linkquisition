@@ -11,11 +11,16 @@ import (
 )
 
 type UnwrapRule struct {
-	Match     string `json:"match"`
+	// Match is a regular expression that the plugin should use to match URLs
+	Match string `json:"match"`
+
+	// Parameter is the query parameter that the plugin should use to unwrap URLs
 	Parameter string `json:"parameter"`
 }
 
+// UnwrapPluginSettings is a struct that holds the settings specific for the unwrap plugin
 type UnwrapPluginSettings struct {
+	// Rules is a list of rules that the plugin should use to unwrap URLs
 	Rules []UnwrapRule `json:"rules"`
 
 	// RequireBrowserMatchToUnwrap is a boolean that determines if the plugin should only unwrap URLs if any browsers has a matching rule
@@ -24,6 +29,7 @@ type UnwrapPluginSettings struct {
 
 var _ linkquisition.Plugin = (*unwrap)(nil)
 
+// unwrap is a plugin that unwraps URLs based on the rules provided in the settings
 type unwrap struct {
 	settings        UnwrapPluginSettings
 	serviceProvider linkquisition.PluginServiceProvider
