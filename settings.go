@@ -67,9 +67,16 @@ func (s *BrowserSettings) MatchesUrl(u string) bool {
 	return false
 }
 
+type PluginSettings struct {
+	// Path is the path to the plugin binary
+	Path     string                 `json:"path"`
+	Settings map[string]interface{} `json:"settings,omitempty"`
+}
+
 type Settings struct {
 	LogLevel string            `json:"logLevel,omitempty"`
 	Browsers []BrowserSettings `json:"browsers"`
+	Plugins  []PluginSettings  `json:"plugins,omitempty"`
 }
 
 // NormalizeBrowsers moves hidden browsers to the end of the list
@@ -199,6 +206,9 @@ type SettingsService interface {
 
 	// GetLogFolderPath returns the path to the config-file
 	GetLogFolderPath() string
+
+	// GetPluginFolderPath returns the absolute path to the plugin-folder
+	GetPluginFolderPath() string
 }
 
 func GetDefaultSettings() *Settings {
@@ -209,7 +219,7 @@ func GetDefaultSettings() *Settings {
 }
 
 func MapSettingsLogLevelToSlog(logLevel string) slog.Level {
-	switch logLevel {
+	switch strings.ToLower(logLevel) {
 	case "debug":
 		return slog.LevelDebug
 	case "info":

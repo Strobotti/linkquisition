@@ -19,6 +19,7 @@ tasks:
     description: "Builds a Debian package for local testing"
     cmds:
       - task build
+      - task build:plugins
       - task package:linux
       - mkdir -p dist
       - mkdir -p package/linux/DEBIAN package/linux/usr/bin
