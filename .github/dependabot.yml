@@ -7,5 +7,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    assignees: "Strobotti"
-
+    assignees:
+      - "Strobotti"
