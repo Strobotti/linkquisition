@@ -49,9 +49,9 @@ nfpms:
     dependencies:
       - libgl1
     contents:
-      - src: ./dist/application_{{ .Os }}_{{ .Arch }}}}_v1/linkquisition
+      - src: ./dist/application_{{ .Os }}_{{ .Arch }}_v1/linkquisition
         dst: /usr/bin/linkquisition
-      - src: ./dist/unwrap-plugin_{{ .Os }}_{{ .Arch }}}}_v1/plugins
+      - src: ./dist/unwrap-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins
         dst: /usr/lib/linkquisition/plugins
         type: dir
       - src: package/linux
