@@ -7,10 +7,14 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      contents: write
+      pages: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Go
         uses: actions/setup-go@v5
@@ -28,6 +32,7 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Run Tests
         run: task test
@@ -39,7 +44,7 @@ jobs:
         with:
           hooks: goreleaser
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
       - name: Make Coverage Badge
         uses: action-badges/cobertura-coverage-xml-badges@0.3.0
