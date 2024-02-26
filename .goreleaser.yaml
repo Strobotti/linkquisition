@@ -51,9 +51,8 @@ nfpms:
     contents:
       - src: ./dist/application_{{ .Os }}_{{ .Arch }}_v1/linkquisition
         dst: /usr/bin/linkquisition
-      - src: ./dist/unwrap-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins
-        dst: /usr/lib/linkquisition/plugins
-        type: dir
+      - src: ./dist/unwrap-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/unwrap.so
+        dst: /usr/lib/linkquisition/plugins/unwrap.so
       - src: package/linux
         dst: /
         type: tree
