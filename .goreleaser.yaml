@@ -19,6 +19,8 @@ builds:
 
   - id: "unwrap-plugin"
     binary: "plugins/unwrap.so"
+    buildmode: plugin
+    no_main_check: true
     goos:
       - linux
     goarch:
@@ -27,7 +29,6 @@ builds:
     flags:
       - -trimpath
       - -buildvcs=false
-      - -buildmode=plugin
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
