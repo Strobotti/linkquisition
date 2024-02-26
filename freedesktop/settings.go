@@ -69,14 +69,19 @@ func (s *SettingsService) ReadSettings() (*linkquisition.Settings, error) {
 	return settings, nil
 }
 
-func (s *SettingsService) IsConfigured() bool {
-	_, err := os.Stat(s.GetConfigFilePath())
+func (s *SettingsService) IsConfigured() (bool, error) {
+	if _, err := os.Stat(s.GetConfigFilePath()); errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
 
-	return !errors.Is(err, os.ErrNotExist)
+	_, err := s.ReadSettings()
+
+	return err == nil, err
 }
 
 func (s *SettingsService) GetSettings() *linkquisition.Settings {
-	if !s.IsConfigured() {
+	isConfigured, err := s.IsConfigured()
+	if !isConfigured || err != nil {
 		return linkquisition.GetDefaultSettings()
 	}
 
@@ -91,7 +96,7 @@ func (s *SettingsService) GetSettings() *linkquisition.Settings {
 func (s *SettingsService) ScanBrowsers() error {
 	var oldSettings *linkquisition.Settings
 
-	if !s.IsConfigured() {
+	if isConfigured, configErr := s.IsConfigured(); !isConfigured || configErr != nil {
 		oldSettings = &linkquisition.Settings{}
 	} else {
 		var err error

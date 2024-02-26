@@ -105,7 +105,8 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 			button.Enable()
 			fmt.Printf("error scanning browsers: %v", err)
 		} else {
-			setupScanBrowsersButton(button, c.settingsService.IsConfigured())
+			isConfigured, _ := c.settingsService.IsConfigured()
+			setupScanBrowsersButton(button, isConfigured)
 		}
 	}
 
@@ -114,7 +115,11 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		onClickScanBrowsersButton(scanBrowsersButton)
 	}
 
-	setupScanBrowsersButton(scanBrowsersButton, c.settingsService.IsConfigured())
+	// TODO show a spinner while scanning
+	// TODO show a message when scanning is done
+	// TODO show a message (instead of the button) if configuration is invalid (corrupted file etc)
+	isConfigured, _ := c.settingsService.IsConfigured()
+	setupScanBrowsersButton(scanBrowsersButton, isConfigured)
 
 	return container.NewVBox(
 		makeDefaultLabel,

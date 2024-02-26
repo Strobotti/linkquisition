@@ -164,7 +164,12 @@ func (a *Application) Run(_ context.Context) error {
 		urlToOpen = plug.ModifyUrl(urlToOpen)
 	}
 
-	if a.SettingsService.IsConfigured() {
+	isConfigured, configErr := a.SettingsService.IsConfigured()
+	if configErr != nil {
+		a.Logger.Warn("configuration error", "error", configErr.Error())
+	}
+
+	if isConfigured {
 		if browser, matchErr := a.SettingsService.GetSettings().GetMatchingBrowser(urlToOpen); matchErr == nil {
 			a.Logger.Debug(fmt.Sprintf("found a matching browser-rule for browser `%s` with URL `%s`", browser.Name, urlToOpen))
 			if a.BrowserService.OpenUrlWithBrowser(urlToOpen, browser) == nil {

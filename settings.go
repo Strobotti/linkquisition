@@ -190,7 +190,7 @@ func (s *Settings) GetMatchingBrowser(u string) (*Browser, error) {
 
 type SettingsService interface {
 	// IsConfigured returns true if the settings have been configured (i.e. the config-file exists)
-	IsConfigured() bool
+	IsConfigured() (bool, error)
 
 	// GetSettings returns the settings, either from the config-file or the default settings
 	GetSettings() *Settings
