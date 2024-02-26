@@ -1,5 +1,7 @@
 builds:
-  - goos:
+  - id: "application"
+    binary: "linkquisition"
+    goos:
       - linux
     goarch:
       - amd64
@@ -15,8 +17,26 @@ builds:
       - -X main.commitSHA={{.FullCommit}}
       - -X main.buildDate={{.Date}}
 
+  - id: "unwrap-plugin"
+    binary: "plugins/unwrap.so"
+    goos:
+      - linux
+    goarch:
+      - amd64
+    main: ./plugins/unwrap/
+    flags:
+      - -trimpath
+      - -buildvcs=false
+      - -buildmode=plugin
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commitSHA={{.FullCommit}}
+      - -X main.buildDate={{.Date}}
+
 nfpms:
-  - package_name: linkquisition
+  - meta: true
+    package_name: linkquisition
     homepage: https://www.strobotti.com
     maintainer: Juha Jantunen <juha@strobotti.com>
     description: |-
@@ -24,11 +44,15 @@ nfpms:
     formats:
       - deb
       - rpm
-    bindir: /usr/bin
     priority: optional
     dependencies:
       - libgl1
     contents:
+      - src: ./dist/linkquisition_{{ .Os }}_{{ .Arch }}}}_v1/linkquisition
+        dst: /usr/bin/linkquisition
+      - src: ./dist/linkquisition_{{ .Os }}_{{ .Arch }}}}_v1/plugins
+        dst: /usr/lib/linkquisition/plugins
+        type: dir
       - src: package/linux
         dst: /
         type: tree
