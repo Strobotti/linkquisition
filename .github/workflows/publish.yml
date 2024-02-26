@@ -44,7 +44,7 @@ jobs:
         with:
           hooks: goreleaser
         env:
-          GITHUB_TOKEN: ${{ secrets.semantic-release }}
+          GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
       - name: Make Coverage Badge
         uses: action-badges/cobertura-coverage-xml-badges@0.3.0
