@@ -3,6 +3,7 @@
 !.git*
 !.goreleaser.yaml
 !.golangci.yml
+!.release.yml
 /bin/
 /package/
 /dist/
