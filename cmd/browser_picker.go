@@ -7,35 +7,41 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/strobotti/linkquisition"
 )
 
 type BrowserPicker struct {
-	fapp           fyne.App
-	browserService linkquisition.BrowserService
-	browsers       []linkquisition.Browser
-	uiSettings     linkquisition.UiSettings
+	fapp            fyne.App
+	browserService  linkquisition.BrowserService
+	browsers        []linkquisition.Browser
+	settingsService linkquisition.SettingsService
 }
 
 func NewBrowserPicker(
 	fapp fyne.App,
 	browserService linkquisition.BrowserService,
 	browsers []linkquisition.Browser,
-	uiSettings linkquisition.UiSettings,
+	settingsService linkquisition.SettingsService,
 ) *BrowserPicker {
 	return &BrowserPicker{
-		fapp:           fapp,
-		browserService: browserService,
-		browsers:       browsers,
-		uiSettings:     uiSettings,
+		fapp:            fapp,
+		browserService:  browserService,
+		browsers:        browsers,
+		settingsService: settingsService,
 	}
 }
 
 //nolint:funlen
 func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	var buttons []fyne.CanvasObject
+	remember := binding.NewBool()
+	_ = remember.Set(false)
+	rememberMatchType := binding.NewString()
+	// TODO give user the option to choose between site and domain (and later on regex, too)
+	_ = rememberMatchType.Set(linkquisition.BrowserMatchTypeSite)
 
 	for i := range bp.browsers {
 		browser := bp.browsers[i]
@@ -45,6 +51,26 @@ func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 			widget.NewButton(
 				browser.Name,
 				func() {
+					rem, _ := remember.Get()
+					fmt.Printf("Opening URL with browser: %s; remember the choice: %v\n", browser.Name, rem)
+
+					settings := bp.settingsService.GetSettings()
+					remType, _ := rememberMatchType.Get()
+
+					if rem {
+						uto := linkquisition.NewURL(urlToOpen)
+						matchValue, _ := uto.GetDomain()
+
+						if remType == linkquisition.BrowserMatchTypeSite {
+							matchValue, _ = uto.GetSite()
+						}
+
+						settings.AddRuleToBrowser(&browser, remType, matchValue)
+						if writeErr := bp.settingsService.WriteSettings(settings); writeErr != nil {
+							fmt.Printf("Failed to write settings: %v\n", writeErr)
+						}
+					}
+
 					go func() {
 						_ = bp.browserService.OpenUrlWithBrowser(urlToOpen, &browser)
 					}()
@@ -120,7 +146,19 @@ func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		container.NewBorder(nil, nil, widget.NewLabel("Open:"), nil, input),
 	)
 
-	if !bp.uiSettings.HideKeyboardGuideLabel {
+	uto := linkquisition.NewURL(urlToOpen)
+	site, _ := uto.GetSite()
+	check := widget.NewCheckWithData(
+		"Remember this choice with "+site,
+		remember,
+	)
+
+	widgets = append(
+		widgets,
+		check,
+	)
+
+	if !bp.settingsService.GetSettings().Ui.HideKeyboardGuideLabel {
 		widgets = append(
 			widgets,
 			layout.NewSpacer(),

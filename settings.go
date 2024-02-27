@@ -32,6 +32,7 @@ type BrowserSettings struct {
 	Matches []BrowserMatch `json:"matches"`
 }
 
+// MatchesUrl returns true if the given url matches any of the browser's rules
 func (s *BrowserSettings) MatchesUrl(u string) bool {
 	uu := NewURL(u)
 
@@ -193,6 +194,20 @@ func (s *Settings) GetMatchingBrowser(u string) (*Browser, error) {
 	return nil, ErrNoMatchFound
 }
 
+func (s *Settings) AddRuleToBrowser(b *Browser, matchType, matchValue string) {
+	for i := range s.Browsers {
+		if s.Browsers[i].Command == b.Command {
+			s.Browsers[i].Matches = append(
+				s.Browsers[i].Matches,
+				BrowserMatch{
+					Type:  matchType,
+					Value: matchValue,
+				},
+			)
+		}
+	}
+}
+
 type SettingsService interface {
 	// IsConfigured returns true if the settings have been configured (i.e. the config-file exists)
 	IsConfigured() (bool, error)
@@ -202,6 +217,9 @@ type SettingsService interface {
 
 	// ReadSettings reads the config-file and returns the settings
 	ReadSettings() (*Settings, error)
+
+	// WriteSettings writes the settings to the config-file
+	WriteSettings(settings *Settings) error
 
 	// ScanBrowsers scans (or re-scans) the system for available browsers and creates/updates the config-file
 	ScanBrowsers() error
