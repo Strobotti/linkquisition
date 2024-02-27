@@ -16,17 +16,20 @@ type BrowserPicker struct {
 	fapp           fyne.App
 	browserService linkquisition.BrowserService
 	browsers       []linkquisition.Browser
+	uiSettings     linkquisition.UiSettings
 }
 
 func NewBrowserPicker(
 	fapp fyne.App,
 	browserService linkquisition.BrowserService,
 	browsers []linkquisition.Browser,
+	uiSettings linkquisition.UiSettings,
 ) *BrowserPicker {
 	return &BrowserPicker{
 		fapp:           fapp,
 		browserService: browserService,
 		browsers:       browsers,
+		uiSettings:     uiSettings,
 	}
 }
 
@@ -115,17 +118,18 @@ func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	widgets = append(
 		widgets,
 		container.NewBorder(nil, nil, widget.NewLabel("Open:"), nil, input),
-		layout.NewSpacer(),
-		widget.NewLabel("Press 'ENTER' to pick first, 'ESC' to quit, 'ctrl+c' to copy URL to clipboard"),
 	)
 
-	var windowHeight float32 = 50
-	for _, wdgt := range widgets {
-		windowHeight += wdgt.MinSize().Height
+	if !bp.uiSettings.HideKeyboardGuideLabel {
+		widgets = append(
+			widgets,
+			layout.NewSpacer(),
+			widget.NewLabel("Press 'ENTER' to pick first, 'ESC' to quit, 'ctrl+c' to copy URL to clipboard"),
+		)
 	}
 
 	w.SetFixedSize(true)
-	w.Resize(fyne.NewSize(600, windowHeight)) //nolint:gomnd
+	w.Resize(fyne.NewSize(600, 50)) //nolint:gomnd
 	w.CenterOnScreen()
 
 	if icon, err := fyne.LoadResourceFromPath("Icon.png"); err == nil {

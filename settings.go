@@ -73,10 +73,15 @@ type PluginSettings struct {
 	Settings map[string]interface{} `json:"settings,omitempty"`
 }
 
+type UiSettings struct {
+	HideKeyboardGuideLabel bool `json:"hideKeyboardGuideLabel,omitempty"`
+}
+
 type Settings struct {
 	LogLevel string            `json:"logLevel,omitempty"`
 	Browsers []BrowserSettings `json:"browsers"`
 	Plugins  []PluginSettings  `json:"plugins,omitempty"`
+	Ui       UiSettings        `json:"ui,omitempty"`
 }
 
 // NormalizeBrowsers moves hidden browsers to the end of the list
@@ -215,6 +220,7 @@ func GetDefaultSettings() *Settings {
 	return &Settings{
 		LogLevel: "info",
 		Browsers: nil,
+		Ui:       UiSettings{},
 	}
 }
 

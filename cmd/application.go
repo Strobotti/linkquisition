@@ -207,6 +207,6 @@ func (a *Application) Run(_ context.Context) error {
 	} else {
 		a.Logger.Warn("browsers not configured, falling back to system settings")
 	}
-	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers)
+	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService.GetSettings().Ui)
 	return bp.Run(context.Background(), urlToOpen)
 }
