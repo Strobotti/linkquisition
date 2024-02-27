@@ -85,24 +85,49 @@ func setupPlugins(
 
 		plug, err := plugin.Open(pluginPath)
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
+			logger.Error("Error loading plugin", "plugin", pluginSettings.Path, "error", err.Error())
+			continue
 		}
 
-		symbol, err := plug.Lookup("Plugin")
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-		}
-		var p linkquisition.Plugin
-		p, ok := symbol.(linkquisition.Plugin)
-		if !ok {
-			fmt.Printf("unexpected type from module symbol: %T\n", symbol)
+		if p, err := setupPlugin(plug, pluginSettings.Settings, pluginServiceProvider); err != nil {
+			logger.Error("Error setting up plugin", "plugin", pluginSettings.Path, "error", err.Error())
 		} else {
-			p.Setup(pluginServiceProvider, pluginSettings.Settings)
 			plugins = append(plugins, p)
 		}
 	}
 
 	return plugins
+}
+
+func setupPlugin(
+	plug *plugin.Plugin,
+	settings map[string]interface{},
+	pluginServiceProvider linkquisition.PluginServiceProvider,
+) (
+	p linkquisition.Plugin,
+	err error,
+) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic while setting up plugin: %v", r)
+		}
+	}()
+
+	var symbol plugin.Symbol
+	symbol, err = plug.Lookup("Plugin")
+	if err != nil {
+		return nil, fmt.Errorf("plugin symbol lookup returned an error: %v", err)
+	}
+
+	var ok bool
+	p, ok = symbol.(linkquisition.Plugin)
+	if !ok {
+		return nil, fmt.Errorf("unexpected type from plugin lookup symbol: %T", symbol)
+	} else {
+		p.Setup(pluginServiceProvider, settings)
+	}
+
+	return p, nil
 }
 
 func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
@@ -182,6 +207,7 @@ func (a *Application) Run(_ context.Context) error {
 	} else {
 		a.Logger.Warn("browsers not configured, falling back to system settings")
 	}
-	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers)
+
+	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService)
 	return bp.Run(context.Background(), urlToOpen)
 }

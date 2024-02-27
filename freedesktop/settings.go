@@ -11,6 +11,7 @@ import (
 )
 
 var configDirPerms = 0700
+var configFilePerms = 0600
 
 var _ linkquisition.SettingsService = (*SettingsService)(nil)
 
@@ -67,6 +68,24 @@ func (s *SettingsService) ReadSettings() (*linkquisition.Settings, error) {
 	}
 
 	return settings, nil
+}
+
+func (s *SettingsService) WriteSettings(settings *linkquisition.Settings) error {
+	data, err := json.MarshalIndent(settings, "", "  ")
+	if err != nil {
+		return fmt.Errorf("unable to marshal settings: %v", err)
+	}
+
+	// ensure the directory exists
+	if errMkdir := os.MkdirAll(s.GetConfigFolderPath(), os.FileMode(configDirPerms)); errMkdir != nil {
+		return fmt.Errorf("failed to write settings: %v", errMkdir)
+	}
+
+	if errWrite := os.WriteFile(s.GetConfigFilePath(), data, os.FileMode(configFilePerms)); errWrite != nil {
+		return fmt.Errorf("failed to write settings: %v", errWrite)
+	}
+
+	return nil
 }
 
 func (s *SettingsService) IsConfigured() (bool, error) {
