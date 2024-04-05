@@ -34,6 +34,7 @@ tasks:
     cmds:
       - mkdir -p package/linux/usr/lib/linkquisition/plugins
       - go build -buildmode=plugin -o package/linux/usr/lib/linkquisition/plugins/unwrap.so ./plugins/unwrap/unwrap.go
+      - go build -buildmode=plugin -o package/linux/usr/lib/linkquisition/plugins/terminus.so ./plugins/terminus/terminus.go
 
   clean:
     cmds:

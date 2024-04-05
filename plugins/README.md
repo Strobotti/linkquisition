@@ -51,6 +51,28 @@ In the above example, the `requireBrowserMatchToUnwrap` -setting is set to `true
 unwrap the links if there is a matching browser-rule for that URL and all the rest of the URLs are opened with full
 Evergreen-protected URL.
 
+## [Terminus](./terminus/terminus.go) -plugin
+
+This plugin can be used to resolve redirects before processing actual rules or showing the browser picker dialog to the
+user.
+
+There are no configuration options available for this plugin yet, so simply enable it by adding it to the config.json
+as follows:
+
+```json
+{
+  "browsers": [
+    ...
+  ],
+  "plugins": [
+    {
+      "path": "terminus.so"
+    }
+  ]
+}
+
+```
+
 ## Developing plugins
 
 As stated before, the plugins-feature is experimental, the API is not stable and therefore subject to change. However,

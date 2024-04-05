@@ -35,6 +35,24 @@ builds:
       - -X main.commitSHA={{.FullCommit}}
       - -X main.buildDate={{.Date}}
 
+  - id: "terminus-plugin"
+    binary: "plugins/terminus.so"
+    buildmode: plugin
+    no_main_check: true
+    goos:
+      - linux
+    goarch:
+      - amd64
+    main: ./plugins/terminus/
+    flags:
+      - -trimpath
+      - -buildvcs=false
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commitSHA={{.FullCommit}}
+      - -X main.buildDate={{.Date}}
+
 nfpms:
   - meta: true
     package_name: linkquisition
@@ -53,6 +71,8 @@ nfpms:
         dst: /usr/bin/linkquisition
       - src: ./dist/unwrap-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/unwrap.so
         dst: /usr/lib/linkquisition/plugins/unwrap.so
+      - src: ./dist/terminus-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/terminus.so
+        dst: /usr/lib/linkquisition/plugins/terminus.so
       - src: package/linux
         dst: /
         type: tree
