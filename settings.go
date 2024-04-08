@@ -70,7 +70,11 @@ func (s *BrowserSettings) MatchesUrl(u string) bool {
 
 type PluginSettings struct {
 	// Path is the path to the plugin binary
-	Path     string                 `json:"path"`
+	Path string `json:"path"`
+
+	// IsDisabled allows temporarily disabling individual plugins
+	IsDisabled bool `json:"isDisabled"`
+
 	Settings map[string]interface{} `json:"settings,omitempty"`
 }
 

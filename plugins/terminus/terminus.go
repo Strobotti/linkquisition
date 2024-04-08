@@ -3,11 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"net/http"
 	"time"
 
 	"github.com/strobotti/linkquisition"
 )
+
+type TerminusPluginSettings struct {
+	MaxRedirects   int    `json:"maxRedirects"`
+	RequestTimeout string `json:"requestTimeout"`
+}
 
 var _ linkquisition.Plugin = (*terminus)(nil)
 
@@ -18,7 +24,13 @@ type terminus struct {
 	serviceProvider linkquisition.PluginServiceProvider
 }
 
-func (p *terminus) Setup(serviceProvider linkquisition.PluginServiceProvider, _ map[string]interface{}) {
+func (p *terminus) Setup(serviceProvider linkquisition.PluginServiceProvider, config map[string]interface{}) {
+	var settings TerminusPluginSettings
+	if err := mapstructure.Decode(config, &settings); err != nil {
+		serviceProvider.GetLogger().Warn("error decoding settings", "error", err.Error(), "plugin", "unwrap")
+	} else {
+	}
+
 	p.serviceProvider = serviceProvider
 	p.MaxRedirects = 5                         // TODO make configurable
 	p.RequestTimeout = time.Millisecond * 2000 // TODO make configurable
