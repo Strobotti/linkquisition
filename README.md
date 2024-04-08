@@ -24,6 +24,7 @@ Motivation behind this project is:
     - regular expression (e.g. `.*\.example\.com`)
   - Hide a browser from the list
   - Manually add a browser to the list (for example, to open a URL in a different profile)
+  - Remember the choice for given site
 - keyboard-shortcuts
   - `Enter` to open the URL in the default browser
   - `Ctrl+C` to just copy the URL to clipboard and close the window

@@ -56,8 +56,8 @@ Evergreen-protected URL.
 This plugin can be used to resolve redirects before processing actual rules or showing the browser picker dialog to the
 user.
 
-There are no configuration options available for this plugin yet, so simply enable it by adding it to the config.json
-as follows:
+The plugin is configurable in terms of how many redirect-"jumps" to follow and the time-limit how long the requests are
+allowed to take before giving up. Here's an example:
 
 ```json
 {
@@ -66,7 +66,12 @@ as follows:
   ],
   "plugins": [
     {
-      "path": "terminus.so"
+      "path": "terminus.so",
+      "isDisabled": false,
+      "settings": {
+        "maxRedirects": 10,
+        "requestTimeout": "2s"
+      }
     }
   ]
 }

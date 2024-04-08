@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
 	"net/http"
 	"time"
+
+	"github.com/mitchellh/mapstructure"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -25,15 +26,29 @@ type terminus struct {
 }
 
 func (p *terminus) Setup(serviceProvider linkquisition.PluginServiceProvider, config map[string]interface{}) {
+	p.MaxRedirects = 5
+	p.RequestTimeout = time.Millisecond * 2000
+
 	var settings TerminusPluginSettings
 	if err := mapstructure.Decode(config, &settings); err != nil {
-		serviceProvider.GetLogger().Warn("error decoding settings", "error", err.Error(), "plugin", "unwrap")
+		serviceProvider.GetLogger().Warn("error decoding settings", "error", err.Error(), "plugin", "terminus")
 	} else {
+		if settings.MaxRedirects > 0 {
+			p.MaxRedirects = settings.MaxRedirects
+		}
+		if settings.RequestTimeout != "" {
+			if timeout, err := time.ParseDuration(settings.RequestTimeout); err != nil {
+				serviceProvider.GetLogger().Warn(
+					"requestTimeout configuration option is malformed", "error", err.Error(), "plugin",
+					"terminus",
+				)
+			} else {
+				p.RequestTimeout = timeout
+			}
+		}
 	}
 
 	p.serviceProvider = serviceProvider
-	p.MaxRedirects = 5                         // TODO make configurable
-	p.RequestTimeout = time.Millisecond * 2000 // TODO make configurable
 	p.Client = &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
