@@ -68,6 +68,11 @@ func setupPlugins(
 	var plugins []linkquisition.Plugin
 
 	for _, pluginSettings := range settings.Plugins {
+		if pluginSettings.IsDisabled {
+			logger.Debug("Plugin is disabled by configuration directive", "plugin", pluginSettings.Path)
+			continue
+		}
+
 		pluginPath := pluginSettings.Path
 		if !strings.HasSuffix(pluginPath, ".so") {
 			pluginPath += ".so"
