@@ -79,6 +79,17 @@ func TestTerminus_ModifyUrl(t *testing.T) {
 				"https://www7.example.com/some/thing?here=again": http.StatusMultipleChoices,
 			},
 		},
+		{
+			name:        "location is a relative path",
+			inputUrl:    "https://www.example.com/some/thing?here=again",
+			expectedUrl: "https://www.example.com/some/thing?here=again",
+			locations: map[string]string{
+				"https://www.example.com/some/thing?here=again": "/some/other/thing?here=again",
+			},
+			responseCodes: map[string]int{
+				"https://www.example.com/some/thing?here=again": http.StatusMultipleChoices,
+			},
+		},
 	} {
 		t.Run(
 			tt.name, func(t *testing.T) {

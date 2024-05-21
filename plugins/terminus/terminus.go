@@ -88,6 +88,14 @@ func (p *terminus) ModifyUrl(url string) string {
 			break
 		}
 
+		// if the location is a relative path, we assume it's due to a missing authentication and just return the original URL
+		if location[0] == '/' {
+			p.serviceProvider.GetLogger().Warn(
+				fmt.Sprintf("location is just a path for %s", newUrl), "location", location, "plugin", "terminus",
+			)
+			break
+		}
+
 		p.serviceProvider.GetLogger().Debug(
 			fmt.Sprintf("following a redirect for %s", newUrl), "location", location, "plugin", "terminus",
 		)
