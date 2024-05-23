@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -56,19 +58,25 @@ func (p *terminus) Setup(serviceProvider linkquisition.PluginServiceProvider, co
 	}
 }
 
-func (p *terminus) ModifyUrl(url string) string {
-	newUrl := url
+func (p *terminus) ModifyUrl(address string) string {
+	modifiedUrl := address
 
 	ctx, cancel := context.WithTimeout(context.Background(), p.RequestTimeout)
 	defer cancel()
 
 	for i := 0; i < p.MaxRedirects; i++ {
-		req, _ := http.NewRequestWithContext(ctx, http.MethodHead, newUrl, http.NoBody)
+		req, _ := http.NewRequestWithContext(ctx, http.MethodHead, modifiedUrl, http.NoBody)
 		req.Header.Set("User-Agent", "linkquisition")
 		resp, err := p.Client.Do(req)
 		if err != nil {
-			p.serviceProvider.GetLogger().Warn(fmt.Sprintf("error requesting HEAD %s", newUrl), "error", err.Error(), "plugin", "terminus")
-			return newUrl
+			p.serviceProvider.GetLogger().Warn(
+				fmt.Sprintf("error requesting HEAD %s", modifiedUrl),
+				"error",
+				err.Error(),
+				"plugin",
+				"terminus",
+			)
+			return modifiedUrl
 		}
 
 		if resp.Body != nil {
@@ -84,26 +92,45 @@ func (p *terminus) ModifyUrl(url string) string {
 
 		if location == "" {
 			// for whatever reason the location -header doesn't contain a URL; skip
-			p.serviceProvider.GetLogger().Warn(fmt.Sprintf("no location-header for HEAD %s", newUrl), "plugin", "terminus")
+			p.serviceProvider.GetLogger().Warn(fmt.Sprintf("no location-header for HEAD %s", modifiedUrl), "plugin", "terminus")
 			break
 		}
 
 		// if the location is a relative path, we assume it's due to a missing authentication and just return the original URL
 		if location[0] == '/' {
 			p.serviceProvider.GetLogger().Warn(
-				fmt.Sprintf("location is just a path for %s", newUrl), "location", location, "plugin", "terminus",
+				fmt.Sprintf("location is just a path for %s", modifiedUrl), "location", location, "plugin", "terminus",
+			)
+			break
+		}
+
+		// if the location is to the same host, we assume it's due to a missing authentication and just return the original URL
+		prevUrl, prevUrlErr := url.Parse(modifiedUrl)
+		nextUrl, nextUrlErr := url.Parse(location)
+		if prevUrlErr != nil || nextUrlErr != nil {
+			p.serviceProvider.GetLogger().Warn(
+				fmt.Sprintf("error parsing URLs for %s", modifiedUrl),
+				"location", location,
+				"plugin", "terminus",
+				"errors", errors.Join(prevUrlErr, nextUrlErr),
+			)
+			break
+		}
+		if prevUrl.Host == nextUrl.Host && prevUrl.Scheme == nextUrl.Scheme {
+			p.serviceProvider.GetLogger().Warn(
+				fmt.Sprintf("location is to the same host and scheme for %s", modifiedUrl), "location", location, "plugin", "terminus",
 			)
 			break
 		}
 
 		p.serviceProvider.GetLogger().Debug(
-			fmt.Sprintf("following a redirect for %s", newUrl), "location", location, "plugin", "terminus",
+			fmt.Sprintf("following a redirect for %s", modifiedUrl), "location", location, "plugin", "terminus",
 		)
 
-		newUrl = location
+		modifiedUrl = location
 	}
 
-	return newUrl
+	return modifiedUrl
 }
 
 var Plugin terminus

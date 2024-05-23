@@ -80,7 +80,7 @@ func TestTerminus_ModifyUrl(t *testing.T) {
 			},
 		},
 		{
-			name:        "location is a relative path",
+			name:        "location is a relative path will not be resolved",
 			inputUrl:    "https://www.example.com/some/thing?here=again",
 			expectedUrl: "https://www.example.com/some/thing?here=again",
 			locations: map[string]string{
@@ -88,6 +88,28 @@ func TestTerminus_ModifyUrl(t *testing.T) {
 			},
 			responseCodes: map[string]int{
 				"https://www.example.com/some/thing?here=again": http.StatusMultipleChoices,
+			},
+		},
+		{
+			name:        "location is to the same exact host will not be resolved",
+			inputUrl:    "https://www.example.com/some/thing?here=again",
+			expectedUrl: "https://www.example.com/some/thing?here=again",
+			locations: map[string]string{
+				"https://www.example.com/some/thing?here=again": "https://www.example.com/some/other/thing?here=again",
+			},
+			responseCodes: map[string]int{
+				"https://www.example.com/some/thing?here=again": http.StatusMultipleChoices,
+			},
+		},
+		{
+			name:        "location is to the same exact host but the scheme is upgraded from http to https will be resolved",
+			inputUrl:    "http://www.example.com/some/thing?here=again",
+			expectedUrl: "https://www.example.com/some/thing?here=again",
+			locations: map[string]string{
+				"http://www.example.com/some/thing?here=again": "https://www.example.com/some/thing?here=again",
+			},
+			responseCodes: map[string]int{
+				"http://www.example.com/some/thing?here=again": http.StatusMultipleChoices,
 			},
 		},
 	} {
