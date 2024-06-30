@@ -23,4 +23,7 @@ type BrowserService interface {
 
 	// MakeUsTheDefaultBrowser sets Linkquisition as the default browser
 	MakeUsTheDefaultBrowser() error
+
+	// GetIconForBrowser returns the icon for the given browser
+	GetIconForBrowser(browser Browser) ([]byte, error)
 }

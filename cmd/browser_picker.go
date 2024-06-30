@@ -35,7 +35,7 @@ func NewBrowserPicker(
 }
 
 //nolint:funlen
-func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
+func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	var buttons []fyne.CanvasObject
 	remember := binding.NewBool()
 	_ = remember.Set(false)
@@ -43,44 +43,14 @@ func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	// TODO give user the option to choose between site and domain (and later on regex, too)
 	_ = rememberMatchType.Set(linkquisition.BrowserMatchTypeSite)
 
-	for i := range bp.browsers {
-		browser := bp.browsers[i]
-
+	for i := range picker.browsers {
 		buttons = append(
 			buttons,
-			widget.NewButton(
-				browser.Name,
-				func() {
-					rem, _ := remember.Get()
-					fmt.Printf("Opening URL with browser: %s; remember the choice: %v\n", browser.Name, rem)
-
-					settings := bp.settingsService.GetSettings()
-					remType, _ := rememberMatchType.Get()
-
-					if rem {
-						uto := linkquisition.NewURL(urlToOpen)
-						matchValue, _ := uto.GetDomain()
-
-						if remType == linkquisition.BrowserMatchTypeSite {
-							matchValue, _ = uto.GetSite()
-						}
-
-						settings.AddRuleToBrowser(&browser, remType, matchValue)
-						if writeErr := bp.settingsService.WriteSettings(settings); writeErr != nil {
-							fmt.Printf("Failed to write settings: %v\n", writeErr)
-						}
-					}
-
-					go func() {
-						_ = bp.browserService.OpenUrlWithBrowser(urlToOpen, &browser)
-					}()
-					bp.fapp.Quit()
-				},
-			),
+			picker.makeBrowserButton(picker.browsers[i], urlToOpen, remember, rememberMatchType),
 		)
 	}
 
-	w := bp.fapp.NewWindow("Linkquisition")
+	w := picker.fapp.NewWindow("Linkquisition")
 
 	w.Canvas().AddShortcut(
 		&fyne.ShortcutCopy{}, func(shortcut fyne.Shortcut) {
@@ -89,14 +59,14 @@ func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 			// Sleep for a while to allow the Clipboard.SetContent to finish
 			time.Sleep(200 * time.Millisecond) //nolint:gomnd
-			bp.fapp.Quit()
+			picker.fapp.Quit()
 		},
 	)
 
 	w.Canvas().SetOnTypedKey(
 		func(keyEvent *fyne.KeyEvent) {
 			if keyEvent.Name == fyne.KeyEscape {
-				bp.fapp.Quit()
+				picker.fapp.Quit()
 			}
 			if len(buttons) > 0 {
 				if keyEvent.Name == fyne.KeyReturn {
@@ -158,7 +128,7 @@ func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		check,
 	)
 
-	if !bp.settingsService.GetSettings().Ui.HideKeyboardGuideLabel {
+	if !picker.settingsService.GetSettings().Ui.HideKeyboardGuideLabel {
 		widgets = append(
 			widgets,
 			layout.NewSpacer(),
@@ -179,4 +149,51 @@ func (bp *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	w.ShowAndRun()
 
 	return nil
+}
+
+func (picker *BrowserPicker) makeBrowserButton(
+	browser linkquisition.Browser,
+	urlToOpen string,
+	remember binding.Bool,
+	rememberMatchType binding.String,
+) fyne.CanvasObject {
+	var icon fyne.Resource
+
+	iconBytes, err := picker.browserService.GetIconForBrowser(browser)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		icon = fyne.NewStaticResource("icon.png", iconBytes)
+	}
+
+	return widget.NewButtonWithIcon(
+		browser.Name,
+		icon,
+		func() {
+			rem, _ := remember.Get()
+			fmt.Printf("Opening URL with browser: %s; remember the choice: %v\n", browser.Name, rem)
+
+			settings := picker.settingsService.GetSettings()
+			remType, _ := rememberMatchType.Get()
+
+			if rem {
+				uto := linkquisition.NewURL(urlToOpen)
+				matchValue, _ := uto.GetDomain()
+
+				if remType == linkquisition.BrowserMatchTypeSite {
+					matchValue, _ = uto.GetSite()
+				}
+
+				settings.AddRuleToBrowser(&browser, remType, matchValue)
+				if writeErr := picker.settingsService.WriteSettings(settings); writeErr != nil {
+					fmt.Printf("Failed to write settings: %v\n", writeErr)
+				}
+			}
+
+			go func() {
+				_ = picker.browserService.OpenUrlWithBrowser(urlToOpen, &browser)
+			}()
+			picker.fapp.Quit()
+		},
+	)
 }

@@ -18,6 +18,7 @@ var _ linkquisition.BrowserService = (*BrowserService)(nil)
 type BrowserService struct {
 	XdgService          *XdgService
 	DesktopEntryService *DesktopEntryService
+	BrowserIconLoader   BrowserIconLoader
 }
 
 func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error) {
@@ -165,4 +166,9 @@ func (b *BrowserService) NewBrowser(command string) linkquisition.Browser {
 	browser.Name = desktopEntry.Name
 
 	return browser
+}
+
+// GetIconForBrowser returns the icon for the given browser
+func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byte, error) {
+	return b.BrowserIconLoader.LoadIcon(browser)
 }
