@@ -157,8 +157,18 @@ func (picker *BrowserPicker) makeBrowserButton(
 	remember binding.Bool,
 	rememberMatchType binding.String,
 ) fyne.CanvasObject {
-	return widget.NewButton(
+	var icon fyne.Resource
+
+	iconBytes, err := picker.browserService.GetIconForBrowser(browser)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		icon = fyne.NewStaticResource("icon.png", iconBytes)
+	}
+
+	return widget.NewButtonWithIcon(
 		browser.Name,
+		icon,
 		func() {
 			rem, _ := remember.Get()
 			fmt.Printf("Opening URL with browser: %s; remember the choice: %v\n", browser.Name, rem)

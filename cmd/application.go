@@ -38,6 +38,10 @@ func NewApplication() *Application {
 	browserService := &freedesktop.BrowserService{
 		XdgService:          xdgService,
 		DesktopEntryService: &freedesktop.DesktopEntryService{},
+		BrowserIconLoader: &freedesktop.DefaultBrowserIconLoader{
+			XdgService:          xdgService,
+			DesktopEntryService: &freedesktop.DesktopEntryService{},
+		},
 	}
 
 	settingsService := &freedesktop.SettingsService{
