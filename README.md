@@ -142,7 +142,7 @@ See [plugins](./plugins/README.md) for more information.
 
 - [X] Add support for plugins
 - [ ] Add support for translations
-- [ ] Add support for browser icons
+- [X] Add support for browser icons
 - [ ] Add support for more platforms
 - [ ] Add support for more architectures
 - [ ] Add support for more package-formats
