@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	fyne.io/fyne/v2 v2.4.5
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/net v0.30.0
