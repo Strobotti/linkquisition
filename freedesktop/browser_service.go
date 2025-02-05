@@ -30,7 +30,7 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 
 	// grep all the .desktop files in the paths for the category "WebBrowser":
 	grepArgs := []string{
-		"-r",
+		"-R",
 		"-l",
 		"-E",
 		"^Categories=.*WebBrowser",
