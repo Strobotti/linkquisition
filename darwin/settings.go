@@ -1,6 +1,6 @@
-//go:build linux
+//go:build darwin
 
-package freedesktop
+package darwin
 
 import (
 	"encoding/json"
@@ -26,12 +26,11 @@ func (s *SettingsService) GetConfigFilePath() string {
 }
 
 func (s *SettingsService) GetConfigFolderPath() string {
-	// get the user's home directory
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		return ".config"
+		homeDir, _ := os.UserHomeDir()
+		return filepath.Join(homeDir, "Library", "Application Support", "linkquisition")
 	}
-
 	return filepath.Join(configDir, "linkquisition")
 }
 
@@ -40,21 +39,16 @@ func (s *SettingsService) GetLogFilePath() string {
 }
 
 func (s *SettingsService) GetLogFolderPath() string {
-	stateDir, isset := os.LookupEnv("XDG_STATE_HOME")
-	if isset {
-		return filepath.Join(stateDir, "linkquisition")
-	}
-
 	homeDir, err := os.UserHomeDir()
-	if err == nil {
-		return filepath.Join(homeDir, ".local", "state", "linkquisition")
+	if err != nil {
+		return filepath.Join(os.TempDir(), "linkquisition")
 	}
-
-	return filepath.Join(os.TempDir(), "linkquisition")
+	return filepath.Join(homeDir, "Library", "Logs", "linkquisition")
 }
 
 func (s *SettingsService) GetPluginFolderPath() string {
-	return "/usr/lib/linkquisition/plugins"
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, "Library", "Application Support", "linkquisition", "plugins")
 }
 
 func (s *SettingsService) ReadSettings() (*linkquisition.Settings, error) {
@@ -64,7 +58,6 @@ func (s *SettingsService) ReadSettings() (*linkquisition.Settings, error) {
 	}
 
 	var settings = &linkquisition.Settings{}
-
 	if err := json.Unmarshal(data, settings); err != nil {
 		return nil, fmt.Errorf("unable to parse the config-file `%s`: %v", s.GetConfigFilePath(), err)
 	}
@@ -78,7 +71,6 @@ func (s *SettingsService) WriteSettings(settings *linkquisition.Settings) error 
 		return fmt.Errorf("unable to marshal settings: %v", err)
 	}
 
-	// ensure the directory exists
 	if errMkdir := os.MkdirAll(s.GetConfigFolderPath(), os.FileMode(configDirPerms)); errMkdir != nil {
 		return fmt.Errorf("failed to write settings: %v", errMkdir)
 	}
@@ -96,7 +88,6 @@ func (s *SettingsService) IsConfigured() (bool, error) {
 	}
 
 	_, err := s.ReadSettings()
-
 	return err == nil, err
 }
 
@@ -133,7 +124,6 @@ func (s *SettingsService) ScanBrowsers() error {
 
 	newSettings := oldSettings.UpdateWithBrowsers(browsers).NormalizeBrowsers()
 
-	// ensure the directory exists
 	if errMkdir := os.MkdirAll(s.GetConfigFolderPath(), os.FileMode(configDirPerms)); errMkdir != nil {
 		return fmt.Errorf("failed to scan browsers: %v", errMkdir)
 	}
@@ -143,8 +133,7 @@ func (s *SettingsService) ScanBrowsers() error {
 		return fmt.Errorf("failed to scan browsers: %v", err)
 	}
 
-	//nolint:mnd
-	if err := os.WriteFile(s.GetConfigFilePath(), data, 0600); err != nil {
+	if err := os.WriteFile(s.GetConfigFilePath(), data, os.FileMode(configFilePerms)); err != nil {
 		return fmt.Errorf("failed to scan browsers: %v", err)
 	}
 
