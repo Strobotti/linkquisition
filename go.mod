@@ -3,6 +3,7 @@ module github.com/strobotti/linkquisition
 go 1.21
 
 require (
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	fyne.io/fyne/v2 v2.5.3
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.9.0

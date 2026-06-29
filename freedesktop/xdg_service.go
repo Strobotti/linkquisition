@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/google/shlex" // archived but available
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -37,8 +38,19 @@ func (x *XdgService) GetDesktopEntryPathForBinary(binary string) (string, error)
 		return "", fmt.Errorf("no valid desktop entry paths found in $XDG_DATA_DIRS")
 	}
 
+	// as most entries will have this pattern: `/usr/bin/chromium --profile-directory=Default %U`
+	// we have to remove the CLI args to find equivalent .desktop files
+	binaryParts, err := shlex.Split(binary)
+	if err != nil || len(binaryParts) == 0 {
+		return "", fmt.Errorf("failed to parse binary string: %v", err)
+	}
+	// The first part is the actual binary path
+	binaryPath := binaryParts[0]
+	// Check if binaryPath must be cleaned of surrounding quotes (edge case)
+	binaryPath = strings.Trim(binaryPath, `"`)
+
 	// grep all the .desktop files in the paths for the binary basename and return the first match:
-	pattern := fmt.Sprintf("^Exec=(%s|%s)", binary, filepath.Base(binary))
+	pattern := fmt.Sprintf("^Exec=(%s|%s)", binaryPath, filepath.Base(binaryPath))
 	grepArgs := []string{"-r", "-l", "-m", "1", "-E", pattern, "--include", "*.desktop"}
 	grepArgs = append(grepArgs, paths...)
 	cmd := exec.Command("grep", grepArgs...)
