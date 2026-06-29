@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2/app"
 
 	"github.com/strobotti/linkquisition"
-	"github.com/strobotti/linkquisition/darwin"
+	"github.com/strobotti/linkquisition/internal/darwin"
 )
 
 func newPlatformServices() (linkquisition.BrowserService, linkquisition.SettingsService) {
