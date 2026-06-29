@@ -7,6 +7,11 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
+var (
+	ipRegex   = regexp.MustCompile(`^\d+\.\d+\.\d+\.\d+$`)
+	siteRegex = regexp.MustCompile(`^https?://([^/]+)(/|$)`)
+)
+
 type URL struct {
 	url string
 }
@@ -22,8 +27,7 @@ func (u URL) GetDomain() (string, error) {
 	}
 
 	// If the hostname is an IP address, we return it as is
-	re := regexp.MustCompile(`^\d+\.\d+\.\d+\.\d+$`)
-	if re.MatchString(parsedUrl.Hostname()) {
+	if ipRegex.MatchString(parsedUrl.Hostname()) {
 		return parsedUrl.Hostname(), nil
 	}
 
@@ -36,8 +40,7 @@ func (u URL) GetDomain() (string, error) {
 }
 
 func (u URL) GetSite() (string, error) {
-	re := regexp.MustCompile(`^https?://([^/]+)(/|$)`)
-	match := re.FindStringSubmatch(u.url)
+	match := siteRegex.FindStringSubmatch(u.url)
 	if len(match) > 1 {
 		return match[1], nil
 	}
