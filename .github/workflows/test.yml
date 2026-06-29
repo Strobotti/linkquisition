@@ -4,8 +4,6 @@ on:
 
 permissions:
   contents: read
-  # Optional: allow read access to pull request. Use with `only-new-issues` option.
-  # pull-requests: read
 
 jobs:
   golangci:
@@ -51,30 +49,41 @@ jobs:
         run: task test
 
   build:
-    name: build the application and plugins
-    runs-on: ubuntu-latest
+    name: build (${{ matrix.target }})
+    strategy:
+      matrix:
+        include:
+          - target: linux-amd64
+            os: ubuntu-latest
+          - target: darwin-arm64
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
 
-      - name: Install some build dependencies
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
-      - name: Install Task
-        uses: arduino/setup-task@v2
+      - uses: arduino/setup-task@v2
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build main application
-        run: task build:linux-amd64
+      - name: Build application
+        run: task build:${{ matrix.target }}
 
       - name: Build plugins
+        if: matrix.target == 'linux-amd64'
         run: task build:plugins
+
+      - name: Build .app bundle
+        if: matrix.target == 'darwin-arm64'
+        run: task package:app

@@ -1,53 +1,179 @@
-name: CI
+name: Release
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  publish:
+  version:
+    name: Determine version
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pages: write
-
+    outputs:
+      new_release: ${{ steps.semrel.outputs.version != '' }}
+      version: ${{ steps.semrel.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
-          persist-credentials: false
           fetch-depth: 0
 
-      - name: Install Go
-        uses: actions/setup-go@v5
+      - uses: go-semantic-release/action@v1
+        id: semrel
+        with:
+          github-token: ${{ secrets.DEPENDABOT_TOKEN }}
+          dry: true
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
 
-      - name: Install some build dependencies
+      - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
-      - name: Install Task
-        uses: arduino/setup-task@v2
+      - uses: arduino/setup-task@v2
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          persist-credentials: false
 
       - name: Run Tests
         run: task test
 
-      - name: Package files for Linux
-        run: task package:linux
+  build:
+    name: Build (${{ matrix.target }})
+    needs: [ version, test ]
+    if: needs.version.outputs.new_release == 'true'
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - target: linux-amd64
+            os: ubuntu-latest
+            artifact: linkquisition-linux-amd64
+          - target: darwin-arm64
+            os: macos-latest
+            artifact: Linkquisition_macOS_arm64.zip
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
+
+      - uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: task build:${{ matrix.target }}
+        env:
+          VERSION: v${{ needs.version.outputs.version }}
+
+      - name: Package Linux .deb
+        if: matrix.target == 'linux-amd64'
+        run: |
+          task package:linux
+          task build:plugins
+          mkdir -p dist
+          mkdir -p package/linux/DEBIAN package/linux/usr/bin package/linux/usr/lib/linkquisition/plugins
+          cp bin/linkquisition-linux-amd64 package/linux/usr/bin/linkquisition
+          cp package/linux/usr/lib/linkquisition/plugins/*.so package/linux/usr/lib/linkquisition/plugins/ 2>/dev/null || true
+          cp templates/DEBIAN/control.tpl package/linux/DEBIAN/control
+          sed -i "s/{{VERSION}}/${{ needs.version.outputs.version }}/g" package/linux/DEBIAN/control
+          sed -i "s/{{ARCH}}/amd64/g" package/linux/DEBIAN/control
+          dpkg-deb --build package/linux dist/linkquisition_${{ needs.version.outputs.version }}_amd64.deb
+        env:
+          VERSION: v${{ needs.version.outputs.version }}
+
+      - name: Package macOS .app
+        if: matrix.target == 'darwin-arm64'
+        run: |
+          task package:app
+          cd dist && zip -r Linkquisition_macOS_arm64.zip Linkquisition.app
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: dist/
+
+  release:
+    name: Create Release
+    needs: [ version, build ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          merge-multiple: true
 
       - uses: go-semantic-release/action@v1
         with:
           github-token: ${{ secrets.DEPENDABOT_TOKEN }}
           hooks: goreleaser
+          allow-initial-development-versions: true
         env:
-          # GITHUB_TOKEN -env is required for the goreleaser -hook
           GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
+
+      - name: Upload macOS asset to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          files: dist/Linkquisition_macOS_arm64.zip
+
+  coverage:
+    name: Coverage Badge
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
+
+      - uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Tests
+        run: task test
 
       - name: Make Coverage Badge
         uses: action-badges/cobertura-coverage-xml-badges@0.4.1
