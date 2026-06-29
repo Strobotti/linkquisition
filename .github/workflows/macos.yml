@@ -1,50 +1,30 @@
-name: macOS
+name: macOS PR check
 
 on:
-  release:
-    types: [ published ]
   pull_request:
 
 jobs:
   build:
     name: build macOS app
     runs-on: macos-latest
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
 
-      - name: Install Task
-        uses: arduino/setup-task@v2
+      - uses: arduino/setup-task@v2
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build macOS binary
+      - name: Build
         run: task build:darwin-arm64
-        env:
-          VERSION: ${{ github.event.release.tag_name || '0.0.0-dev' }}
 
-      - name: Run tests
+      - name: Test
         run: go test ./...
 
-      - name: Build .app bundle
+      - name: Package
         run: task package:app
-        env:
-          VERSION: ${{ github.event.release.tag_name || '0.0.0-dev' }}
-
-      - name: Create zip archive
-        if: github.event_name == 'release'
-        run: cd dist && zip -r Linkquisition_macOS_arm64.zip Linkquisition.app
-
-      - name: Upload to release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/Linkquisition_macOS_arm64.zip
