@@ -141,7 +141,7 @@ func (s *SettingsService) ScanBrowsers() error {
 		return fmt.Errorf("failed to scan browsers: %v", err)
 	}
 
-	//nolint:gomnd
+	//nolint:mnd
 	if err := os.WriteFile(s.GetConfigFilePath(), data, 0600); err != nil {
 		return fmt.Errorf("failed to scan browsers: %v", err)
 	}

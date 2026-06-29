@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+
 	"github.com/strobotti/linkquisition"
 )
 
@@ -58,7 +59,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 			w.Clipboard().SetContent(urlToOpen)
 
 			// Sleep for a while to allow the Clipboard.SetContent to finish
-			time.Sleep(200 * time.Millisecond) //nolint:gomnd
+			time.Sleep(200 * time.Millisecond) //nolint:mnd
 			picker.fapp.Quit()
 		},
 	)
@@ -103,7 +104,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 	// if the text is too long, it will be truncated
 	text := urlToOpen
-	if len(urlToOpen) > 75 { //nolint:gomnd
+	if len(urlToOpen) > 75 { //nolint:mnd
 		text = urlToOpen[:75] + "..."
 	}
 
@@ -137,7 +138,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	}
 
 	w.SetFixedSize(true)
-	w.Resize(fyne.NewSize(600, 50)) //nolint:gomnd
+	w.Resize(fyne.NewSize(600, 50)) //nolint:mnd
 	w.CenterOnScreen()
 
 	if icon, err := fyne.LoadResourceFromPath("Icon.png"); err == nil {

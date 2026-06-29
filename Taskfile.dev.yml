@@ -51,11 +51,11 @@ tasks:
 
   lint:
     cmds:
-      - set -euo pipefail && golangci-lint run --issues-exit-code 1 --sort-results --out-format code-climate | tee gl-code-quality-report.json | jq -r '.[] | "\(.location.path):\(.location.lines.begin) \(.description)"'
+      - golangci-lint run --issues-exit-code 1 --output.code-climate.path=gl-code-quality-report.json
 
   lint:fix:
     cmds:
-      - set -euo pipefail && golangci-lint run --fix  --issues-exit-code 1 --sort-results --out-format code-climate | tee gl-code-quality-report.json | jq -r '.[] | "\(.location.path):\(.location.lines.begin) \(.description)"'
+      - golangci-lint run --fix --issues-exit-code 1 --output.code-climate.path=gl-code-quality-report.json
 
   fmt:
     cmds:
