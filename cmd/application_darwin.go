@@ -12,8 +12,9 @@ import (
 func newPlatformServices() (linkquisition.BrowserService, linkquisition.SettingsService) {
 	browserService := &darwin.BrowserService{}
 
-	settingsService := &darwin.SettingsService{
+	settingsService := &linkquisition.FileSettingsService{
 		BrowserService: browserService,
+		PathProvider:   &darwin.PathProvider{},
 	}
 
 	return browserService, settingsService
