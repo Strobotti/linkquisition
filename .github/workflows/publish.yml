@@ -146,11 +146,11 @@ jobs:
       - name: Package files for Linux
         run: task package:linux
 
-      - name: Download all artifacts
+      - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
-          path: dist/
-          merge-multiple: true
+          name: darwin-arm64
+          path: artifacts/
 
       - uses: go-semantic-release/action@v1
         id: semrel
@@ -163,7 +163,7 @@ jobs:
 
       - name: Upload macOS asset to release
         if: steps.semrel.outputs.version != ''
-        run: gh release upload "v${{ steps.semrel.outputs.version }}" dist/Linkquisition_macOS_arm64.zip --clobber
+        run: gh release upload "v${{ steps.semrel.outputs.version }}" artifacts/Linkquisition_macOS_arm64.zip --clobber
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
