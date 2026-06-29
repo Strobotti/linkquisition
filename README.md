@@ -122,7 +122,7 @@ amd64, as I do not have time/access to other architectures for testing easily.
 - Taskfile (https://taskfile.dev/#/installation)
 - Build-dependencies:
   ```shell
-  sudo apt-get update && sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
+  sudo apt-get update && sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev scdoc
   ```
 
 ### Building locally

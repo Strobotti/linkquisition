@@ -9,11 +9,19 @@ tasks:
     cmds:
       - rm -rfv dist package
 
+  manpages:
+    description: "Builds man pages from scdoc sources"
+    cmds:
+      - mkdir -p package/linux/usr/share/man/man1 package/linux/usr/share/man/man5
+      - scdoc < doc/linkquisition.1.scd > package/linux/usr/share/man/man1/linkquisition.1
+      - scdoc < doc/linkquisition.5.scd > package/linux/usr/share/man/man5/linkquisition.5
+
   linux:
     cmds:
       - mkdir -p package/linux/usr/share/applications package/linux/usr/share/pixmaps
       - cp Icon.png package/linux/usr/share/pixmaps/linkquisition.png
       - cp templates/linkquisition.desktop package/linux/usr/share/applications/linkquisition.desktop
+      - task: manpages
 
   deb:
     description: "Builds a Debian package for local testing"
