@@ -28,3 +28,23 @@ tasks:
       - sed -i 's/{{ "{{" }}VERSION{{ "}}" }}/{{.VERSION}}/g' package/linux/DEBIAN/control
       - sed -i 's/{{ "{{" }}ARCH{{ "}}" }}/amd64/g' package/linux/DEBIAN/control
       - dpkg-deb --build package/linux dist/linkquisition_{{.VERSION}}_linux_amd64.deb
+
+  app:
+    description: "Builds a macOS .app bundle and optionally installs it"
+    cmds:
+      - task build:darwin-arm64
+      - rm -rf dist/Linkquisition.app
+      - mkdir -p dist/Linkquisition.app/Contents/MacOS
+      - mkdir -p dist/Linkquisition.app/Contents/Resources
+      - cp bin/linkquisition-darwin-arm64 dist/Linkquisition.app/Contents/MacOS/linkquisition
+      - sed 's/${VERSION}/{{.VERSION}}/g' package/darwin/Info.plist > dist/Linkquisition.app/Contents/Info.plist
+      - sips -s format icns Icon.png --out dist/Linkquisition.app/Contents/Resources/Icon.icns 2>/dev/null || cp Icon.png dist/Linkquisition.app/Contents/Resources/Icon.icns
+      - echo "dist/Linkquisition.app created successfully"
+
+  app:install:
+    description: "Builds the .app bundle and installs it to /Applications"
+    cmds:
+      - task package:app
+      - cp -r dist/Linkquisition.app /Applications/
+      - /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -R -f /Applications/Linkquisition.app
+      - echo "Installed to /Applications/Linkquisition.app and registered with Launch Services"

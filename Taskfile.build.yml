@@ -14,7 +14,7 @@ tasks:
         sh: echo ${VERSION:-v0.0.0}
       OPTIONS: '{{default "" .DEVOPTIONS}}'
     cmds:
-      - CGO_ENABLED=1 GOOS={{.TARGET}} go build -tags release -ldflags '-s -w -X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} cmd/*.go
+      - CGO_ENABLED=1 GOOS={{.TARGET}} go build -tags release -ldflags '-s -w -X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} ./cmd/
       - echo "bin/{{.OUTPUT}}{{exeExt}} created successfully"
     sources:
       - ./**/*.go
@@ -29,6 +29,20 @@ tasks:
         vars:
           OUTPUT: "linkquisition-linux-amd64"
           TARGET: "linux"
+
+  darwin-arm64:
+    cmds:
+      - task: binary
+        vars:
+          OUTPUT: "linkquisition-darwin-arm64"
+          TARGET: "darwin"
+
+  darwin-amd64:
+    cmds:
+      - task: binary
+        vars:
+          OUTPUT: "linkquisition-darwin-amd64"
+          TARGET: "darwin"
 
   plugins:
     cmds:

@@ -3,8 +3,10 @@ builds:
     binary: "linkquisition"
     goos:
       - linux
+      - darwin
     goarch:
       - amd64
+      - arm64
     env:
       - CGO_ENABLED=1
     main: ./cmd/
@@ -16,6 +18,9 @@ builds:
       - -X main.version={{.Version}}
       - -X main.commitSHA={{.FullCommit}}
       - -X main.buildDate={{.Date}}
+    ignore:
+      - goos: linux
+        goarch: arm64
 
   - id: "unwrap-plugin"
     binary: "plugins/unwrap.so"

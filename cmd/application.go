@@ -12,10 +12,8 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
 
 	"github.com/strobotti/linkquisition"
-	"github.com/strobotti/linkquisition/freedesktop"
 )
 
 const logDirPerms = 0755
@@ -23,44 +21,11 @@ const logFilePerms = 0644
 
 type Application struct {
 	Fapp            fyne.App
-	XdgService      freedesktop.XdgService
 	BrowserService  linkquisition.BrowserService
 	SettingsService linkquisition.SettingsService
 
 	Logger  *slog.Logger
 	plugins []linkquisition.Plugin
-}
-
-func NewApplication() *Application {
-	fapp := app.New()
-
-	xdgService := &freedesktop.XdgService{}
-	browserService := &freedesktop.BrowserService{
-		XdgService:          xdgService,
-		DesktopEntryService: &freedesktop.DesktopEntryService{},
-		BrowserIconLoader: &freedesktop.DefaultBrowserIconLoader{
-			XdgService:          xdgService,
-			DesktopEntryService: &freedesktop.DesktopEntryService{},
-		},
-	}
-
-	settingsService := &freedesktop.SettingsService{
-		BrowserService: browserService,
-	}
-
-	logger := setupLogger(settingsService)
-
-	pluginServiceProvider := linkquisition.NewPluginServiceProvider(logger, settingsService.GetSettings())
-
-	a := &Application{
-		Fapp:            fapp,
-		BrowserService:  browserService,
-		SettingsService: settingsService,
-		Logger:          logger,
-		plugins:         setupPlugins(settingsService, pluginServiceProvider, logger),
-	}
-
-	return a
 }
 
 func setupPlugins(
@@ -170,33 +135,37 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 
 func (a *Application) Run(_ context.Context) error {
 	args := os.Args
-	if len(args) < 2 { //nolint:mnd
+
+	urlToOpen := ""
+
+	if len(args) >= 2 { //nolint:mnd
+		if args[1] == "--version" || args[1] == "-v" || args[1] == "version" {
+			fmt.Printf("Version: %s\n", version)
+			return nil
+		}
+		urlToOpen = args[1]
+	} else {
+		// No CLI args — check if a URL arrived via platform event (macOS Apple Events)
+		urlToOpen = getURLFromPlatformEvent()
+	}
+
+	if urlToOpen == "" {
 		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService)
 		return configurator.Run()
 	}
 
-	if args[1] == "--version" || args[1] == "-v" || args[1] == "version" {
-		fmt.Printf("Version: %s\n", version)
-		return nil
-	}
-
-	var browsers []linkquisition.Browser
-
-	var err error
-
-	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with args: `%s`", strings.Join(os.Args, " ")))
-
-	urlToOpen := args[1]
-
-	if _, err = url.ParseRequestURI(urlToOpen); err != nil {
+	if _, err := url.ParseRequestURI(urlToOpen); err != nil {
 		a.Logger.Error("Invalid URL: " + urlToOpen)
-
 		return nil
 	}
+
+	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with URL: `%s`", urlToOpen))
 
 	for _, plug := range a.plugins {
 		urlToOpen = plug.ModifyUrl(urlToOpen)
 	}
+
+	var browsers []linkquisition.Browser
 
 	isConfigured, configErr := a.SettingsService.IsConfigured()
 	if configErr != nil {
@@ -211,9 +180,11 @@ func (a *Application) Run(_ context.Context) error {
 			}
 		}
 		browsers = a.SettingsService.GetSettings().GetSelectableBrowsers()
-	} else if browsers, err = a.BrowserService.GetAvailableBrowsers(); err != nil {
-		return err
 	} else {
+		var err error
+		if browsers, err = a.BrowserService.GetAvailableBrowsers(); err != nil {
+			return err
+		}
 		a.Logger.Warn("browsers not configured, falling back to system settings")
 	}
 

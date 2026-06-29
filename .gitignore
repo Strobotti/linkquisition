@@ -5,7 +5,7 @@
 !.golangci.yml
 !.release.yml
 /bin/
-/package/
+/package/linux/
 /dist/
 /test/
 gl-code-quality-report.json
