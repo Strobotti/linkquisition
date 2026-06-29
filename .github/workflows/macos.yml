@@ -1,0 +1,41 @@
+name: macOS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    name: build macOS app
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build macOS binary
+        run: task build:darwin-arm64
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build .app bundle
+        run: task package:app
+
+      - name: Upload .app artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linkquisition.app
+          path: dist/Linkquisition.app
