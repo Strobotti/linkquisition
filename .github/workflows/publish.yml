@@ -107,7 +107,8 @@ jobs:
         if: matrix.target == 'darwin-arm64'
         run: |
           task package:app
-          cd dist && zip -r Linkquisition_macOS_arm64.zip Linkquisition.app
+          codesign --force --deep --sign - dist/Linkquisition.app
+          cd dist && ditto -c -k --keepParent Linkquisition.app Linkquisition_macOS_arm64.zip
         env:
           VERSION: ${{ needs.version.outputs.version }}
 

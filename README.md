@@ -2,7 +2,7 @@
 
 ![coverage](https://raw.githubusercontent.com/Strobotti/linkquisition/gh-pages/.badges/main/coverage.svg)
 
-Linkquisition is a fast, configurable browser-picker for Linux desktop written in Go.
+Linkquisition is a fast, configurable browser-picker for Linux (and experimentally macOS) written in Go.
 
 ...as nobody expects the Linkquisition!
 
@@ -34,6 +34,8 @@ Motivation behind this project is:
 
 ## Installation
 
+### Linux
+
 You can download the latest `.deb` package from
 the [releases page](https://github.com/Strobotti/linkquisition/releases).
 
@@ -41,6 +43,18 @@ The installation contains everything needed to launch the application using the 
 able to press `Super`-key in Ubuntu and type "Linkquisition" to see the launcher. To do the same in terminal just run
 `linkquisition` command. Launching the application without any arguments will show the configuration screen which allows
 you to set it as the default browser and scan for installed browsers for faster startup and easier configuration.
+
+### macOS (experimental)
+
+Download the latest `Linkquisition_macOS_arm64.zip` from
+the [releases page](https://github.com/Strobotti/linkquisition/releases), unzip it, and move
+`Linkquisition.app` to `/Applications`.
+
+Since the app is not notarized with Apple, macOS will block it on first launch. To fix this, run:
+
+```bash
+xattr -cr /Applications/Linkquisition.app
+```
 
 ## Configuration
 
