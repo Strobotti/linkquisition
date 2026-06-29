@@ -11,30 +11,33 @@ Linkquisition is a fast, configurable browser-picker for Linux desktop written i
 ## What is it?
 
 Motivation behind this project is:
-1. I needed a fast browser-picker for Linux desktop that is configurable to automatically choose a browser based on different rules
+
+1. I needed a fast browser-picker for Linux desktop that is configurable to automatically choose a browser based on
+   different rules
 2. I have written a lot of server-side code in Go and wanted to see how easy it is to write a desktop app in Go
 
 ## Features
 
 - Fast
 - Configurable
-  - Automatically chooses a browser based on different rules
-    - domain (e.g. `example.com`)
-    - site (e.g. `www.example.com`)
-    - regular expression (e.g. `.*\.example\.com`)
-  - Hide a browser from the list
-  - Manually add a browser to the list (for example, to open a URL in a different profile)
-  - Remember the choice for given site
+    - Automatically chooses a browser based on different rules
+        - domain (e.g. `example.com`)
+        - site (e.g. `www.example.com`)
+        - regular expression (e.g. `.*\.example\.com`)
+    - Hide a browser from the list
+    - Manually add a browser to the list (for example, to open a URL in a different profile)
+    - Remember the choice for given site
 - keyboard-shortcuts
-  - `Enter` to open the URL in the default browser
-  - `Ctrl+C` to just copy the URL to clipboard and close the window
-  - Number keys (1-9) to select a browser
+    - `Enter` to open the URL in the default browser
+    - `Ctrl+C` to just copy the URL to clipboard and close the window
+    - Number keys (1-9) to select a browser
 
 ## Installation
 
-You can download the latest `.deb` package from the [releases page](https://github.com/Strobotti/linkquisition/releases).
+You can download the latest `.deb` package from
+the [releases page](https://github.com/Strobotti/linkquisition/releases).
 
-The installation contains everything needed to launch the application using the desktop-environment, e.g. you should be 
+The installation contains everything needed to launch the application using the desktop-environment, e.g. you should be
 able to press `Super`-key in Ubuntu and type "Linkquisition" to see the launcher. To do the same in terminal just run
 `linkquisition` command. Launching the application without any arguments will show the configuration screen which allows
 you to set it as the default browser and scan for installed browsers for faster startup and easier configuration.
@@ -54,7 +57,8 @@ create one if it does not exist, or update it with the currently installed brows
 any manually added browsers or rules to existing browsers.
 
 If adding a browser-entry manually to the config.json be sure to mark it as "manual" to prevent it from being removed
-on next scan. Also, if you want to hide a browser from the list, you can have it's "hidden" -attribute with value `true`.
+on next scan. Also, if you want to hide a browser from the list, you can have it's "hidden" -attribute with value
+`true`.
 
 Please note that the scan will use the "command" -attribute as the identifier for the browser, so if change the command
 it will be treated as a different browser and might be removed if not safe-guarded with `"source": "manual"` -setting.
@@ -92,7 +96,6 @@ it will be treated as a different browser and might be removed if not safe-guard
 }
 ```
 
-
 ## Development
 
 I am using Ubuntu Linux for development, so the instructions are tailored for that. However, the code should work on any
@@ -101,7 +104,7 @@ amd64, as I do not have time/access to other architectures for testing easily.
 
 ### Requirements
 
-- Go 1.21 (https://go.dev/doc/install)
+- Go 1.24 (https://go.dev/doc/install)
 - Taskfile (https://taskfile.dev/#/installation)
 - Build-dependencies:
   ```shell
@@ -153,7 +156,8 @@ With the above list the most interesting feature for me personally is the plugin
 doing some more complex processing of the URL before opening it in a browser. For example, I could write a plugin that
 strips any tracking parameters from the URL before opening it in the browser.
 
-~~I also would like to have a plugin that checks if the opened url is a Microsoft Defender (Evergreen) URL and then, with
+~~I also would like to have a plugin that checks if the opened url is a Microsoft Defender (Evergreen) URL and then,
+with
 matching rules, opens the actual url (baked in the "evergreen-assets URL") in a browser. This way all the internal
 links in my company could be opened directly in the browser, but the external links would still go through the Defender
 URL.~~ See [Unwrap](./plugins/unwrap/unwrap.go) -plugin for more information.
