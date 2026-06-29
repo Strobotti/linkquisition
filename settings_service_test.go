@@ -1,0 +1,165 @@
+package linkquisition_test
+
+import (
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	. "github.com/strobotti/linkquisition"
+)
+
+type testPathProvider struct {
+	dir string
+}
+
+func (p *testPathProvider) GetConfigFolderPath() string { return p.dir }
+func (p *testPathProvider) GetLogFolderPath() string    { return p.dir }
+func (p *testPathProvider) GetPluginFolderPath() string { return p.dir }
+
+type mockBrowserService struct {
+	browsers []Browser
+	err      error
+}
+
+func (m *mockBrowserService) GetAvailableBrowsers() ([]Browser, error)  { return m.browsers, m.err }
+func (m *mockBrowserService) GetDefaultBrowser() (Browser, error)       { return Browser{}, nil }
+func (m *mockBrowserService) OpenUrlWithDefaultBrowser(string) error    { return nil }
+func (m *mockBrowserService) OpenUrlWithBrowser(string, *Browser) error { return nil }
+func (m *mockBrowserService) AreWeTheDefaultBrowser() bool              { return false }
+func (m *mockBrowserService) MakeUsTheDefaultBrowser() error            { return nil }
+func (m *mockBrowserService) GetIconForBrowser(Browser) ([]byte, error) {
+	return nil, nil
+}
+
+func newTestService(t *testing.T, browsers []Browser) *FileSettingsService {
+	t.Helper()
+	return &FileSettingsService{
+		BrowserService: &mockBrowserService{browsers: browsers},
+		PathProvider:   &testPathProvider{dir: t.TempDir()},
+	}
+}
+
+func TestFileSettingsService_IsConfigured_ReturnsFalseWhenNoFile(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	configured, err := svc.IsConfigured()
+
+	assert.NoError(t, err)
+	assert.False(t, configured)
+}
+
+func TestFileSettingsService_WriteAndReadSettings(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	settings := &Settings{
+		LogLevel: "debug",
+		Browsers: []BrowserSettings{
+			{Name: "Firefox", Command: "firefox", Source: SourceAuto},
+		},
+	}
+
+	err := svc.WriteSettings(settings)
+	require.NoError(t, err)
+
+	read, err := svc.ReadSettings()
+	require.NoError(t, err)
+	assert.Equal(t, settings, read)
+}
+
+func TestFileSettingsService_IsConfigured_ReturnsTrueAfterWrite(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	err := svc.WriteSettings(GetDefaultSettings())
+	require.NoError(t, err)
+
+	configured, err := svc.IsConfigured()
+
+	assert.NoError(t, err)
+	assert.True(t, configured)
+}
+
+func TestFileSettingsService_GetSettings_ReturnsDefaultWhenNotConfigured(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	settings := svc.GetSettings()
+
+	assert.Equal(t, GetDefaultSettings(), settings)
+}
+
+func TestFileSettingsService_GetSettings_ReturnsStoredSettings(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	written := &Settings{
+		LogLevel: "warn",
+		Browsers: []BrowserSettings{
+			{Name: "Chrome", Command: "chrome", Source: SourceManual},
+		},
+	}
+	require.NoError(t, svc.WriteSettings(written))
+
+	settings := svc.GetSettings()
+
+	assert.Equal(t, written, settings)
+}
+
+func TestFileSettingsService_ScanBrowsers_CreatesConfig(t *testing.T) {
+	browsers := []Browser{
+		{Name: "Firefox", Command: "firefox"},
+		{Name: "Chrome", Command: "chrome"},
+	}
+	svc := newTestService(t, browsers)
+
+	err := svc.ScanBrowsers()
+	require.NoError(t, err)
+
+	configured, _ := svc.IsConfigured()
+	assert.True(t, configured)
+
+	settings, err := svc.ReadSettings()
+	require.NoError(t, err)
+	assert.Len(t, settings.Browsers, 2)
+	assert.Equal(t, "Firefox", settings.Browsers[0].Name)
+	assert.Equal(t, "Chrome", settings.Browsers[1].Name)
+}
+
+func TestFileSettingsService_ScanBrowsers_PreservesExistingRules(t *testing.T) {
+	browsers := []Browser{
+		{Name: "Firefox", Command: "firefox"},
+	}
+	svc := newTestService(t, browsers)
+
+	// Write initial settings with a rule
+	initial := &Settings{
+		Browsers: []BrowserSettings{
+			{
+				Name:    "Firefox",
+				Command: "firefox",
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{{Type: BrowserMatchTypeSite, Value: "example.com"}},
+			},
+		},
+	}
+	require.NoError(t, svc.WriteSettings(initial))
+
+	// Re-scan should preserve the existing rule
+	err := svc.ScanBrowsers()
+	require.NoError(t, err)
+
+	settings, _ := svc.ReadSettings()
+	require.Len(t, settings.Browsers, 1)
+	assert.Len(t, settings.Browsers[0].Matches, 1)
+	assert.Equal(t, "example.com", settings.Browsers[0].Matches[0].Value)
+}
+
+func TestFileSettingsService_ReadSettings_ReturnsErrorForCorruptFile(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	// Write garbage to the config file
+	configPath := svc.GetConfigFilePath()
+	require.NoError(t, os.WriteFile(configPath, []byte("{invalid json"), 0600))
+
+	_, err := svc.ReadSettings()
+	assert.Error(t, err)
+}
