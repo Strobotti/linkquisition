@@ -47,6 +47,13 @@ func (s *SettingsService) GetLogFolderPath() string {
 }
 
 func (s *SettingsService) GetPluginFolderPath() string {
+	execPath, err := os.Executable()
+	if err == nil {
+		bundlePath := filepath.Join(filepath.Dir(execPath), "..", "Resources", "plugins")
+		if _, statErr := os.Stat(bundlePath); statErr == nil {
+			return bundlePath
+		}
+	}
 	homeDir, _ := os.UserHomeDir()
 	return filepath.Join(homeDir, "Library", "Application Support", "linkquisition", "plugins")
 }
