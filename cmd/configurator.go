@@ -42,7 +42,7 @@ func (c *Configurator) Run() error {
 	w.SetContent(tabs)
 
 	w.SetFixedSize(true)
-	w.Resize(fyne.NewSize(500, 400)) //nolint:gomnd
+	w.Resize(fyne.NewSize(500, 400)) //nolint:mnd
 	w.CenterOnScreen()
 
 	w.ShowAndRun()

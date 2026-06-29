@@ -170,7 +170,7 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 
 func (a *Application) Run(_ context.Context) error {
 	args := os.Args
-	if len(args) < 2 { //nolint:gomnd
+	if len(args) < 2 { //nolint:mnd
 		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService)
 		return configurator.Run()
 	}
