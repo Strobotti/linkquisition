@@ -104,7 +104,7 @@ amd64, as I do not have time/access to other architectures for testing easily.
 
 ### Requirements
 
-- Go 1.24 (https://go.dev/doc/install)
+- Go 1.25 (https://go.dev/doc/install)
 - Taskfile (https://taskfile.dev/#/installation)
 - Build-dependencies:
   ```shell
