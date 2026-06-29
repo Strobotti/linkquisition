@@ -153,6 +153,7 @@ jobs:
           merge-multiple: true
 
       - uses: go-semantic-release/action@v1
+        id: semrel
         with:
           github-token: ${{ secrets.DEPENDABOT_TOKEN }}
           hooks: goreleaser
@@ -161,10 +162,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
       - name: Upload macOS asset to release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ needs.version.outputs.version }}
-          files: dist/Linkquisition_macOS_arm64.zip
+        if: steps.semrel.outputs.version != ''
+        run: gh release upload "v${{ steps.semrel.outputs.version }}" dist/Linkquisition_macOS_arm64.zip --clobber
+        env:
+          GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
   coverage:
     name: Coverage Badge
