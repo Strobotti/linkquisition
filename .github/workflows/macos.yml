@@ -1,14 +1,16 @@
 name: macOS
 
 on:
-  push:
-    branches: [ main ]
+  release:
+    types: [ published ]
   pull_request:
 
 jobs:
   build:
     name: build macOS app
     runs-on: macos-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -26,16 +28,23 @@ jobs:
 
       - name: Build macOS binary
         run: task build:darwin-arm64
+        env:
+          VERSION: ${{ github.event.release.tag_name || '0.0.0-dev' }}
 
       - name: Run tests
         run: go test ./...
 
       - name: Build .app bundle
         run: task package:app
+        env:
+          VERSION: ${{ github.event.release.tag_name || '0.0.0-dev' }}
 
-      - name: Upload .app artifact
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+      - name: Create zip archive
+        if: github.event_name == 'release'
+        run: cd dist && zip -r Linkquisition_macOS_arm64.zip Linkquisition.app
+
+      - name: Upload to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
         with:
-          name: Linkquisition.app
-          path: dist/Linkquisition.app
+          files: dist/Linkquisition_macOS_arm64.zip
