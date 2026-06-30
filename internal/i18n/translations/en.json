@@ -1,0 +1,71 @@
+{
+  "config.window_title": {
+    "other": "Linkquisition settings"
+  },
+  "config.tab_general": {
+    "other": "General"
+  },
+  "config.tab_about": {
+    "other": "About"
+  },
+  "config.make_default_label": {
+    "other": "In order to Linkquisition to function as a browser-picker\nit has to be set as the default browser:"
+  },
+  "config.make_default_done": {
+    "other": "All good!"
+  },
+  "config.make_default_button": {
+    "other": "Make default"
+  },
+  "config.make_default_error": {
+    "other": "Error making default!"
+  },
+  "config.make_default_checking": {
+    "other": "checking"
+  },
+  "config.scan_browsers": {
+    "other": "Scan browsers"
+  },
+  "config.rescan_browsers": {
+    "other": "Re-scan browsers"
+  },
+  "config.scan_now": {
+    "other": "Scan now"
+  },
+  "config.scan_error": {
+    "other": "Error scanning browsers!"
+  },
+  "config.scan_description": {
+    "other": "The browsers should be scanned and stored in a configuration file for\nfaster startup and for enabling custom configuration.\n\nThe scan should be safe to execute at any time: only newly detected\nbrowsers are added and the ones no longer present in the system are\nremoved.\n\nAny existing rules, ordering or customization shouldn't be affected."
+  },
+  "picker.window_title": {
+    "other": "Linkquisition"
+  },
+  "picker.open_label": {
+    "other": "Open:"
+  },
+  "picker.remember_choice": {
+    "other": "Remember this choice with {{.Site}}"
+  },
+  "picker.keyboard_guide": {
+    "other": "Press 'ENTER' to pick first, 'ESC' to quit, 'ctrl+c' to copy URL to clipboard"
+  },
+  "config.language_label": {
+    "other": "Language:"
+  },
+  "config.language_auto": {
+    "other": "Auto (system default)"
+  },
+  "config.language_restart_note": {
+    "other": "Language change takes effect on next launch."
+  },
+  "config.scan_in_progress": {
+    "other": "Scanning..."
+  },
+  "config.scan_success": {
+    "other": "✓ Browsers scanned successfully"
+  },
+  "config.scan_failed": {
+    "other": "✗ Scan failed"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "config.window_title": {
+    "other": "Ajustes de Linkquisition"
+  },
+  "config.tab_general": {
+    "other": "General"
+  },
+  "config.tab_about": {
+    "other": "Acerca de"
+  },
+  "config.make_default_label": {
+    "other": "Para que Linkquisition funcione como selector de navegador,\ndebe establecerse como el navegador predeterminado:"
+  },
+  "config.make_default_done": {
+    "other": "¡Todo listo!"
+  },
+  "config.make_default_button": {
+    "other": "Establecer como predeterminado"
+  },
+  "config.make_default_error": {
+    "other": "¡Error al establecer como predeterminado!"
+  },
+  "config.make_default_checking": {
+    "other": "verificando"
+  },
+  "config.scan_browsers": {
+    "other": "Buscar navegadores"
+  },
+  "config.rescan_browsers": {
+    "other": "Volver a buscar navegadores"
+  },
+  "config.scan_now": {
+    "other": "Buscar ahora"
+  },
+  "config.scan_error": {
+    "other": "¡Error al buscar navegadores!"
+  },
+  "config.scan_description": {
+    "other": "Los navegadores deben ser buscados y almacenados en un archivo de configuración\npara un inicio más rápido y para permitir configuración personalizada.\n\nLa búsqueda se puede ejecutar en cualquier momento de forma segura: solo se\nagregan los navegadores detectados recientemente y se eliminan los que ya no\nestán presentes en el sistema.\n\nLas reglas, el orden o las personalizaciones existentes no se verán afectados."
+  },
+  "picker.window_title": {
+    "other": "Linkquisition"
+  },
+  "picker.open_label": {
+    "other": "Abrir:"
+  },
+  "picker.remember_choice": {
+    "other": "Recordar esta elección para {{.Site}}"
+  },
+  "picker.keyboard_guide": {
+    "other": "Pulsa 'ENTER' para elegir el primero, 'ESC' para salir, 'ctrl+c' para copiar la URL al portapapeles"
+  },
+  "config.language_label": {
+    "other": "Idioma:"
+  },
+  "config.language_auto": {
+    "other": "Automático (predeterminado del sistema)"
+  },
+  "config.language_restart_note": {
+    "other": "El cambio de idioma se aplicará en el próximo inicio."
+  },
+  "config.scan_in_progress": {
+    "other": "Buscando..."
+  },
+  "config.scan_success": {
+    "other": "✓ Navegadores encontrados correctamente"
+  },
+  "config.scan_failed": {
+    "other": "✗ La búsqueda falló"
+  }
+}

@@ -81,6 +81,7 @@ it will be treated as a different browser and might be removed if not safe-guard
 
 ```json
 {
+  "locale": "",
   "browsers": [
     {
       "name": "Microsoft Edge",
@@ -109,6 +110,24 @@ it will be treated as a different browser and might be removed if not safe-guard
   ]
 }
 ```
+
+### Localization
+
+Linkquisition supports localization. The UI language is determined in the following order:
+
+1. If `locale` is set in `config.json` (e.g. `"locale": "fi"`), that locale is used
+2. Otherwise, the system locale is auto-detected
+3. If no matching translation is available, English is used as fallback
+
+Currently supported languages:
+
+- English (en) — default
+- Finnish (fi)
+- Spanish (es)
+- Swedish (sv)
+
+To contribute a new translation, add a JSON file to `internal/i18n/translations/` following the
+format of the existing files (e.g. `en.json`). The filename should be the locale code (e.g. `de.json` for German).
 
 ## Development
 
@@ -158,7 +177,7 @@ See [plugins](./plugins/README.md) for more information.
 ## TODO
 
 - [X] Add support for plugins
-- [ ] Add support for translations
+- [X] Add support for translations
 - [X] Add support for browser icons
 - [ ] Add support for more platforms
 - [ ] Add support for more architectures

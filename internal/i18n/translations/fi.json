@@ -1,0 +1,71 @@
+{
+  "config.window_title": {
+    "other": "Linkquisition-asetukset"
+  },
+  "config.tab_general": {
+    "other": "Yleiset"
+  },
+  "config.tab_about": {
+    "other": "Tietoja"
+  },
+  "config.make_default_label": {
+    "other": "Jotta Linkquisition toimisi selainvalitsimena,\nse täytyy asettaa oletusselaimeksi:"
+  },
+  "config.make_default_done": {
+    "other": "Kaikki kunnossa!"
+  },
+  "config.make_default_button": {
+    "other": "Aseta oletukseksi"
+  },
+  "config.make_default_error": {
+    "other": "Virhe asetettaessa oletukseksi!"
+  },
+  "config.make_default_checking": {
+    "other": "tarkistetaan"
+  },
+  "config.scan_browsers": {
+    "other": "Hae selaimet"
+  },
+  "config.rescan_browsers": {
+    "other": "Hae selaimet uudelleen"
+  },
+  "config.scan_now": {
+    "other": "Hae nyt"
+  },
+  "config.scan_error": {
+    "other": "Virhe selaimien haussa!"
+  },
+  "config.scan_description": {
+    "other": "Selaimet tulisi hakea ja tallentaa asetustiedostoon nopeampaa\nkäynnistystä ja mukautettuja asetuksia varten.\n\nHaku on turvallista suorittaa milloin tahansa: vain uudet selaimet\nlisätään ja järjestelmästä poistetut selaimet poistetaan.\n\nOlemassa olevat säännöt, järjestys tai mukautukset eivät muutu."
+  },
+  "picker.window_title": {
+    "other": "Linkquisition"
+  },
+  "picker.open_label": {
+    "other": "Avaa:"
+  },
+  "picker.remember_choice": {
+    "other": "Muista tämä valinta sivustolle {{.Site}}"
+  },
+  "picker.keyboard_guide": {
+    "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, 'ctrl+c' kopioidaksesi URL:n leikepöydälle"
+  },
+  "config.language_label": {
+    "other": "Kieli:"
+  },
+  "config.language_auto": {
+    "other": "Automaattinen (järjestelmän oletus)"
+  },
+  "config.language_restart_note": {
+    "other": "Kielen vaihto tulee voimaan seuraavalla käynnistyksellä."
+  },
+  "config.scan_in_progress": {
+    "other": "Haetaan..."
+  },
+  "config.scan_success": {
+    "other": "✓ Selaimet haettu onnistuneesti"
+  },
+  "config.scan_failed": {
+    "other": "✗ Haku epäonnistui"
+  }
+}

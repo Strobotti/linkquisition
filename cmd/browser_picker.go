@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/i18n"
 )
 
 type BrowserPicker struct {
@@ -51,7 +52,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		)
 	}
 
-	w := picker.fapp.NewWindow("Linkquisition")
+	w := picker.fapp.NewWindow(i18n.T("picker.window_title"))
 
 	w.Canvas().AddShortcut(
 		&fyne.ShortcutCopy{}, func(shortcut fyne.Shortcut) {
@@ -114,13 +115,13 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 	widgets = append(
 		widgets,
-		container.NewBorder(nil, nil, widget.NewLabel("Open:"), nil, input),
+		container.NewBorder(nil, nil, widget.NewLabel(i18n.T("picker.open_label")), nil, input),
 	)
 
 	uto := linkquisition.NewURL(urlToOpen)
 	site, _ := uto.GetSite()
 	check := widget.NewCheckWithData(
-		"Remember this choice with "+site,
+		i18n.T("picker.remember_choice", map[string]interface{}{"Site": site}),
 		remember,
 	)
 
@@ -133,7 +134,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		widgets = append(
 			widgets,
 			layout.NewSpacer(),
-			widget.NewLabel("Press 'ENTER' to pick first, 'ESC' to quit, 'ctrl+c' to copy URL to clipboard"),
+			widget.NewLabel(i18n.T("picker.keyboard_guide")),
 		)
 	}
 
