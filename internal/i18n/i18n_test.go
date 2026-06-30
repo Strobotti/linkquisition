@@ -59,6 +59,28 @@ func TestInit_UnsupportedLocale_FallsBackToEnglish(t *testing.T) {
 	}
 }
 
+func TestInit_FinnishLocale(t *testing.T) {
+	Init("fi")
+
+	got := T("config.tab_general")
+	want := "Yleiset"
+
+	if got != want {
+		t.Errorf("T(\"config.tab_general\") with fi locale = %q, want %q", got, want)
+	}
+}
+
+func TestInit_FinnishLocale_WithTemplateData(t *testing.T) {
+	Init("fi")
+
+	got := T("picker.remember_choice", map[string]interface{}{"Site": "example.com"})
+	want := "Muista tämä valinta sivustolle example.com"
+
+	if got != want {
+		t.Errorf("T(\"picker.remember_choice\") with fi locale = %q, want %q", got, want)
+	}
+}
+
 func TestDetectLocale_OverrideTakesPrecedence(t *testing.T) {
 	got := detectLocale("fi")
 	want := "fi"
