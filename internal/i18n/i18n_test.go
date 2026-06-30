@@ -92,6 +92,17 @@ func TestInit_SpanishLocale(t *testing.T) {
 	}
 }
 
+func TestInit_SwedishLocale(t *testing.T) {
+	Init("sv")
+
+	got := T("config.tab_general")
+	want := "Allmänt"
+
+	if got != want {
+		t.Errorf("T(\"config.tab_general\") with sv locale = %q, want %q", got, want)
+	}
+}
+
 func TestDetectLocale_OverrideTakesPrecedence(t *testing.T) {
 	got := detectLocale("fi")
 	want := "fi"

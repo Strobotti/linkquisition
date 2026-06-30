@@ -124,6 +124,7 @@ Currently supported languages:
 - English (en) — default
 - Finnish (fi)
 - Spanish (es)
+- Swedish (sv)
 
 To contribute a new translation, add a JSON file to `internal/i18n/translations/` following the
 format of the existing files (e.g. `en.json`). The filename should be the locale code (e.g. `de.json` for German).

@@ -1,0 +1,53 @@
+{
+  "config.window_title": {
+    "other": "Linkquisition-inställningar"
+  },
+  "config.tab_general": {
+    "other": "Allmänt"
+  },
+  "config.tab_about": {
+    "other": "Om"
+  },
+  "config.make_default_label": {
+    "other": "För att Linkquisition ska fungera som webbläsarväljare\nmåste den ställas in som standardwebbläsare:"
+  },
+  "config.make_default_done": {
+    "other": "Allt klart!"
+  },
+  "config.make_default_button": {
+    "other": "Ange som standard"
+  },
+  "config.make_default_error": {
+    "other": "Fel vid inställning som standard!"
+  },
+  "config.make_default_checking": {
+    "other": "kontrollerar"
+  },
+  "config.scan_browsers": {
+    "other": "Sök webbläsare"
+  },
+  "config.rescan_browsers": {
+    "other": "Sök webbläsare igen"
+  },
+  "config.scan_now": {
+    "other": "Sök nu"
+  },
+  "config.scan_error": {
+    "other": "Fel vid sökning av webbläsare!"
+  },
+  "config.scan_description": {
+    "other": "Webbläsarna bör sökas igenom och lagras i en konfigurationsfil för\nsnabbare uppstart och för att möjliggöra anpassad konfiguration.\n\nSökningen kan köras när som helst utan risk: bara nyligen upptäckta\nwebbläsare läggs till och de som inte längre finns i systemet tas bort.\n\nBefintliga regler, ordning eller anpassningar påverkas inte."
+  },
+  "picker.window_title": {
+    "other": "Linkquisition"
+  },
+  "picker.open_label": {
+    "other": "Öppna:"
+  },
+  "picker.remember_choice": {
+    "other": "Kom ihåg detta val för {{.Site}}"
+  },
+  "picker.keyboard_guide": {
+    "other": "Tryck 'ENTER' för att välja första, 'ESC' för att avsluta, 'ctrl+c' för att kopiera URL till urklipp"
+  }
+}
