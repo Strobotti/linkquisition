@@ -58,5 +58,14 @@
   },
   "config.language_restart_note": {
     "other": "Språkändringen träder i kraft vid nästa start."
+  },
+  "config.scan_in_progress": {
+    "other": "Söker..."
+  },
+  "config.scan_success": {
+    "other": "✓ Webbläsare hittades"
+  },
+  "config.scan_failed": {
+    "other": "✗ Sökningen misslyckades"
   }
 }

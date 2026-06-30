@@ -58,5 +58,14 @@
   },
   "config.language_restart_note": {
     "other": "Language change takes effect on next launch."
+  },
+  "config.scan_in_progress": {
+    "other": "Scanning..."
+  },
+  "config.scan_success": {
+    "other": "✓ Browsers scanned successfully"
+  },
+  "config.scan_failed": {
+    "other": "✗ Scan failed"
   }
 }

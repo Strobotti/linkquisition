@@ -58,5 +58,14 @@
   },
   "config.language_restart_note": {
     "other": "El cambio de idioma se aplicará en el próximo inicio."
+  },
+  "config.scan_in_progress": {
+    "other": "Buscando..."
+  },
+  "config.scan_success": {
+    "other": "✓ Navegadores encontrados correctamente"
+  },
+  "config.scan_failed": {
+    "other": "✗ La búsqueda falló"
   }
 }

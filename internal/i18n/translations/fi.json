@@ -58,5 +58,14 @@
   },
   "config.language_restart_note": {
     "other": "Kielen vaihto tulee voimaan seuraavalla käynnistyksellä."
+  },
+  "config.scan_in_progress": {
+    "other": "Haetaan..."
+  },
+  "config.scan_success": {
+    "other": "✓ Selaimet haettu onnistuneesti"
+  },
+  "config.scan_failed": {
+    "other": "✗ Haku epäonnistui"
   }
 }

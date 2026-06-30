@@ -87,6 +87,10 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 	setupMakeDefaultButton(makeDefaultButton, c.browserService.AreWeTheDefaultBrowser())
 
 	// SCAN BROWSERS -BUTTON
+	scanStatusLabel := widget.NewLabel("")
+	scanStatusLabel.TextStyle = fyne.TextStyle{Italic: true}
+	scanStatusLabel.Hide()
+
 	setupScanBrowsersButton := func(button *widget.Button, alreadyScanned bool) {
 		if alreadyScanned {
 			button.SetText(i18n.T("config.rescan_browsers"))
@@ -97,15 +101,21 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 	}
 	onClickScanBrowsersButton := func(button *widget.Button) {
 		button.Disable()
-		err := c.settingsService.ScanBrowsers()
-		if err != nil {
-			button.SetText(i18n.T("config.scan_error"))
-			button.Enable()
-			fmt.Printf("error scanning browsers: %v", err)
-		} else {
-			isConfigured, _ := c.settingsService.IsConfigured()
-			setupScanBrowsersButton(button, isConfigured)
-		}
+		scanStatusLabel.SetText(i18n.T("config.scan_in_progress"))
+		scanStatusLabel.Show()
+
+		go func() {
+			err := c.settingsService.ScanBrowsers()
+			if err != nil {
+				scanStatusLabel.SetText(i18n.T("config.scan_failed"))
+				button.Enable()
+				fmt.Printf("error scanning browsers: %v\n", err)
+			} else {
+				scanStatusLabel.SetText(i18n.T("config.scan_success"))
+				isConfigured, _ := c.settingsService.IsConfigured()
+				setupScanBrowsersButton(button, isConfigured)
+			}
+		}()
 	}
 
 	scanBrowsersButton := widget.NewButton(i18n.T("config.scan_now"), func() {})
@@ -113,9 +123,6 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		onClickScanBrowsersButton(scanBrowsersButton)
 	}
 
-	// TODO show a spinner while scanning
-	// TODO show a message when scanning is done
-	// TODO show a message (instead of the button) if configuration is invalid (corrupted file etc)
 	isConfigured, _ := c.settingsService.IsConfigured()
 	setupScanBrowsersButton(scanBrowsersButton, isConfigured)
 
@@ -168,6 +175,7 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		layout.NewSpacer(),
 		widget.NewLabel(i18n.T("config.scan_description")),
 		scanBrowsersButton,
+		scanStatusLabel,
 		layout.NewSpacer(),
 		container.NewBorder(nil, nil, widget.NewLabel(i18n.T("config.language_label")), nil, languageSelect),
 		restartNote,
