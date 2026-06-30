@@ -508,3 +508,26 @@ func TestSettings_UpdateWithBrowsers(t *testing.T) {
 		)
 	}
 }
+
+func TestSettings_UpdateWithBrowsers_PreservesNonBrowserFields(t *testing.T) {
+	settings := &Settings{
+		LogLevel: "debug",
+		Browsers: []BrowserSettings{
+			{Name: "Firefox", Command: "firefox", Source: SourceAuto},
+		},
+		Plugins: []PluginSettings{
+			{Path: "/usr/lib/linkquisition/plugins/unwrap.so"},
+		},
+		Ui: UiSettings{HideKeyboardGuideLabel: true},
+	}
+
+	result := settings.UpdateWithBrowsers([]Browser{
+		{Name: "Firefox", Command: "firefox"},
+		{Name: "Chrome", Command: "chrome"},
+	})
+
+	assert.Equal(t, "debug", result.LogLevel)
+	assert.Equal(t, 1, len(result.Plugins))
+	assert.Equal(t, "/usr/lib/linkquisition/plugins/unwrap.so", result.Plugins[0].Path)
+	assert.True(t, result.Ui.HideKeyboardGuideLabel)
+}

@@ -38,20 +38,10 @@ type BrowserSettings struct {
 func (s *BrowserSettings) MatchesUrl(u string) bool {
 	uu := NewURL(u)
 
-	matchSite := func(u, site string) bool {
-		re := regexp.MustCompile(`^https?://([^/]+)(/|$)`)
-		match := re.FindStringSubmatch(u)
-		if len(match) > 1 {
-			return strings.EqualFold(match[1], site)
-		}
-
-		return false
-	}
-
 	for i := range s.Matches {
 		switch s.Matches[i].Type {
 		case BrowserMatchTypeRegex:
-			if matches, _ := regexp.MatchString(s.Matches[i].Value, u); matches {
+			if re, err := regexp.Compile(s.Matches[i].Value); err == nil && re.MatchString(u) {
 				return true
 			}
 		case BrowserMatchTypeDomain:
@@ -61,7 +51,8 @@ func (s *BrowserSettings) MatchesUrl(u string) bool {
 				}
 			}
 		case BrowserMatchTypeSite:
-			if matchSite(u, s.Matches[i].Value) {
+			match := siteRegex.FindStringSubmatch(u)
+			if len(match) > 1 && strings.EqualFold(match[1], s.Matches[i].Value) {
 				return true
 			}
 		}
@@ -104,14 +95,10 @@ func (s *Settings) NormalizeBrowsers() *Settings {
 		}
 	}
 
-	var normalizedSettings = &Settings{
-		Browsers: []BrowserSettings{},
-	}
+	//nolint:gocritic // appendAssign: intentionally building a new combined slice
+	s.Browsers = append(visibleBrowsers, hiddenBrowsers...)
 
-	normalizedSettings.Browsers = append(normalizedSettings.Browsers, visibleBrowsers...)
-	normalizedSettings.Browsers = append(normalizedSettings.Browsers, hiddenBrowsers...)
-
-	return normalizedSettings
+	return s
 }
 
 func (s *Settings) UpdateWithBrowsers(browsers []Browser) *Settings {
@@ -135,14 +122,12 @@ func (s *Settings) dropAutoAddedBrowsersNoLongerPresent(browsers []Browser) *Set
 		}
 	}
 
-	return &Settings{
-		Browsers: browserSettings,
-	}
+	s.Browsers = browserSettings
+
+	return s
 }
 
 func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
-	browserSettings := s.Browsers // we need to keep the order
-
 	for i := range browsers {
 		found := false
 		for j := range s.Browsers {
@@ -153,8 +138,8 @@ func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
 		}
 
 		if !found {
-			browserSettings = append(
-				browserSettings, BrowserSettings{
+			s.Browsers = append(
+				s.Browsers, BrowserSettings{
 					Name:    browsers[i].Name,
 					Command: browsers[i].Command,
 					Hidden:  false,
@@ -164,9 +149,7 @@ func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
 		}
 	}
 
-	return &Settings{
-		Browsers: browserSettings,
-	}
+	return s
 }
 
 func (s *Settings) GetSelectableBrowsers() []Browser {
