@@ -6,39 +6,24 @@ permissions:
   contents: read
 
 jobs:
-  golangci:
-    name: lint
+  lint-and-test:
+    name: lint & test
     runs-on: ubuntu-latest
     steps:
-      - name: Install build dependencies (cached)
-        uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: gcc libgl1-mesa-dev xorg-dev
-          version: 1.0
       - uses: actions/checkout@v7
+
       - uses: actions/setup-go@v6
         with:
           go-version: '1.25'
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
-
-  test:
-    name: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: '1.25'
 
       - name: Install build dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: gcc libgl1-mesa-dev xorg-dev
           version: 1.0
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
 
       - name: Install Task
         uses: arduino/setup-task@v2
