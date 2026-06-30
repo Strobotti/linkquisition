@@ -76,6 +76,7 @@ type UiSettings struct {
 }
 
 type Settings struct {
+	Locale   string            `json:"locale,omitempty"`
 	LogLevel string            `json:"logLevel,omitempty"`
 	Browsers []BrowserSettings `json:"browsers"`
 	Plugins  []PluginSettings  `json:"plugins,omitempty"`
