@@ -48,6 +48,12 @@ jobs:
       - name: Run Tests
         run: task test
 
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report
+          path: test/coverage.latest/coverage.xml
+
   build:
     name: Build (${{ matrix.target }})
     needs: [ version, test ]
@@ -184,23 +190,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v6
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v6
         with:
-          go-version: '1.25'
-
-      - name: Install build dependencies (cached)
-        uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: gcc libgl1-mesa-dev xorg-dev
-          version: 1.0
-
-      - uses: arduino/setup-task@v2
-        with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run Tests
-        run: task test
+          name: coverage-report
+          path: test/coverage.latest/
 
       - name: Make Coverage Badge
         uses: action-badges/cobertura-coverage-xml-badges@0.4.1
