@@ -67,6 +67,28 @@ func TestURL_GetDomain(t *testing.T) {
 	}
 }
 
+func TestURL_GetDomain_ErrorCases(t *testing.T) {
+	for _, tt := range [...]struct {
+		name string
+		url  string
+	}{
+		{
+			name: "invalid URL returns error",
+			url:  "://not-a-url",
+		},
+		{
+			name: "empty string returns error",
+			url:  "",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			u := NewURL(tt.url)
+			_, err := u.GetDomain()
+			assert.Error(t, err)
+		})
+	}
+}
+
 func TestURL_GetSite(t *testing.T) {
 	for _, tt := range [...]struct {
 		name      string
@@ -108,6 +130,21 @@ func TestURL_GetSite(t *testing.T) {
 			name:     "ip address will be returned as is",
 			url:      "https://1.2.3.4/path/is/here",
 			expected: "1.2.3.4",
+		},
+		{
+			name:     "non-http URL returns empty string",
+			url:      "ftp://files.example.com/data",
+			expected: "",
+		},
+		{
+			name:     "empty string returns empty",
+			url:      "",
+			expected: "",
+		},
+		{
+			name:     "just a path returns empty",
+			url:      "/some/path",
+			expected: "",
 		},
 	} {
 		t.Run(
