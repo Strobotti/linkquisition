@@ -531,3 +531,196 @@ func TestSettings_UpdateWithBrowsers_PreservesNonBrowserFields(t *testing.T) {
 	assert.Equal(t, "/usr/lib/linkquisition/plugins/unwrap.so", result.Plugins[0].Path)
 	assert.True(t, result.Ui.HideKeyboardGuideLabel)
 }
+
+func TestSettings_GetSelectableBrowsers(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		settings Settings
+		expected []Browser
+	}{
+		{
+			name: "returns only visible browsers",
+			settings: Settings{
+				Browsers: []BrowserSettings{
+					{Name: "Firefox", Command: "firefox", Hidden: false},
+					{Name: "Chromium", Command: "chromium", Hidden: true},
+					{Name: "Brave", Command: "brave", Hidden: false},
+				},
+			},
+			expected: []Browser{
+				{Name: "Firefox", Command: "firefox"},
+				{Name: "Brave", Command: "brave"},
+			},
+		},
+		{
+			name: "returns empty slice when all are hidden",
+			settings: Settings{
+				Browsers: []BrowserSettings{
+					{Name: "Firefox", Command: "firefox", Hidden: true},
+					{Name: "Chromium", Command: "chromium", Hidden: true},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "returns all when none are hidden",
+			settings: Settings{
+				Browsers: []BrowserSettings{
+					{Name: "Firefox", Command: "firefox", Hidden: false},
+					{Name: "Chromium", Command: "chromium", Hidden: false},
+				},
+			},
+			expected: []Browser{
+				{Name: "Firefox", Command: "firefox"},
+				{Name: "Chromium", Command: "chromium"},
+			},
+		},
+		{
+			name:     "returns nil when there are no browsers",
+			settings: Settings{Browsers: nil},
+			expected: nil,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.settings.GetSelectableBrowsers()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestSettings_GetMatchingBrowser(t *testing.T) {
+	settings := &Settings{
+		Browsers: []BrowserSettings{
+			{
+				Name:    "Firefox",
+				Command: "firefox",
+				Matches: []BrowserMatch{
+					{Type: BrowserMatchTypeSite, Value: "www.facebook.com"},
+				},
+			},
+			{
+				Name:    "Edge",
+				Command: "edge",
+				Matches: []BrowserMatch{
+					{Type: BrowserMatchTypeDomain, Value: "office.com"},
+				},
+			},
+		},
+	}
+
+	t.Run("returns matching browser for site rule", func(t *testing.T) {
+		browser, err := settings.GetMatchingBrowser("https://www.facebook.com/feed")
+		assert.NoError(t, err)
+		assert.Equal(t, "Firefox", browser.Name)
+		assert.Equal(t, "firefox", browser.Command)
+	})
+
+	t.Run("returns matching browser for domain rule", func(t *testing.T) {
+		browser, err := settings.GetMatchingBrowser("https://outlook.office.com/mail")
+		assert.NoError(t, err)
+		assert.Equal(t, "Edge", browser.Name)
+		assert.Equal(t, "edge", browser.Command)
+	})
+
+	t.Run("returns ErrNoMatchFound when no browser matches", func(t *testing.T) {
+		browser, err := settings.GetMatchingBrowser("https://github.com/something")
+		assert.ErrorIs(t, err, ErrNoMatchFound)
+		assert.Nil(t, browser)
+	})
+
+	t.Run("returns first match when multiple browsers could match", func(t *testing.T) {
+		s := &Settings{
+			Browsers: []BrowserSettings{
+				{
+					Name:    "First",
+					Command: "first",
+					Matches: []BrowserMatch{{Type: BrowserMatchTypeDomain, Value: "example.com"}},
+				},
+				{
+					Name:    "Second",
+					Command: "second",
+					Matches: []BrowserMatch{{Type: BrowserMatchTypeDomain, Value: "example.com"}},
+				},
+			},
+		}
+		browser, err := s.GetMatchingBrowser("https://www.example.com/page")
+		assert.NoError(t, err)
+		assert.Equal(t, "First", browser.Name)
+	})
+}
+
+func TestSettings_AddRuleToBrowser(t *testing.T) {
+	t.Run("adds a rule to the matching browser", func(t *testing.T) {
+		settings := &Settings{
+			Browsers: []BrowserSettings{
+				{Name: "Firefox", Command: "firefox"},
+				{Name: "Edge", Command: "edge"},
+			},
+		}
+
+		browser := &Browser{Name: "Firefox", Command: "firefox"}
+		settings.AddRuleToBrowser(browser, BrowserMatchTypeSite, "www.example.com")
+
+		assert.Len(t, settings.Browsers[0].Matches, 1)
+		assert.Equal(t, BrowserMatchTypeSite, settings.Browsers[0].Matches[0].Type)
+		assert.Equal(t, "www.example.com", settings.Browsers[0].Matches[0].Value)
+		// Other browser should be untouched
+		assert.Empty(t, settings.Browsers[1].Matches)
+	})
+
+	t.Run("does nothing when browser command does not match", func(t *testing.T) {
+		settings := &Settings{
+			Browsers: []BrowserSettings{
+				{Name: "Firefox", Command: "firefox"},
+			},
+		}
+
+		browser := &Browser{Name: "Nonexistent", Command: "nonexistent"}
+		settings.AddRuleToBrowser(browser, BrowserMatchTypeDomain, "example.com")
+
+		assert.Empty(t, settings.Browsers[0].Matches)
+	})
+
+	t.Run("appends to existing matches", func(t *testing.T) {
+		settings := &Settings{
+			Browsers: []BrowserSettings{
+				{
+					Name:    "Firefox",
+					Command: "firefox",
+					Matches: []BrowserMatch{
+						{Type: BrowserMatchTypeSite, Value: "existing.com"},
+					},
+				},
+			},
+		}
+
+		browser := &Browser{Name: "Firefox", Command: "firefox"}
+		settings.AddRuleToBrowser(browser, BrowserMatchTypeDomain, "new.com")
+
+		assert.Len(t, settings.Browsers[0].Matches, 2)
+		assert.Equal(t, "existing.com", settings.Browsers[0].Matches[0].Value)
+		assert.Equal(t, "new.com", settings.Browsers[0].Matches[1].Value)
+	})
+}
+
+func TestMapSettingsLogLevelToSlog(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		input    string
+		expected int
+	}{
+		{name: "debug", input: "debug", expected: -4},
+		{name: "info", input: "info", expected: 0},
+		{name: "warn", input: "warn", expected: 4},
+		{name: "error", input: "error", expected: 8},
+		{name: "unknown defaults to info", input: "something", expected: 0},
+		{name: "empty defaults to info", input: "", expected: 0},
+		{name: "case insensitive DEBUG", input: "DEBUG", expected: -4},
+		{name: "case insensitive Warn", input: "Warn", expected: 4},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			result := MapSettingsLogLevelToSlog(tt.input)
+			assert.Equal(t, tt.expected, int(result))
+		})
+	}
+}

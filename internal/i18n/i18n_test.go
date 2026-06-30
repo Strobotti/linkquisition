@@ -119,3 +119,71 @@ func TestDetectLocale_EmptyOverrideFallsBack(t *testing.T) {
 		t.Error("detectLocale(\"\") returned empty string")
 	}
 }
+
+func TestAvailableLocales(t *testing.T) {
+	locales := AvailableLocales()
+
+	// Should contain at least the four known locales
+	if len(locales) < 4 {
+		t.Errorf("AvailableLocales() returned %d locales, want at least 4", len(locales))
+	}
+
+	expected := map[string]bool{"en": false, "es": false, "fi": false, "sv": false}
+	for _, loc := range locales {
+		if _, ok := expected[loc]; ok {
+			expected[loc] = true
+		}
+	}
+
+	for code, found := range expected {
+		if !found {
+			t.Errorf("AvailableLocales() missing expected locale %q", code)
+		}
+	}
+}
+
+func TestLocaleDisplayName(t *testing.T) {
+	tests := []struct {
+		code string
+		want string
+	}{
+		{LocaleEnglish, "English"},
+		{LocaleFinnish, "Suomi"},
+		{LocaleSpanish, "Español"},
+		{LocaleSwedish, "Svenska"},
+		{"unknown", "unknown"}, // falls back to code itself
+		{"", ""},               // empty code returns empty
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			got := LocaleDisplayName(tt.code)
+			if got != tt.want {
+				t.Errorf("LocaleDisplayName(%q) = %q, want %q", tt.code, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTWithCount_FallbackOnMissingPluralForms(t *testing.T) {
+	Init("en")
+
+	// TWithCount returns the fallback format when the message doesn't define plural forms
+	// This exercises the error handling path of TWithCount
+	got := TWithCount("picker.window_title", 1)
+	want := "[picker.window_title]"
+	if got != want {
+		t.Errorf("TWithCount(\"picker.window_title\", 1) = %q, want %q", got, want)
+	}
+}
+
+func TestT_NilTemplateData(t *testing.T) {
+	Init("en")
+
+	// Passing nil as template data should not panic and should work normally
+	got := T("picker.window_title", nil)
+	want := "Linkquisition"
+	if got != want {
+		t.Errorf("T with nil template data = %q, want %q", got, want)
+	}
+}

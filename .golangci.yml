@@ -114,6 +114,9 @@ linters:
         linters:
           - noctx
           - goconst
+      - path: internal/i18n/
+        linters:
+          - goconst
       - text: "G704:"
         linters:
           - gosec
