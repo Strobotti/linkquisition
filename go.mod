@@ -4,9 +4,12 @@ go 1.25.0
 
 require (
 	fyne.io/fyne/v2 v2.7.4
+	github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/net v0.56.0
+	golang.org/x/text v0.38.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/ini.v1 v1.67.3
 )
@@ -31,12 +34,10 @@ require (
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/hack-pad/go-indexeddb v0.3.2 // indirect
 	github.com/hack-pad/safejs v0.1.1 // indirect
-	github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade // indirect
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
-	github.com/nicksnyder/go-i18n/v2 v2.6.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rymdport/portal v0.4.2 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
@@ -44,6 +45,5 @@ require (
 	github.com/yuin/goldmark v1.8.2 // indirect
 	golang.org/x/image v0.43.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
