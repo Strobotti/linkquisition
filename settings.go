@@ -95,6 +95,7 @@ func (s *Settings) NormalizeBrowsers() *Settings {
 		}
 	}
 
+	//nolint:gocritic // appendAssign: intentionally building a new combined slice
 	s.Browsers = append(visibleBrowsers, hiddenBrowsers...)
 
 	return s
