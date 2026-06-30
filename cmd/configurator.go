@@ -52,10 +52,19 @@ func (c *Configurator) Run() error {
 }
 
 func (c *Configurator) getGeneralTab() fyne.CanvasObject {
-	// MAKE DEFAULT -LABEL
+	return container.NewVBox(
+		c.buildMakeDefaultSection(),
+		layout.NewSpacer(),
+		c.buildScanBrowsersSection(),
+		layout.NewSpacer(),
+		c.buildLanguageSection(),
+	)
+}
+
+func (c *Configurator) buildMakeDefaultSection() fyne.CanvasObject {
 	makeDefaultLabel := widget.NewLabel(i18n.T("config.make_default_label"))
 
-	setupMakeDefaultButton := func(button *widget.Button, isDefault bool) {
+	setupButton := func(button *widget.Button, isDefault bool) {
 		if isDefault {
 			button.SetText(i18n.T("config.make_default_done"))
 			button.Disable()
@@ -65,33 +74,31 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		}
 	}
 
-	// MAKE DEFAULT -BUTTON
-	onClickMakeDefaultButton := func(button *widget.Button) {
-		button.Disable()
-		err := c.browserService.MakeUsTheDefaultBrowser()
-		if err != nil {
-			button.SetText(i18n.T("config.make_default_error"))
-			button.Enable()
-			fmt.Printf("error making Linkquisition the default browser: %v", err)
-		} else {
-			setupMakeDefaultButton(button, true)
-		}
-	}
-
 	makeDefaultButton := widget.NewButton(i18n.T("config.make_default_checking"), func() {})
 	makeDefaultButton.OnTapped = func() {
-		onClickMakeDefaultButton(makeDefaultButton)
+		makeDefaultButton.Disable()
+		err := c.browserService.MakeUsTheDefaultBrowser()
+		if err != nil {
+			makeDefaultButton.SetText(i18n.T("config.make_default_error"))
+			makeDefaultButton.Enable()
+			fmt.Printf("error making Linkquisition the default browser: %v\n", err)
+		} else {
+			setupButton(makeDefaultButton, true)
+		}
 	}
 	makeDefaultButton.Disable()
 
-	setupMakeDefaultButton(makeDefaultButton, c.browserService.AreWeTheDefaultBrowser())
+	setupButton(makeDefaultButton, c.browserService.AreWeTheDefaultBrowser())
 
-	// SCAN BROWSERS -BUTTON
+	return container.NewVBox(makeDefaultLabel, makeDefaultButton)
+}
+
+func (c *Configurator) buildScanBrowsersSection() fyne.CanvasObject {
 	scanStatusLabel := widget.NewLabel("")
 	scanStatusLabel.TextStyle = fyne.TextStyle{Italic: true}
 	scanStatusLabel.Hide()
 
-	setupScanBrowsersButton := func(button *widget.Button, alreadyScanned bool) {
+	setupButton := func(button *widget.Button, alreadyScanned bool) {
 		if alreadyScanned {
 			button.SetText(i18n.T("config.rescan_browsers"))
 		} else {
@@ -99,8 +106,10 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		}
 		button.Enable()
 	}
-	onClickScanBrowsersButton := func(button *widget.Button) {
-		button.Disable()
+
+	scanBrowsersButton := widget.NewButton(i18n.T("config.scan_now"), func() {})
+	scanBrowsersButton.OnTapped = func() {
+		scanBrowsersButton.Disable()
 		scanStatusLabel.SetText(i18n.T("config.scan_in_progress"))
 		scanStatusLabel.Show()
 
@@ -108,35 +117,35 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 			err := c.settingsService.ScanBrowsers()
 			if err != nil {
 				scanStatusLabel.SetText(i18n.T("config.scan_failed"))
-				button.Enable()
+				scanBrowsersButton.Enable()
 				fmt.Printf("error scanning browsers: %v\n", err)
 			} else {
 				scanStatusLabel.SetText(i18n.T("config.scan_success"))
 				isConfigured, _ := c.settingsService.IsConfigured()
-				setupScanBrowsersButton(button, isConfigured)
+				setupButton(scanBrowsersButton, isConfigured)
 			}
 		}()
 	}
 
-	scanBrowsersButton := widget.NewButton(i18n.T("config.scan_now"), func() {})
-	scanBrowsersButton.OnTapped = func() {
-		onClickScanBrowsersButton(scanBrowsersButton)
-	}
-
 	isConfigured, _ := c.settingsService.IsConfigured()
-	setupScanBrowsersButton(scanBrowsersButton, isConfigured)
+	setupButton(scanBrowsersButton, isConfigured)
 
-	// LANGUAGE SELECTOR
+	return container.NewVBox(
+		widget.NewLabel(i18n.T("config.scan_description")),
+		scanBrowsersButton,
+		scanStatusLabel,
+	)
+}
+
+func (c *Configurator) buildLanguageSection() fyne.CanvasObject {
 	locales := i18n.AvailableLocales()
 	autoLabel := i18n.T("config.language_auto")
 
-	// Build dropdown options: "Auto (system default)" + each locale's display name
 	options := []string{autoLabel}
 	for _, code := range locales {
 		options = append(options, fmt.Sprintf("%s (%s)", i18n.LocaleDisplayName(code), code))
 	}
 
-	// Determine current selection from settings
 	currentLocale := c.settingsService.GetSettings().Locale
 	selectedOption := autoLabel
 	for _, code := range locales {
@@ -149,7 +158,6 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 	languageSelect := widget.NewSelect(options, func(selected string) {
 		newLocale := ""
 		if selected != autoLabel {
-			// Extract locale code from "DisplayName (code)" format
 			for _, code := range locales {
 				if selected == fmt.Sprintf("%s (%s)", i18n.LocaleDisplayName(code), code) {
 					newLocale = code
@@ -170,13 +178,6 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 	restartNote.TextStyle = fyne.TextStyle{Italic: true}
 
 	return container.NewVBox(
-		makeDefaultLabel,
-		makeDefaultButton,
-		layout.NewSpacer(),
-		widget.NewLabel(i18n.T("config.scan_description")),
-		scanBrowsersButton,
-		scanStatusLabel,
-		layout.NewSpacer(),
 		container.NewBorder(nil, nil, widget.NewLabel(i18n.T("config.language_label")), nil, languageSelect),
 		restartNote,
 	)

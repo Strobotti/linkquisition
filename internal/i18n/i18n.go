@@ -20,12 +20,20 @@ var translationFS embed.FS
 
 var localizer *i18n.Localizer
 
+// Locale code constants.
+const (
+	LocaleEnglish = "en"
+	LocaleSpanish = "es"
+	LocaleFinnish = "fi"
+	LocaleSwedish = "sv"
+)
+
 // localeNames maps locale codes to their display names (in their own language).
 var localeNames = map[string]string{
-	"en": "English",
-	"es": "Español",
-	"fi": "Suomi",
-	"sv": "Svenska",
+	LocaleEnglish: "English",
+	LocaleSpanish: "Español",
+	LocaleFinnish: "Suomi",
+	LocaleSwedish: "Svenska",
 }
 
 // AvailableLocales returns the locale codes of all embedded translation files,
@@ -33,7 +41,7 @@ var localeNames = map[string]string{
 func AvailableLocales() []string {
 	entries, err := translationFS.ReadDir("translations")
 	if err != nil {
-		return []string{"en"}
+		return []string{LocaleEnglish}
 	}
 
 	var locales []string
@@ -75,7 +83,7 @@ func Init(localeOverride string) {
 	}
 
 	lang := detectLocale(localeOverride)
-	localizer = i18n.NewLocalizer(bundle, lang, "en")
+	localizer = i18n.NewLocalizer(bundle, lang, LocaleEnglish)
 }
 
 // T returns the translated string for the given message ID.
@@ -129,5 +137,5 @@ func detectLocale(override string) string {
 		return lang
 	}
 
-	return "en"
+	return LocaleEnglish
 }
