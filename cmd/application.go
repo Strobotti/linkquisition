@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/i18n"
 )
 
 const logDirPerms = 0755
@@ -134,6 +135,9 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 }
 
 func (a *Application) Run(_ context.Context) error {
+	// Initialize localization before any UI strings are used
+	i18n.Init(a.SettingsService.GetSettings().Locale)
+
 	args := os.Args
 
 	urlToOpen := ""

@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/resources"
 )
 
@@ -31,11 +32,11 @@ func NewConfigurator(
 }
 
 func (c *Configurator) Run() error {
-	w := c.fapp.NewWindow("Linkquisition settings")
+	w := c.fapp.NewWindow(i18n.T("config.window_title"))
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("General", c.getGeneralTab()),
-		container.NewTabItem("About", c.getAboutTab()),
+		container.NewTabItem(i18n.T("config.tab_general"), c.getGeneralTab()),
+		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
@@ -52,17 +53,14 @@ func (c *Configurator) Run() error {
 
 func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 	// MAKE DEFAULT -LABEL
-	makeDefaultLabel := widget.NewLabel(
-		"In order to Linkquisition to function as a browser-picker\n" +
-			"it has to be set as the default browser:",
-	)
+	makeDefaultLabel := widget.NewLabel(i18n.T("config.make_default_label"))
 
 	setupMakeDefaultButton := func(button *widget.Button, isDefault bool) {
 		if isDefault {
-			button.SetText("All good!")
+			button.SetText(i18n.T("config.make_default_done"))
 			button.Disable()
 		} else {
-			button.SetText("Make default")
+			button.SetText(i18n.T("config.make_default_button"))
 			button.Enable()
 		}
 	}
@@ -72,7 +70,7 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		button.Disable()
 		err := c.browserService.MakeUsTheDefaultBrowser()
 		if err != nil {
-			button.SetText("Error making default!")
+			button.SetText(i18n.T("config.make_default_error"))
 			button.Enable()
 			fmt.Printf("error making Linkquisition the default browser: %v", err)
 		} else {
@@ -80,7 +78,7 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		}
 	}
 
-	makeDefaultButton := widget.NewButton("checking", func() {})
+	makeDefaultButton := widget.NewButton(i18n.T("config.make_default_checking"), func() {})
 	makeDefaultButton.OnTapped = func() {
 		onClickMakeDefaultButton(makeDefaultButton)
 	}
@@ -91,9 +89,9 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 	// SCAN BROWSERS -BUTTON
 	setupScanBrowsersButton := func(button *widget.Button, alreadyScanned bool) {
 		if alreadyScanned {
-			button.SetText("Re-scan browsers")
+			button.SetText(i18n.T("config.rescan_browsers"))
 		} else {
-			button.SetText("Scan browsers")
+			button.SetText(i18n.T("config.scan_browsers"))
 		}
 		button.Enable()
 	}
@@ -101,7 +99,7 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		button.Disable()
 		err := c.settingsService.ScanBrowsers()
 		if err != nil {
-			button.SetText("Error scanning browsers!")
+			button.SetText(i18n.T("config.scan_error"))
 			button.Enable()
 			fmt.Printf("error scanning browsers: %v", err)
 		} else {
@@ -110,7 +108,7 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		}
 	}
 
-	scanBrowsersButton := widget.NewButton("Scan now", func() {})
+	scanBrowsersButton := widget.NewButton(i18n.T("config.scan_now"), func() {})
 	scanBrowsersButton.OnTapped = func() {
 		onClickScanBrowsersButton(scanBrowsersButton)
 	}
@@ -125,14 +123,7 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		makeDefaultLabel,
 		makeDefaultButton,
 		layout.NewSpacer(),
-		widget.NewLabel(
-			"The browsers should be scanned and stored in a configuration file for\n"+
-				"faster startup and for enabling custom configuration.\n"+
-				"\n"+
-				"The scan should be safe to execute at any time: only newly detected\n"+
-				"browsers are added and the ones no longer present in the system are\n"+
-				"removed.\n\nAny existing rules, ordering or customization shouldn't be affected.",
-		),
+		widget.NewLabel(i18n.T("config.scan_description")),
 		scanBrowsersButton,
 	)
 }
