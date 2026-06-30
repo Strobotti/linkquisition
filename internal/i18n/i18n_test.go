@@ -81,6 +81,17 @@ func TestInit_FinnishLocale_WithTemplateData(t *testing.T) {
 	}
 }
 
+func TestInit_SpanishLocale(t *testing.T) {
+	Init("es")
+
+	got := T("config.tab_about")
+	want := "Acerca de"
+
+	if got != want {
+		t.Errorf("T(\"config.tab_about\") with es locale = %q, want %q", got, want)
+	}
+}
+
 func TestDetectLocale_OverrideTakesPrecedence(t *testing.T) {
 	got := detectLocale("fi")
 	want := "fi"
