@@ -119,12 +119,58 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 	isConfigured, _ := c.settingsService.IsConfigured()
 	setupScanBrowsersButton(scanBrowsersButton, isConfigured)
 
+	// LANGUAGE SELECTOR
+	locales := i18n.AvailableLocales()
+	autoLabel := i18n.T("config.language_auto")
+
+	// Build dropdown options: "Auto (system default)" + each locale's display name
+	options := []string{autoLabel}
+	for _, code := range locales {
+		options = append(options, fmt.Sprintf("%s (%s)", i18n.LocaleDisplayName(code), code))
+	}
+
+	// Determine current selection from settings
+	currentLocale := c.settingsService.GetSettings().Locale
+	selectedOption := autoLabel
+	for _, code := range locales {
+		if code == currentLocale {
+			selectedOption = fmt.Sprintf("%s (%s)", i18n.LocaleDisplayName(code), code)
+			break
+		}
+	}
+
+	languageSelect := widget.NewSelect(options, func(selected string) {
+		newLocale := ""
+		if selected != autoLabel {
+			// Extract locale code from "DisplayName (code)" format
+			for _, code := range locales {
+				if selected == fmt.Sprintf("%s (%s)", i18n.LocaleDisplayName(code), code) {
+					newLocale = code
+					break
+				}
+			}
+		}
+
+		settings := c.settingsService.GetSettings()
+		settings.Locale = newLocale
+		if err := c.settingsService.WriteSettings(settings); err != nil {
+			fmt.Printf("error saving locale setting: %v\n", err)
+		}
+	})
+	languageSelect.Selected = selectedOption
+
+	restartNote := widget.NewLabel(i18n.T("config.language_restart_note"))
+	restartNote.TextStyle = fyne.TextStyle{Italic: true}
+
 	return container.NewVBox(
 		makeDefaultLabel,
 		makeDefaultButton,
 		layout.NewSpacer(),
 		widget.NewLabel(i18n.T("config.scan_description")),
 		scanBrowsersButton,
+		layout.NewSpacer(),
+		container.NewBorder(nil, nil, widget.NewLabel(i18n.T("config.language_label")), nil, languageSelect),
+		restartNote,
 	)
 }
 

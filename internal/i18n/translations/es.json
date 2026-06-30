@@ -49,5 +49,14 @@
   },
   "picker.keyboard_guide": {
     "other": "Pulsa 'ENTER' para elegir el primero, 'ESC' para salir, 'ctrl+c' para copiar la URL al portapapeles"
+  },
+  "config.language_label": {
+    "other": "Idioma:"
+  },
+  "config.language_auto": {
+    "other": "Automático (predeterminado del sistema)"
+  },
+  "config.language_restart_note": {
+    "other": "El cambio de idioma se aplicará en el próximo inicio."
   }
 }

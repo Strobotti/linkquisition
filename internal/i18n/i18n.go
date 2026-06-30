@@ -20,6 +20,43 @@ var translationFS embed.FS
 
 var localizer *i18n.Localizer
 
+// localeNames maps locale codes to their display names (in their own language).
+var localeNames = map[string]string{
+	"en": "English",
+	"es": "Español",
+	"fi": "Suomi",
+	"sv": "Svenska",
+}
+
+// AvailableLocales returns the locale codes of all embedded translation files,
+// sorted alphabetically.
+func AvailableLocales() []string {
+	entries, err := translationFS.ReadDir("translations")
+	if err != nil {
+		return []string{"en"}
+	}
+
+	var locales []string
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".json") {
+			code := strings.TrimSuffix(entry.Name(), ".json")
+			locales = append(locales, code)
+		}
+	}
+
+	return locales
+}
+
+// LocaleDisplayName returns a human-readable name for a locale code
+// (e.g. "en" → "English", "fi" → "Suomi"). Falls back to the code itself.
+func LocaleDisplayName(code string) string {
+	if name, ok := localeNames[code]; ok {
+		return name
+	}
+
+	return code
+}
+
 // Init initializes the i18n system. If localeOverride is non-empty, it is used
 // as the locale. Otherwise the system locale is detected. English is always
 // loaded as the fallback.

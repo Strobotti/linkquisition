@@ -49,5 +49,14 @@
   },
   "picker.keyboard_guide": {
     "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, 'ctrl+c' kopioidaksesi URL:n leikepöydälle"
+  },
+  "config.language_label": {
+    "other": "Kieli:"
+  },
+  "config.language_auto": {
+    "other": "Automaattinen (järjestelmän oletus)"
+  },
+  "config.language_restart_note": {
+    "other": "Kielen vaihto tulee voimaan seuraavalla käynnistyksellä."
   }
 }

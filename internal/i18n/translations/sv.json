@@ -49,5 +49,14 @@
   },
   "picker.keyboard_guide": {
     "other": "Tryck 'ENTER' för att välja första, 'ESC' för att avsluta, 'ctrl+c' för att kopiera URL till urklipp"
+  },
+  "config.language_label": {
+    "other": "Språk:"
+  },
+  "config.language_auto": {
+    "other": "Automatisk (systemstandard)"
+  },
+  "config.language_restart_note": {
+    "other": "Språkändringen träder i kraft vid nästa start."
   }
 }
