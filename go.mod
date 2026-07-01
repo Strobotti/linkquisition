@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	fyne.io/fyne/v2 v2.7.4
+	github.com/jackmordaunt/icns/v3 v3.0.1
 	github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.1

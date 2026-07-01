@@ -5,12 +5,13 @@ package darwin
 import (
 	"bytes"
 	"fmt"
+	"image/png"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"fyne.io/fyne/v2"
+	icns "github.com/jackmordaunt/icns/v3"
 	"howett.net/plist"
 
 	"github.com/strobotti/linkquisition"
@@ -234,18 +235,24 @@ func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byt
 		return nil, fmt.Errorf("no icon found for %s", browser.Name)
 	}
 
-	// Convert .icns to PNG using sips
-	cmd := exec.Command("sips", "-s", "format", "png", iconPath, "--out", "/tmp/linkquisition-icon-tmp.png")
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("failed to convert icon: %v", err)
-	}
-
-	icon, err := fyne.LoadResourceFromPath("/tmp/linkquisition-icon-tmp.png")
+	// Decode the .icns file natively and encode as PNG
+	f, err := os.Open(iconPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open icon file: %v", err)
+	}
+	defer f.Close()
+
+	img, err := icns.Decode(f)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode icns: %v", err)
 	}
 
-	return icon.Content(), nil
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		return nil, fmt.Errorf("failed to encode icon as PNG: %v", err)
+	}
+
+	return buf.Bytes(), nil
 }
 
 func getAppPathForBundleID(bundleID string) (string, error) {
