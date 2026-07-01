@@ -238,7 +238,9 @@ func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byt
 }
 
 func getAppPathForBundleID(bundleID string) (string, error) {
-	cmd := exec.Command("mdfind", fmt.Sprintf("kMDItemCFBundleIdentifier == '%s'", bundleID))
+	// Pass the query as a single argument to mdfind — bundleID is not interpolated into a shell
+	query := "kMDItemCFBundleIdentifier == '" + bundleID + "'"
+	cmd := exec.Command("mdfind", query)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
@@ -255,23 +257,14 @@ func getAppPathForBundleID(bundleID string) (string, error) {
 }
 
 func getIconPathFromApp(appPath string) string {
-	// Read Info.plist to find icon file name
-	cmd := exec.Command("/usr/bin/python3", "-c", fmt.Sprintf(`
-import plistlib, os
-plist_path = "%s/Contents/Info.plist"
-try:
-    with open(plist_path, "rb") as f:
-        data = plistlib.load(f)
-    icon = data.get("CFBundleIconFile", "")
-    if icon and not icon.endswith(".icns"):
-        icon += ".icns"
-    print(icon)
-except Exception:
-    print("")
-`, appPath))
+	// Read Info.plist natively using plutil to extract the icon file name safely
+	plistPath := filepath.Join(appPath, "Contents", "Info.plist")
 
+	// Use plutil to extract CFBundleIconFile as raw value — avoids Python and injection risks
+	cmd := exec.Command("plutil", "-extract", "CFBundleIconFile", "raw", plistPath)
 	var out bytes.Buffer
 	cmd.Stdout = &out
+
 	if err := cmd.Run(); err != nil {
 		return ""
 	}
@@ -279,6 +272,10 @@ except Exception:
 	iconFile := strings.TrimSpace(out.String())
 	if iconFile == "" {
 		return ""
+	}
+
+	if !strings.HasSuffix(iconFile, ".icns") {
+		iconFile += ".icns"
 	}
 
 	return filepath.Join(appPath, "Contents", "Resources", iconFile)
