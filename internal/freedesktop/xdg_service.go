@@ -39,27 +39,27 @@ func (x *XdgService) GetDesktopEntryPathForBinary(binary string) (string, error)
 		return "", fmt.Errorf("no valid desktop entry paths found in $XDG_DATA_DIRS")
 	}
 
-	// grep all the .desktop files in the paths for the binary basename and return the first match:
-	pattern := fmt.Sprintf("^Exec=(%s|%s)", binary, filepath.Base(binary))
-	grepArgs := []string{"-r", "-l", "-m", "1", "-E", pattern, "--include", "*.desktop"}
-	grepArgs = append(grepArgs, paths...)
-	cmd := exec.Command("grep", grepArgs...)
+	baseName := filepath.Base(binary)
 
-	var out bytes.Buffer
-	cmd.Stdout = &out
+	for _, dir := range paths {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
 
-	if err := cmd.Run(); err != nil {
-		fmt.Println(out.String())
-		return "", fmt.Errorf("failed to call grep for determining a .desktop entry for %s: %v", binary, err)
+		for _, entry := range entries {
+			if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".desktop") {
+				continue
+			}
+
+			entryPath := filepath.Join(dir, entry.Name())
+			if desktopEntryExecMatches(entryPath, binary, baseName) {
+				return entryPath, nil
+			}
+		}
 	}
 
-	scanner := bufio.NewScanner(strings.NewReader(out.String()))
-
-	if !scanner.Scan() {
-		return "", fmt.Errorf("no .desktop entry found for %s", binary)
-	}
-
-	return scanner.Text(), nil
+	return "", fmt.Errorf("no .desktop entry found for %s", binary)
 }
 
 func (x *XdgService) GetApplicationPaths() []string {
@@ -108,4 +108,25 @@ func (x *XdgService) SettingsSet(property, value string) error {
 		return fmt.Errorf("failed to call xdg-settings set: %v", err)
 	}
 	return nil
+}
+
+// desktopEntryExecMatches checks if a .desktop file's Exec= line starts with
+// the given binary path or its basename.
+func desktopEntryExecMatches(path, binary, baseName string) bool {
+	f, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	prefix := "Exec="
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, prefix) {
+			execValue := strings.TrimPrefix(line, prefix)
+			return strings.HasPrefix(execValue, binary) || strings.HasPrefix(execValue, baseName)
+		}
+	}
+	return false
 }

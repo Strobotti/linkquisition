@@ -3,10 +3,8 @@
 package freedesktop
 
 import (
-	"bufio"
-	"bytes"
-	"fmt"
-	"os/exec"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -34,41 +32,43 @@ func (l *DefaultBrowserIconLoader) LoadIcon(browser linkquisition.Browser) ([]by
 		return nil, err
 	}
 
-	// TODO how to abstract this away? Also should probably not use find but go-code to find the icon
-	// TODO we should probably check the Icon field for a full path to an icon file
-	findArgs := []string{
-		"/usr/share/icons",
-		"-type",
-		"f,l",
-		"-name",
-		desktopEntry.Icon + ".*",
-	}
-
-	cmd := exec.Command("find", findArgs...)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	if errRun := cmd.Run(); errRun != nil {
-		return nil, fmt.Errorf("failed to fetch icons with name `%s`: %v", desktopEntry.Icon, errRun)
-	}
-
-	scanner := bufio.NewScanner(strings.NewReader(out.String()))
-
-	for scanner.Scan() {
-		// TODO we're using the first icon we find, but we should probably pick one with optimal resolution
-		//      matching the possible theme and color scheme. Now we probably have a following response:
-		//      	/usr/share/icons/hicolor/128x128/apps/firefox.png
-		// 			/usr/share/icons/hicolor/48x48/apps/firefox.png
-		// 			/usr/share/icons/HighContrast/24x24/apps/firefox.png
-		// 			/usr/share/icons/HighContrast/22x22/apps/firefox.png
-		//      ...and by sheer "luck" we get the 128x128 icon here which is probably the best one, but still
-		//      not guaranteed to be the best one - especially if the user wants to use a high-contrast theme.
-		if icon, errLoad := fyne.LoadResourceFromPath(scanner.Text()); errLoad == nil {
+	// If the icon field is already a full path, use it directly
+	if strings.HasPrefix(desktopEntry.Icon, "/") {
+		if icon, errLoad := fyne.LoadResourceFromPath(desktopEntry.Icon); errLoad == nil {
 			return icon.Content(), nil
 		}
 	}
 
-	// As a fallback we'll use the application icon - not very elegant approach, is it?
+	// Search for the icon in /usr/share/icons
+	iconName := desktopEntry.Icon
+	var foundPath string
+
+	_ = filepath.WalkDir("/usr/share/icons", func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return filepath.SkipDir
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		baseName := d.Name()
+		ext := filepath.Ext(baseName)
+		nameWithoutExt := strings.TrimSuffix(baseName, ext)
+
+		if nameWithoutExt == iconName {
+			foundPath = path
+			return filepath.SkipAll
+		}
+		return nil
+	})
+
+	if foundPath != "" {
+		if icon, errLoad := fyne.LoadResourceFromPath(foundPath); errLoad == nil {
+			return icon.Content(), nil
+		}
+	}
+
+	// As a fallback we'll use the application icon
 	icon, err := fyne.LoadResourceFromPath("Icon.png")
 	if err != nil {
 		return nil, err
