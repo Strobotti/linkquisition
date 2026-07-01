@@ -4,7 +4,6 @@ package darwin
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,6 +11,7 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
+	"howett.net/plist"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -97,43 +97,42 @@ func (b *BrowserService) getHTTPHandlers() ([]lsRegisterEntry, error) {
 }
 
 // parseBrowserPlist extracts bundle ID, display name, and whether the app handles HTTP/HTTPS URLs.
-// Uses plutil to convert the plist to JSON for safe parsing without Python.
+// Parses the binary plist directly using the howett.net/plist library.
 func parseBrowserPlist(plistPath, appDirName string) (bundleID, name string, isHTTPHandler bool) {
-	cmd := exec.Command("plutil", "-convert", "json", "-o", "-", plistPath)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	if err := cmd.Run(); err != nil {
+	f, err := os.Open(plistPath)
+	if err != nil {
 		return "", "", false
 	}
+	defer f.Close()
 
-	var plist struct {
-		BundleID    string `json:"CFBundleIdentifier"`
-		DisplayName string `json:"CFBundleDisplayName"`
-		BundleName  string `json:"CFBundleName"`
+	var plistData struct {
+		BundleID    string `plist:"CFBundleIdentifier"`
+		DisplayName string `plist:"CFBundleDisplayName"`
+		BundleName  string `plist:"CFBundleName"`
 		URLTypes    []struct {
-			Schemes []string `json:"CFBundleURLSchemes"`
-		} `json:"CFBundleURLTypes"`
+			Schemes []string `plist:"CFBundleURLSchemes"`
+		} `plist:"CFBundleURLTypes"`
 	}
 
-	if err := json.Unmarshal(out.Bytes(), &plist); err != nil {
+	decoder := plist.NewDecoder(f)
+	if err := decoder.Decode(&plistData); err != nil {
 		return "", "", false
 	}
 
 	// Check if the app handles http or https
-	for _, urlType := range plist.URLTypes {
+	for _, urlType := range plistData.URLTypes {
 		for _, scheme := range urlType.Schemes {
 			lower := strings.ToLower(scheme)
 			if lower == "http" || lower == "https" {
 				// Determine the display name
-				name = plist.DisplayName
+				name = plistData.DisplayName
 				if name == "" {
-					name = plist.BundleName
+					name = plistData.BundleName
 				}
 				if name == "" {
 					name = strings.TrimSuffix(appDirName, ".app")
 				}
-				return plist.BundleID, name, true
+				return plistData.BundleID, name, true
 			}
 		}
 	}
@@ -144,7 +143,6 @@ func parseBrowserPlist(plistPath, appDirName string) (bundleID, name string, isH
 func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
 	safariDefault := linkquisition.Browser{Name: "Safari", Command: "com.apple.Safari"}
 
-	// Read the LaunchServices plist using plutil (no Python dependency)
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return safariDefault, nil
@@ -153,22 +151,21 @@ func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
 	plistPath := filepath.Join(homeDir, "Library", "Preferences",
 		"com.apple.LaunchServices", "com.apple.launchservices.secure.plist")
 
-	cmd := exec.Command("plutil", "-convert", "json", "-o", "-", plistPath)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	if err := cmd.Run(); err != nil {
+	f, err := os.Open(plistPath)
+	if err != nil {
 		return safariDefault, nil
 	}
+	defer f.Close()
 
 	var data struct {
 		LSHandlers []struct {
-			URLScheme      string `json:"LSHandlerURLScheme"`
-			HandlerRoleAll string `json:"LSHandlerRoleAll"`
-		} `json:"LSHandlers"`
+			URLScheme      string `plist:"LSHandlerURLScheme"`
+			HandlerRoleAll string `plist:"LSHandlerRoleAll"`
+		} `plist:"LSHandlers"`
 	}
 
-	if err := json.Unmarshal(out.Bytes(), &data); err != nil {
+	decoder := plist.NewDecoder(f)
+	if err := decoder.Decode(&data); err != nil {
 		return safariDefault, nil
 	}
 
@@ -271,19 +268,24 @@ func getAppPathForBundleID(bundleID string) (string, error) {
 }
 
 func getIconPathFromApp(appPath string) string {
-	// Read Info.plist natively using plutil to extract the icon file name safely
 	plistPath := filepath.Join(appPath, "Contents", "Info.plist")
 
-	// Use plutil to extract CFBundleIconFile as raw value — avoids Python and injection risks
-	cmd := exec.Command("plutil", "-extract", "CFBundleIconFile", "raw", plistPath)
-	var out bytes.Buffer
-	cmd.Stdout = &out
+	f, err := os.Open(plistPath)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
 
-	if err := cmd.Run(); err != nil {
+	var data struct {
+		IconFile string `plist:"CFBundleIconFile"`
+	}
+
+	decoder := plist.NewDecoder(f)
+	if err := decoder.Decode(&data); err != nil {
 		return ""
 	}
 
-	iconFile := strings.TrimSpace(out.String())
+	iconFile := data.IconFile
 	if iconFile == "" {
 		return ""
 	}
