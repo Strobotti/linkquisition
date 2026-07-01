@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -54,119 +55,132 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 }
 
 func (b *BrowserService) getHTTPHandlers() ([]lsRegisterEntry, error) {
-	// Use the Swift helper via 'open' heuristics and system_profiler won't work cleanly.
-	// Instead, use LSCopyAllHandlersForURLScheme via a small Swift script, or parse
-	// the output of `lsregister -dump` which is too complex.
-	// Pragmatic approach: use defaults + known browser bundle IDs + check what's installed.
-	cmd := exec.Command("/usr/bin/python3", "-c", `
-import json, subprocess, plistlib, os, glob
-
-browsers = []
-app_dirs = ["/Applications", os.path.expanduser("~/Applications")]
-
-for app_dir in app_dirs:
-    if not os.path.isdir(app_dir):
-        continue
-    for app in glob.glob(os.path.join(app_dir, "*.app")):
-        plist_path = os.path.join(app, "Contents", "Info.plist")
-        if not os.path.exists(plist_path):
-            continue
-        try:
-            with open(plist_path, "rb") as f:
-                plist = plistlib.load(f)
-            url_types = plist.get("CFBundleURLTypes", [])
-            for url_type in url_types:
-                schemes = [s.lower() for s in url_type.get("CFBundleURLSchemes", [])]
-                if "http" in schemes or "https" in schemes:
-                    bundle_id = plist.get("CFBundleIdentifier", "")
-                    name = plist.get("CFBundleDisplayName") or plist.get("CFBundleName") or os.path.basename(app).replace(".app", "")
-                    browsers.append({"bundleId": bundle_id, "name": name, "path": app})
-                    break
-        except Exception:
-            pass
-
-print(json.dumps(browsers))
-`)
-
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("failed to discover browsers: %v", err)
-	}
-
-	var results []struct {
-		BundleID string `json:"bundleId"`
-		Name     string `json:"name"`
-		Path     string `json:"path"`
-	}
-
-	if err := json.Unmarshal(out.Bytes(), &results); err != nil {
-		return nil, fmt.Errorf("failed to parse browser list: %v", err)
-	}
+	homeDir, _ := os.UserHomeDir()
+	appDirs := []string{"/Applications", filepath.Join(homeDir, "Applications")}
 
 	var entries []lsRegisterEntry
-	for _, r := range results {
-		entries = append(entries, lsRegisterEntry{
-			BundleID: r.BundleID,
-			Name:     r.Name,
-			Path:     r.Path,
-		})
+	seen := make(map[string]bool)
+
+	for _, appDir := range appDirs {
+		dirEntries, err := os.ReadDir(appDir)
+		if err != nil {
+			continue
+		}
+
+		for _, entry := range dirEntries {
+			if !entry.IsDir() || !strings.HasSuffix(entry.Name(), ".app") {
+				continue
+			}
+
+			appPath := filepath.Join(appDir, entry.Name())
+			plistPath := filepath.Join(appPath, "Contents", "Info.plist")
+
+			if _, err := os.Stat(plistPath); err != nil {
+				continue
+			}
+
+			bundleID, name, isHTTPHandler := parseBrowserPlist(plistPath, entry.Name())
+			if !isHTTPHandler || seen[bundleID] {
+				continue
+			}
+
+			seen[bundleID] = true
+			entries = append(entries, lsRegisterEntry{
+				BundleID: bundleID,
+				Name:     name,
+				Path:     appPath,
+			})
+		}
 	}
 
 	return entries, nil
 }
 
-func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
-	// Read the default HTTP handler
-	cmd := exec.Command("/usr/bin/python3", "-c", `
-import subprocess, re
-result = subprocess.run(["defaults", "read", "com.apple.LaunchServices/com.apple.launchservices.secure", "LSHandlers"], capture_output=True, text=True)
-# Fallback: use the x-scheme-handler approach
-import Foundation
-from Foundation import NSBundle
-# Actually simplest: use open command
-import subprocess as sp
-r = sp.run(["plutil", "-convert", "json", "-o", "-", "/Users/"+__import__("os").environ.get("USER","")+"//Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist"], capture_output=True, text=True)
-`)
-	// The above is too fragile. Use a simpler approach:
-	cmd = exec.Command("/usr/bin/python3", "-c", `
-import json, subprocess
-# On macOS, we can get the default browser bundle ID from LaunchServices
-# Using the 'defaults' command to read the handler for https
-import plistlib, os
-
-plist_path = os.path.expanduser("~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist")
-bundle_id = "com.apple.Safari"  # default fallback
-
-try:
-    with open(plist_path, "rb") as f:
-        data = plistlib.load(f)
-    for handler in data.get("LSHandlers", []):
-        if handler.get("LSHandlerURLScheme") == "https":
-            bundle_id = handler.get("LSHandlerRoleAll", bundle_id)
-            break
-except Exception:
-    pass
-
-print(bundle_id)
-`)
-
+// parseBrowserPlist extracts bundle ID, display name, and whether the app handles HTTP/HTTPS URLs.
+// Uses plutil to convert the plist to JSON for safe parsing without Python.
+func parseBrowserPlist(plistPath, appDirName string) (bundleID, name string, isHTTPHandler bool) {
+	cmd := exec.Command("plutil", "-convert", "json", "-o", "-", plistPath)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
 	if err := cmd.Run(); err != nil {
-		// Fallback to Safari
-		return linkquisition.Browser{Name: "Safari", Command: "com.apple.Safari"}, nil
+		return "", "", false
 	}
 
-	bundleID := strings.TrimSpace(out.String())
-	if bundleID == "" {
-		bundleID = "com.apple.Safari"
+	var plist struct {
+		BundleID    string `json:"CFBundleIdentifier"`
+		DisplayName string `json:"CFBundleDisplayName"`
+		BundleName  string `json:"CFBundleName"`
+		URLTypes    []struct {
+			Schemes []string `json:"CFBundleURLSchemes"`
+		} `json:"CFBundleURLTypes"`
+	}
+
+	if err := json.Unmarshal(out.Bytes(), &plist); err != nil {
+		return "", "", false
+	}
+
+	// Check if the app handles http or https
+	for _, urlType := range plist.URLTypes {
+		for _, scheme := range urlType.Schemes {
+			lower := strings.ToLower(scheme)
+			if lower == "http" || lower == "https" {
+				// Determine the display name
+				name = plist.DisplayName
+				if name == "" {
+					name = plist.BundleName
+				}
+				if name == "" {
+					name = strings.TrimSuffix(appDirName, ".app")
+				}
+				return plist.BundleID, name, true
+			}
+		}
+	}
+
+	return "", "", false
+}
+
+func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
+	safariDefault := linkquisition.Browser{Name: "Safari", Command: "com.apple.Safari"}
+
+	// Read the LaunchServices plist using plutil (no Python dependency)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return safariDefault, nil
+	}
+
+	plistPath := filepath.Join(homeDir, "Library", "Preferences",
+		"com.apple.LaunchServices", "com.apple.launchservices.secure.plist")
+
+	cmd := exec.Command("plutil", "-convert", "json", "-o", "-", plistPath)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	if err := cmd.Run(); err != nil {
+		return safariDefault, nil
+	}
+
+	var data struct {
+		LSHandlers []struct {
+			URLScheme      string `json:"LSHandlerURLScheme"`
+			HandlerRoleAll string `json:"LSHandlerRoleAll"`
+		} `json:"LSHandlers"`
+	}
+
+	if err := json.Unmarshal(out.Bytes(), &data); err != nil {
+		return safariDefault, nil
+	}
+
+	bundleID := "com.apple.Safari"
+	for _, handler := range data.LSHandlers {
+		if handler.URLScheme == "https" && handler.HandlerRoleAll != "" {
+			bundleID = handler.HandlerRoleAll
+			break
+		}
 	}
 
 	name := bundleIDToName(bundleID)
-
 	return linkquisition.Browser{Name: name, Command: bundleID}, nil
 }
 
