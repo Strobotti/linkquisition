@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"log"
 	"os/exec"
 	"strings"
 
@@ -60,10 +59,9 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 			continue
 		}
 
-		fmt.Printf("Found browser: %s\n", scanner.Text())
 		desktopEntry, err := b.DesktopEntryService.CreateFromPath(scanner.Text())
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("failed to parse desktop entry %q: %v", scanner.Text(), err)
 		}
 
 		browser := linkquisition.Browser{
@@ -128,11 +126,8 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 func (b *BrowserService) AreWeTheDefaultBrowser() bool {
 	value, err := b.XdgService.SettingsCheck("default-web-browser", "linkquisition.desktop")
 	if err != nil {
-		log.Printf("failed to check if we are the default browser: %v", err)
 		return false
 	}
-
-	fmt.Println("'" + value + "'")
 
 	return value == "yes"
 }
@@ -150,24 +145,24 @@ func (b *BrowserService) SetDefaultBrowser(browser linkquisition.Browser) error 
 	return b.XdgService.SettingsSet("default-web-browser", browser.Name)
 }
 
-func (b *BrowserService) NewBrowser(command string) linkquisition.Browser {
+func (b *BrowserService) NewBrowser(command string) (linkquisition.Browser, error) {
 	browser := linkquisition.Browser{
 		Command: command,
 	}
 
 	dePath, err := b.XdgService.GetDesktopEntryPathForBinary(command)
 	if err != nil {
-		log.Fatal(err)
+		return browser, fmt.Errorf("failed to find desktop entry for binary %q: %v", command, err)
 	}
 
 	desktopEntry, err := b.DesktopEntryService.CreateFromPath(dePath)
 	if err != nil {
-		log.Fatal(err)
+		return browser, fmt.Errorf("failed to parse desktop entry for binary %q: %v", command, err)
 	}
 
 	browser.Name = desktopEntry.Name
 
-	return browser
+	return browser, nil
 }
 
 // GetIconForBrowser returns the icon for the given browser
