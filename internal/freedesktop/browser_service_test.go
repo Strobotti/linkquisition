@@ -21,7 +21,7 @@ Exec=firefox %u
 Type=Application
 Categories=Network;WebBrowser;
 `
-	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
 
 	assert.True(t, desktopEntryHasCategory(path, "WebBrowser"))
 }
@@ -36,7 +36,7 @@ Exec=editor %f
 Type=Application
 Categories=Development;TextEditor;
 `
-	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
 
 	assert.False(t, desktopEntryHasCategory(path, "WebBrowser"))
 }
@@ -50,7 +50,7 @@ Name=Minimal App
 Exec=minimal
 Type=Application
 `
-	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
 
 	assert.False(t, desktopEntryHasCategory(path, "WebBrowser"))
 }
@@ -68,7 +68,7 @@ Name=Empty
 Exec=empty
 Categories=
 `
-	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
 
 	assert.False(t, desktopEntryHasCategory(path, "WebBrowser"))
 }
@@ -82,7 +82,7 @@ Name=Firefox
 Exec=/usr/bin/firefox %u
 Type=Application
 `
-	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
 
 	assert.True(t, desktopEntryExecMatches(path, "/usr/bin/firefox", "firefox"))
 }
@@ -96,7 +96,7 @@ Name=Chrome
 Exec=google-chrome-stable %U
 Type=Application
 `
-	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
 
 	assert.True(t, desktopEntryExecMatches(path, "/usr/bin/google-chrome-stable", "google-chrome-stable"))
 }
@@ -110,7 +110,7 @@ Name=Firefox
 Exec=/usr/bin/firefox %u
 Type=Application
 `
-	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
 
 	assert.False(t, desktopEntryExecMatches(path, "/usr/bin/chromium", "chromium"))
 }
@@ -123,7 +123,7 @@ func TestDesktopEntryExecMatches_NoExecLine(t *testing.T) {
 Name=Broken
 Type=Application
 `
-	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
 
 	assert.False(t, desktopEntryExecMatches(path, "/usr/bin/broken", "broken"))
 }
@@ -167,7 +167,7 @@ func TestGetDesktopEntryPathForFilename_Found(t *testing.T) {
 
 	// Create a .desktop file
 	desktopFile := filepath.Join(appsDir, "firefox.desktop")
-	require.NoError(t, os.WriteFile(desktopFile, []byte("[Desktop Entry]\nName=Firefox\n"), 0644))
+	require.NoError(t, os.WriteFile(desktopFile, []byte("[Desktop Entry]\nName=Firefox\n"), 0600))
 
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "share"))
 
@@ -204,7 +204,7 @@ Type=Application
 Categories=Network;WebBrowser;
 `
 	desktopFile := filepath.Join(appsDir, "firefox.desktop")
-	require.NoError(t, os.WriteFile(desktopFile, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(desktopFile, []byte(content), 0600))
 
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "share"))
 
@@ -226,7 +226,7 @@ Exec=google-chrome-stable %U
 Type=Application
 `
 	desktopFile := filepath.Join(appsDir, "chrome.desktop")
-	require.NoError(t, os.WriteFile(desktopFile, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(desktopFile, []byte(content), 0600))
 
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "share"))
 
@@ -247,7 +247,7 @@ Name=Firefox
 Exec=/usr/bin/firefox %u
 Type=Application
 `
-	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "firefox.desktop"), []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "firefox.desktop"), []byte(content), 0600))
 
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "share"))
 
@@ -271,7 +271,7 @@ Type=Application
 Categories=Network;WebBrowser;
 Icon=firefox
 `
-	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "firefox.desktop"), []byte(browserContent), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "firefox.desktop"), []byte(browserContent), 0600))
 
 	// Create a non-browser .desktop file
 	editorContent := `[Desktop Entry]
@@ -280,7 +280,7 @@ Exec=/usr/bin/editor
 Type=Application
 Categories=Development;TextEditor;
 `
-	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "editor.desktop"), []byte(editorContent), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "editor.desktop"), []byte(editorContent), 0600))
 
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "share"))
 
@@ -308,7 +308,7 @@ Exec=/usr/bin/linkquisition
 Type=Application
 Categories=Network;WebBrowser;
 `
-	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "linkquisition.desktop"), []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "linkquisition.desktop"), []byte(content), 0600))
 
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "share"))
 

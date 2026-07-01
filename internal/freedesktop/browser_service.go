@@ -169,7 +169,7 @@ func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byt
 
 // desktopEntryHasCategory checks if a .desktop file contains the given category
 // by scanning the Categories= line without fully parsing the file.
-func desktopEntryHasCategory(path, category string) bool {
+func desktopEntryHasCategory(path, category string) bool { //nolint:unparam // keeping param for testability
 	f, err := os.Open(path)
 	if err != nil {
 		return false

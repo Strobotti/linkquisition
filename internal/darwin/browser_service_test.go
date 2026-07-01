@@ -127,7 +127,7 @@ func TestParseBrowserPlist_InvalidPlist(t *testing.T) {
 	dir := t.TempDir()
 	plistPath := filepath.Join(dir, "Info.plist")
 
-	err := os.WriteFile(plistPath, []byte("not a valid plist"), 0644)
+	err := os.WriteFile(plistPath, []byte("not a valid plist"), 0600)
 	require.NoError(t, err)
 
 	_, _, isHTTPHandler := parseBrowserPlist(plistPath, "Bad.app")
