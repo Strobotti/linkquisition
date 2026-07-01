@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -17,17 +18,20 @@ type Configurator struct {
 	fapp            fyne.App
 	browserService  linkquisition.BrowserService
 	settingsService linkquisition.SettingsService
+	logger          *slog.Logger
 }
 
 func NewConfigurator(
 	fapp fyne.App,
 	browserService linkquisition.BrowserService,
 	settingsService linkquisition.SettingsService,
+	logger *slog.Logger,
 ) *Configurator {
 	return &Configurator{
 		fapp:            fapp,
 		browserService:  browserService,
 		settingsService: settingsService,
+		logger:          logger,
 	}
 }
 
@@ -81,7 +85,7 @@ func (c *Configurator) buildMakeDefaultSection() fyne.CanvasObject {
 		if err != nil {
 			makeDefaultButton.SetText(i18n.T("config.make_default_error"))
 			makeDefaultButton.Enable()
-			fmt.Printf("error making Linkquisition the default browser: %v\n", err)
+			c.logger.Error("Error making Linkquisition the default browser", "error", err)
 		} else {
 			setupButton(makeDefaultButton, true)
 		}
@@ -118,7 +122,7 @@ func (c *Configurator) buildScanBrowsersSection() fyne.CanvasObject {
 			if err != nil {
 				scanStatusLabel.SetText(i18n.T("config.scan_failed"))
 				scanBrowsersButton.Enable()
-				fmt.Printf("error scanning browsers: %v\n", err)
+				c.logger.Error("Error scanning browsers", "error", err)
 			} else {
 				scanStatusLabel.SetText(i18n.T("config.scan_success"))
 				isConfigured, _ := c.settingsService.IsConfigured()
@@ -169,7 +173,7 @@ func (c *Configurator) buildLanguageSection() fyne.CanvasObject {
 		settings := c.settingsService.GetSettings()
 		settings.Locale = newLocale
 		if err := c.settingsService.WriteSettings(settings); err != nil {
-			fmt.Printf("error saving locale setting: %v\n", err)
+			c.logger.Error("Error saving locale setting", "error", err)
 		}
 	})
 	languageSelect.Selected = selectedOption
@@ -189,7 +193,7 @@ func (c *Configurator) getAboutTab() fyne.CanvasObject {
 		resources.LinkquisitionIcon,
 		func() {
 			if err := c.browserService.OpenUrlWithDefaultBrowser("https://github.com/Strobotti/linkquisition"); err != nil {
-				fmt.Printf("error opening url: %s", err.Error())
+				c.logger.Error("Error opening URL", "error", err)
 			}
 		},
 	)

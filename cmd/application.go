@@ -154,7 +154,7 @@ func (a *Application) Run(_ context.Context) error {
 	}
 
 	if urlToOpen == "" {
-		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService)
+		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService, a.Logger)
 		return configurator.Run()
 	}
 
@@ -192,6 +192,6 @@ func (a *Application) Run(_ context.Context) error {
 		a.Logger.Warn("browsers not configured, falling back to system settings")
 	}
 
-	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService)
+	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService, a.Logger)
 	return bp.Run(context.Background(), urlToOpen)
 }

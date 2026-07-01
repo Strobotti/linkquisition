@@ -4,13 +4,15 @@ package darwin
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
+	"image/png"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"fyne.io/fyne/v2"
+	icns "github.com/jackmordaunt/icns/v3"
+	"howett.net/plist"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -54,119 +56,129 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 }
 
 func (b *BrowserService) getHTTPHandlers() ([]lsRegisterEntry, error) {
-	// Use the Swift helper via 'open' heuristics and system_profiler won't work cleanly.
-	// Instead, use LSCopyAllHandlersForURLScheme via a small Swift script, or parse
-	// the output of `lsregister -dump` which is too complex.
-	// Pragmatic approach: use defaults + known browser bundle IDs + check what's installed.
-	cmd := exec.Command("/usr/bin/python3", "-c", `
-import json, subprocess, plistlib, os, glob
-
-browsers = []
-app_dirs = ["/Applications", os.path.expanduser("~/Applications")]
-
-for app_dir in app_dirs:
-    if not os.path.isdir(app_dir):
-        continue
-    for app in glob.glob(os.path.join(app_dir, "*.app")):
-        plist_path = os.path.join(app, "Contents", "Info.plist")
-        if not os.path.exists(plist_path):
-            continue
-        try:
-            with open(plist_path, "rb") as f:
-                plist = plistlib.load(f)
-            url_types = plist.get("CFBundleURLTypes", [])
-            for url_type in url_types:
-                schemes = [s.lower() for s in url_type.get("CFBundleURLSchemes", [])]
-                if "http" in schemes or "https" in schemes:
-                    bundle_id = plist.get("CFBundleIdentifier", "")
-                    name = plist.get("CFBundleDisplayName") or plist.get("CFBundleName") or os.path.basename(app).replace(".app", "")
-                    browsers.append({"bundleId": bundle_id, "name": name, "path": app})
-                    break
-        except Exception:
-            pass
-
-print(json.dumps(browsers))
-`)
-
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("failed to discover browsers: %v", err)
-	}
-
-	var results []struct {
-		BundleID string `json:"bundleId"`
-		Name     string `json:"name"`
-		Path     string `json:"path"`
-	}
-
-	if err := json.Unmarshal(out.Bytes(), &results); err != nil {
-		return nil, fmt.Errorf("failed to parse browser list: %v", err)
-	}
+	homeDir, _ := os.UserHomeDir()
+	appDirs := []string{"/Applications", filepath.Join(homeDir, "Applications")}
 
 	var entries []lsRegisterEntry
-	for _, r := range results {
-		entries = append(entries, lsRegisterEntry{
-			BundleID: r.BundleID,
-			Name:     r.Name,
-			Path:     r.Path,
-		})
+	seen := make(map[string]bool)
+
+	for _, appDir := range appDirs {
+		dirEntries, err := os.ReadDir(appDir)
+		if err != nil {
+			continue
+		}
+
+		for _, entry := range dirEntries {
+			if !entry.IsDir() || !strings.HasSuffix(entry.Name(), ".app") {
+				continue
+			}
+
+			appPath := filepath.Join(appDir, entry.Name())
+			plistPath := filepath.Join(appPath, "Contents", "Info.plist")
+
+			if _, err := os.Stat(plistPath); err != nil {
+				continue
+			}
+
+			bundleID, name, isHTTPHandler := parseBrowserPlist(plistPath, entry.Name())
+			if !isHTTPHandler || seen[bundleID] {
+				continue
+			}
+
+			seen[bundleID] = true
+			entries = append(entries, lsRegisterEntry{
+				BundleID: bundleID,
+				Name:     name,
+				Path:     appPath,
+			})
+		}
 	}
 
 	return entries, nil
 }
 
-func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
-	// Read the default HTTP handler
-	cmd := exec.Command("/usr/bin/python3", "-c", `
-import subprocess, re
-result = subprocess.run(["defaults", "read", "com.apple.LaunchServices/com.apple.launchservices.secure", "LSHandlers"], capture_output=True, text=True)
-# Fallback: use the x-scheme-handler approach
-import Foundation
-from Foundation import NSBundle
-# Actually simplest: use open command
-import subprocess as sp
-r = sp.run(["plutil", "-convert", "json", "-o", "-", "/Users/"+__import__("os").environ.get("USER","")+"//Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist"], capture_output=True, text=True)
-`)
-	// The above is too fragile. Use a simpler approach:
-	cmd = exec.Command("/usr/bin/python3", "-c", `
-import json, subprocess
-# On macOS, we can get the default browser bundle ID from LaunchServices
-# Using the 'defaults' command to read the handler for https
-import plistlib, os
+// parseBrowserPlist extracts bundle ID, display name, and whether the app handles HTTP/HTTPS URLs.
+// Parses the binary plist directly using the howett.net/plist library.
+func parseBrowserPlist(plistPath, appDirName string) (bundleID, name string, isHTTPHandler bool) {
+	f, err := os.Open(plistPath)
+	if err != nil {
+		return "", "", false
+	}
+	defer f.Close()
 
-plist_path = os.path.expanduser("~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist")
-bundle_id = "com.apple.Safari"  # default fallback
-
-try:
-    with open(plist_path, "rb") as f:
-        data = plistlib.load(f)
-    for handler in data.get("LSHandlers", []):
-        if handler.get("LSHandlerURLScheme") == "https":
-            bundle_id = handler.get("LSHandlerRoleAll", bundle_id)
-            break
-except Exception:
-    pass
-
-print(bundle_id)
-`)
-
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	if err := cmd.Run(); err != nil {
-		// Fallback to Safari
-		return linkquisition.Browser{Name: "Safari", Command: "com.apple.Safari"}, nil
+	var plistData struct {
+		BundleID    string `plist:"CFBundleIdentifier"`
+		DisplayName string `plist:"CFBundleDisplayName"`
+		BundleName  string `plist:"CFBundleName"`
+		URLTypes    []struct {
+			Schemes []string `plist:"CFBundleURLSchemes"`
+		} `plist:"CFBundleURLTypes"`
 	}
 
-	bundleID := strings.TrimSpace(out.String())
-	if bundleID == "" {
-		bundleID = "com.apple.Safari"
+	decoder := plist.NewDecoder(f)
+	if err := decoder.Decode(&plistData); err != nil {
+		return "", "", false
+	}
+
+	// Check if the app handles http or https
+	for _, urlType := range plistData.URLTypes {
+		for _, scheme := range urlType.Schemes {
+			lower := strings.ToLower(scheme)
+			if lower == "http" || lower == "https" {
+				// Determine the display name
+				name = plistData.DisplayName
+				if name == "" {
+					name = plistData.BundleName
+				}
+				if name == "" {
+					name = strings.TrimSuffix(appDirName, ".app")
+				}
+				return plistData.BundleID, name, true
+			}
+		}
+	}
+
+	return "", "", false
+}
+
+func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
+	safariDefault := linkquisition.Browser{Name: "Safari", Command: "com.apple.Safari"}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return safariDefault, nil
+	}
+
+	plistPath := filepath.Join(homeDir, "Library", "Preferences",
+		"com.apple.LaunchServices", "com.apple.launchservices.secure.plist")
+
+	f, err := os.Open(plistPath)
+	if err != nil {
+		return safariDefault, nil
+	}
+	defer f.Close()
+
+	var data struct {
+		LSHandlers []struct {
+			URLScheme      string `plist:"LSHandlerURLScheme"`
+			HandlerRoleAll string `plist:"LSHandlerRoleAll"`
+		} `plist:"LSHandlers"`
+	}
+
+	decoder := plist.NewDecoder(f)
+	if err := decoder.Decode(&data); err != nil {
+		return safariDefault, nil
+	}
+
+	bundleID := "com.apple.Safari"
+	for _, handler := range data.LSHandlers {
+		if handler.URLScheme == "https" && handler.HandlerRoleAll != "" {
+			bundleID = handler.HandlerRoleAll
+			break
+		}
 	}
 
 	name := bundleIDToName(bundleID)
-
 	return linkquisition.Browser{Name: name, Command: bundleID}, nil
 }
 
@@ -223,22 +235,30 @@ func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byt
 		return nil, fmt.Errorf("no icon found for %s", browser.Name)
 	}
 
-	// Convert .icns to PNG using sips
-	cmd := exec.Command("sips", "-s", "format", "png", iconPath, "--out", "/tmp/linkquisition-icon-tmp.png")
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("failed to convert icon: %v", err)
-	}
-
-	icon, err := fyne.LoadResourceFromPath("/tmp/linkquisition-icon-tmp.png")
+	// Decode the .icns file natively and encode as PNG
+	f, err := os.Open(iconPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open icon file: %v", err)
+	}
+	defer f.Close()
+
+	img, err := icns.Decode(f)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode icns: %v", err)
 	}
 
-	return icon.Content(), nil
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		return nil, fmt.Errorf("failed to encode icon as PNG: %v", err)
+	}
+
+	return buf.Bytes(), nil
 }
 
 func getAppPathForBundleID(bundleID string) (string, error) {
-	cmd := exec.Command("mdfind", fmt.Sprintf("kMDItemCFBundleIdentifier == '%s'", bundleID))
+	// Pass the query as a single argument to mdfind — bundleID is not interpolated into a shell
+	query := "kMDItemCFBundleIdentifier == '" + bundleID + "'"
+	cmd := exec.Command("mdfind", query)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
@@ -255,30 +275,30 @@ func getAppPathForBundleID(bundleID string) (string, error) {
 }
 
 func getIconPathFromApp(appPath string) string {
-	// Read Info.plist to find icon file name
-	cmd := exec.Command("/usr/bin/python3", "-c", fmt.Sprintf(`
-import plistlib, os
-plist_path = "%s/Contents/Info.plist"
-try:
-    with open(plist_path, "rb") as f:
-        data = plistlib.load(f)
-    icon = data.get("CFBundleIconFile", "")
-    if icon and not icon.endswith(".icns"):
-        icon += ".icns"
-    print(icon)
-except Exception:
-    print("")
-`, appPath))
+	plistPath := filepath.Join(appPath, "Contents", "Info.plist")
 
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	if err := cmd.Run(); err != nil {
+	f, err := os.Open(plistPath)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	var data struct {
+		IconFile string `plist:"CFBundleIconFile"`
+	}
+
+	decoder := plist.NewDecoder(f)
+	if err := decoder.Decode(&data); err != nil {
 		return ""
 	}
 
-	iconFile := strings.TrimSpace(out.String())
+	iconFile := data.IconFile
 	if iconFile == "" {
 		return ""
+	}
+
+	if !strings.HasSuffix(iconFile, ".icns") {
+		iconFile += ".icns"
 	}
 
 	return filepath.Join(appPath, "Contents", "Resources", iconFile)

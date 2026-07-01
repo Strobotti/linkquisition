@@ -4,10 +4,10 @@ package freedesktop
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
-	"log"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/alessio/shellescape.v1"
@@ -30,48 +30,43 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 		return nil, fmt.Errorf("no valid desktop entry paths found in $XDG_DATA_DIRS")
 	}
 
-	// grep all the .desktop files in the paths for the category "WebBrowser":
-	grepArgs := []string{
-		"-r",
-		"-l",
-		"-E",
-		"^Categories=.*WebBrowser",
-	}
-
-	grepArgs = append(grepArgs, paths...)
-
-	cmd := exec.Command("grep", grepArgs...)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	err := cmd.Run()
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch available browsers: %v", err)
-	}
-
-	scanner := bufio.NewScanner(strings.NewReader(out.String()))
-
 	var browsers []linkquisition.Browser
 
-	for scanner.Scan() {
-		// skip Linkquisition as an available browser
-		// TODO this should happen on a higher level
-		if strings.Contains(scanner.Text(), "linkquisition.desktop") {
+	for _, dir := range paths {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
 			continue
 		}
 
-		fmt.Printf("Found browser: %s\n", scanner.Text())
-		desktopEntry, err := b.DesktopEntryService.CreateFromPath(scanner.Text())
-		if err != nil {
-			log.Fatal(err)
-		}
+		for _, entry := range entries {
+			if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".desktop") {
+				continue
+			}
 
-		browser := linkquisition.Browser{
-			Name:    desktopEntry.Name,
-			Command: desktopEntry.Exec,
+			path := filepath.Join(dir, entry.Name())
+
+			if !desktopEntryHasCategory(path, "WebBrowser") {
+				continue
+			}
+
+			// skip Linkquisition as an available browser
+			if strings.Contains(entry.Name(), "linkquisition") {
+				continue
+			}
+
+			desktopEntry, err := b.DesktopEntryService.CreateFromPath(path)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse desktop entry %q: %v", path, err)
+			}
+
+			browser := linkquisition.Browser{
+				Name:    desktopEntry.Name,
+				Command: desktopEntry.Exec,
+			}
+			browsers = append(browsers, browser)
 		}
-		browsers = append(browsers, browser)
 	}
+
 	return browsers, nil
 }
 
@@ -128,11 +123,8 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 func (b *BrowserService) AreWeTheDefaultBrowser() bool {
 	value, err := b.XdgService.SettingsCheck("default-web-browser", "linkquisition.desktop")
 	if err != nil {
-		log.Printf("failed to check if we are the default browser: %v", err)
 		return false
 	}
-
-	fmt.Println("'" + value + "'")
 
 	return value == "yes"
 }
@@ -150,27 +142,47 @@ func (b *BrowserService) SetDefaultBrowser(browser linkquisition.Browser) error 
 	return b.XdgService.SettingsSet("default-web-browser", browser.Name)
 }
 
-func (b *BrowserService) NewBrowser(command string) linkquisition.Browser {
+func (b *BrowserService) NewBrowser(command string) (linkquisition.Browser, error) {
 	browser := linkquisition.Browser{
 		Command: command,
 	}
 
 	dePath, err := b.XdgService.GetDesktopEntryPathForBinary(command)
 	if err != nil {
-		log.Fatal(err)
+		return browser, fmt.Errorf("failed to find desktop entry for binary %q: %v", command, err)
 	}
 
 	desktopEntry, err := b.DesktopEntryService.CreateFromPath(dePath)
 	if err != nil {
-		log.Fatal(err)
+		return browser, fmt.Errorf("failed to parse desktop entry for binary %q: %v", command, err)
 	}
 
 	browser.Name = desktopEntry.Name
 
-	return browser
+	return browser, nil
 }
 
 // GetIconForBrowser returns the icon for the given browser
 func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byte, error) {
 	return b.BrowserIconLoader.LoadIcon(browser)
+}
+
+// desktopEntryHasCategory checks if a .desktop file contains the given category
+// by scanning the Categories= line without fully parsing the file.
+func desktopEntryHasCategory(path, category string) bool { //nolint:unparam // keeping param for testability
+	f, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	prefix := "Categories="
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, prefix) {
+			return strings.Contains(line, category)
+		}
+	}
+	return false
 }

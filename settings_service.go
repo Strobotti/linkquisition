@@ -53,6 +53,8 @@ func (s *FileSettingsService) ReadSettings() (*Settings, error) {
 		return nil, fmt.Errorf("unable to parse the config-file `%s`: %v", s.GetConfigFilePath(), err)
 	}
 
+	settings.CompileAllRegexMatches()
+
 	return settings, nil
 }
 

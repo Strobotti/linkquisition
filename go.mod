@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	fyne.io/fyne/v2 v2.7.4
+	github.com/jackmordaunt/icns/v3 v3.0.1
 	github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
@@ -12,6 +13,7 @@ require (
 	golang.org/x/text v0.38.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/ini.v1 v1.67.3
+	howett.net/plist v1.0.1
 )
 
 require (

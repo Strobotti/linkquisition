@@ -163,3 +163,49 @@ func TestFileSettingsService_ReadSettings_ReturnsErrorForCorruptFile(t *testing.
 	_, err := svc.ReadSettings()
 	assert.Error(t, err)
 }
+
+func TestFileSettingsService_IsConfigured_ReturnsFalseForCorruptFile(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	configPath := svc.GetConfigFilePath()
+	require.NoError(t, os.WriteFile(configPath, []byte("not json at all"), 0600))
+
+	configured, err := svc.IsConfigured()
+	assert.False(t, configured)
+	assert.Error(t, err)
+}
+
+func TestFileSettingsService_ReadSettings_CompilesRegexPatterns(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	settings := &Settings{
+		Browsers: []BrowserSettings{
+			{
+				Name:    "Firefox",
+				Command: "firefox",
+				Source:  SourceAuto,
+				Matches: []BrowserMatch{
+					{Type: BrowserMatchTypeRegex, Value: `.*\.example\.com`},
+				},
+			},
+		},
+	}
+	require.NoError(t, svc.WriteSettings(settings))
+
+	read, err := svc.ReadSettings()
+	require.NoError(t, err)
+
+	// The regex should work after reading (compiled during ReadSettings)
+	assert.True(t, read.Browsers[0].MatchesUrl("https://sub.example.com/page"))
+}
+
+func TestFileSettingsService_GetSettings_ReturnsDefaultForCorruptFile(t *testing.T) {
+	svc := newTestService(t, nil)
+
+	configPath := svc.GetConfigFilePath()
+	require.NoError(t, os.WriteFile(configPath, []byte("corrupt!"), 0600))
+
+	// Should not panic, should return defaults
+	settings := svc.GetSettings()
+	assert.Equal(t, GetDefaultSettings(), settings)
+}
