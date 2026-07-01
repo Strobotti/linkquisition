@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -20,6 +20,7 @@ type BrowserPicker struct {
 	browserService  linkquisition.BrowserService
 	browsers        []linkquisition.Browser
 	settingsService linkquisition.SettingsService
+	logger          *slog.Logger
 }
 
 func NewBrowserPicker(
@@ -27,12 +28,14 @@ func NewBrowserPicker(
 	browserService linkquisition.BrowserService,
 	browsers []linkquisition.Browser,
 	settingsService linkquisition.SettingsService,
+	logger *slog.Logger,
 ) *BrowserPicker {
 	return &BrowserPicker{
 		fapp:            fapp,
 		browserService:  browserService,
 		browsers:        browsers,
 		settingsService: settingsService,
+		logger:          logger,
 	}
 }
 
@@ -56,7 +59,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 	w.Canvas().AddShortcut(
 		&fyne.ShortcutCopy{}, func(shortcut fyne.Shortcut) {
-			fmt.Println("Copying URL to clipboard: " + urlToOpen)
+			picker.logger.Debug("Copying URL to clipboard", "url", urlToOpen)
 			w.Clipboard().SetContent(urlToOpen)
 
 			// Sleep for a while to allow the Clipboard.SetContent to finish
@@ -163,7 +166,7 @@ func (picker *BrowserPicker) makeBrowserButton(
 
 	iconBytes, err := picker.browserService.GetIconForBrowser(browser)
 	if err != nil {
-		fmt.Println(err)
+		picker.logger.Debug("Failed to load browser icon", "browser", browser.Name, "error", err)
 	} else {
 		icon = fyne.NewStaticResource("icon.png", iconBytes)
 	}
@@ -173,7 +176,7 @@ func (picker *BrowserPicker) makeBrowserButton(
 		icon,
 		func() {
 			rem, _ := remember.Get()
-			fmt.Printf("Opening URL with browser: %s; remember the choice: %v\n", browser.Name, rem)
+			picker.logger.Debug("Opening URL with browser", "browser", browser.Name, "remember", rem)
 
 			settings := picker.settingsService.GetSettings()
 			remType, _ := rememberMatchType.Get()
@@ -188,7 +191,7 @@ func (picker *BrowserPicker) makeBrowserButton(
 
 				settings.AddRuleToBrowser(&browser, remType, matchValue)
 				if writeErr := picker.settingsService.WriteSettings(settings); writeErr != nil {
-					fmt.Printf("Failed to write settings: %v\n", writeErr)
+					picker.logger.Error("Failed to write settings", "error", writeErr)
 				}
 			}
 
