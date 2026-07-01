@@ -23,6 +23,10 @@ const (
 type BrowserMatch struct {
 	Type  string `json:"type"`
 	Value string `json:"value"`
+
+	// compiledRegex caches the compiled regex pattern for BrowserMatchTypeRegex matches.
+	// Populated by CompileRegexMatches to avoid recompilation on every URL match.
+	compiledRegex *regexp.Regexp
 }
 
 type BrowserSettings struct {
@@ -34,6 +38,21 @@ type BrowserSettings struct {
 	Matches []BrowserMatch `json:"matches"`
 }
 
+// CompileRegexMatches pre-compiles all regex match patterns for this browser.
+// Invalid patterns are logged and will be skipped during matching.
+func (s *BrowserSettings) CompileRegexMatches() {
+	for i := range s.Matches {
+		if s.Matches[i].Type == BrowserMatchTypeRegex {
+			if re, err := regexp.Compile(s.Matches[i].Value); err == nil {
+				s.Matches[i].compiledRegex = re
+			} else {
+				slog.Warn("Invalid regex pattern in browser match rule",
+					"browser", s.Name, "pattern", s.Matches[i].Value, "error", err)
+			}
+		}
+	}
+}
+
 // MatchesUrl returns true if the given url matches any of the browser's rules
 func (s *BrowserSettings) MatchesUrl(u string) bool {
 	uu := NewURL(u)
@@ -41,7 +60,17 @@ func (s *BrowserSettings) MatchesUrl(u string) bool {
 	for i := range s.Matches {
 		switch s.Matches[i].Type {
 		case BrowserMatchTypeRegex:
-			if re, err := regexp.Compile(s.Matches[i].Value); err == nil && re.MatchString(u) {
+			re := s.Matches[i].compiledRegex
+			if re == nil {
+				// Fallback: try to compile if not pre-compiled (e.g. dynamically added rule)
+				var err error
+				re, err = regexp.Compile(s.Matches[i].Value)
+				if err != nil {
+					continue
+				}
+				s.Matches[i].compiledRegex = re
+			}
+			if re.MatchString(u) {
 				return true
 			}
 		case BrowserMatchTypeDomain:
@@ -99,6 +128,15 @@ func (s *Settings) NormalizeBrowsers() *Settings {
 	//nolint:gocritic // appendAssign: intentionally building a new combined slice
 	s.Browsers = append(visibleBrowsers, hiddenBrowsers...)
 
+	return s
+}
+
+// CompileAllRegexMatches pre-compiles regex patterns for all browsers.
+// Call after loading settings to avoid repeated compilation during URL matching.
+func (s *Settings) CompileAllRegexMatches() *Settings {
+	for i := range s.Browsers {
+		s.Browsers[i].CompileRegexMatches()
+	}
 	return s
 }
 
