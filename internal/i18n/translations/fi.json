@@ -67,5 +67,8 @@
   },
   "config.scan_failed": {
     "other": "✗ Haku epäonnistui"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Piilota pikanäppäinohje valitsimessa"
   }
 }

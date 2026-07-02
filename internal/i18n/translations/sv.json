@@ -67,5 +67,8 @@
   },
   "config.scan_failed": {
     "other": "✗ Sökningen misslyckades"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Dölj tangentbordsguide i väljaren"
   }
 }

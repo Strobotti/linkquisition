@@ -67,5 +67,8 @@
   },
   "config.scan_failed": {
     "other": "✗ Scan failed"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Hide keyboard shortcut guide in picker"
   }
 }

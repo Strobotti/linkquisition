@@ -67,5 +67,8 @@
   },
   "config.scan_failed": {
     "other": "✗ La búsqueda falló"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Ocultar guía de atajos de teclado en el selector"
   }
 }

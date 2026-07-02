@@ -62,6 +62,8 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		c.buildScanBrowsersSection(),
 		layout.NewSpacer(),
 		c.buildLanguageSection(),
+		layout.NewSpacer(),
+		c.buildUiSection(),
 	)
 }
 
@@ -185,6 +187,21 @@ func (c *Configurator) buildLanguageSection() fyne.CanvasObject {
 		container.NewBorder(nil, nil, widget.NewLabel(i18n.T("config.language_label")), nil, languageSelect),
 		restartNote,
 	)
+}
+
+func (c *Configurator) buildUiSection() fyne.CanvasObject {
+	settings := c.settingsService.GetSettings()
+
+	hideGuideCheck := widget.NewCheck(i18n.T("config.hide_keyboard_guide"), func(checked bool) {
+		s := c.settingsService.GetSettings()
+		s.Ui.HideKeyboardGuideLabel = checked
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving UI setting", "error", err)
+		}
+	})
+	hideGuideCheck.Checked = settings.Ui.HideKeyboardGuideLabel
+
+	return container.NewVBox(hideGuideCheck)
 }
 
 func (c *Configurator) getAboutTab() fyne.CanvasObject {
