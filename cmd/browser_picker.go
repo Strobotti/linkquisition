@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	"runtime"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -134,10 +135,17 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	)
 
 	if !picker.settingsService.GetSettings().Ui.HideKeyboardGuideLabel {
+		copyShortcut := "Ctrl+C"
+		if runtime.GOOS == "darwin" {
+			copyShortcut = "⌘+C"
+		}
+
 		widgets = append(
 			widgets,
 			layout.NewSpacer(),
-			widget.NewLabel(i18n.T("picker.keyboard_guide")),
+			widget.NewLabel(i18n.T("picker.keyboard_guide", map[string]interface{}{
+				"CopyShortcut": copyShortcut,
+			})),
 		)
 	}
 

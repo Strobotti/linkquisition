@@ -31,6 +31,9 @@ When launched without arguments, Linkquisition opens the configuration screen.
 *Ctrl+C*
 	Copy the URL to clipboard and close.
 
+*Escape*
+	Close the picker without opening a browser.
+
 *1-9*
 	Select a browser by its position in the list.
 

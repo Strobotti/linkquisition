@@ -8,6 +8,15 @@
   "config.tab_about": {
     "other": "Tietoja"
   },
+  "config.tab_rules": {
+    "other": "Säännöt"
+  },
+  "config.rules_description": {
+    "other": "Säännöt määrittävät mikä selain avaa tietyn URL-osoitteen automaattisesti.\n\nSäännöt voivat perustua sivustoon (esim. www.example.com), verkkotunnukseen (esim. example.com) tai säännölliseen lausekkeeseen.\n\nToistaiseksi sääntöjä hallitaan muokkaamalla asetustiedostoa suoraan. Visuaalinen muokkain lisätään tulevassa versiossa."
+  },
+  "config.rules_edit_button": {
+    "other": "Avaa asetustiedosto editorissa"
+  },
   "config.make_default_label": {
     "other": "Jotta Linkquisition toimisi selainvalitsimena,\nse täytyy asettaa oletusselaimeksi:"
   },
@@ -48,7 +57,7 @@
     "other": "Muista tämä valinta sivustolle {{.Site}}"
   },
   "picker.keyboard_guide": {
-    "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, 'ctrl+c' kopioidaksesi URL:n leikepöydälle"
+    "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, '{{.CopyShortcut}}' kopioidaksesi URL:n leikepöydälle"
   },
   "config.language_label": {
     "other": "Kieli:"
@@ -67,5 +76,20 @@
   },
   "config.scan_failed": {
     "other": "✗ Haku epäonnistui"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Piilota pikanäppäinohje valitsimessa"
+  },
+  "about.description": {
+    "other": "Nopea ja muokattava selainvalitsin Linuxille ja macOS:lle."
+  },
+  "about.author_label": {
+    "other": "Tekijä:"
+  },
+  "about.license_label": {
+    "other": "Lisenssi:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
   }
 }

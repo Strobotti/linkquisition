@@ -40,6 +40,7 @@ func (c *Configurator) Run() error {
 
 	tabs := container.NewAppTabs(
 		container.NewTabItem(i18n.T("config.tab_general"), c.getGeneralTab()),
+		container.NewTabItem(i18n.T("config.tab_rules"), c.getRulesTab()),
 		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
@@ -62,6 +63,8 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		c.buildScanBrowsersSection(),
 		layout.NewSpacer(),
 		c.buildLanguageSection(),
+		layout.NewSpacer(),
+		c.buildUiSection(),
 	)
 }
 
@@ -187,22 +190,90 @@ func (c *Configurator) buildLanguageSection() fyne.CanvasObject {
 	)
 }
 
+func (c *Configurator) buildUiSection() fyne.CanvasObject {
+	settings := c.settingsService.GetSettings()
+
+	hideGuideCheck := widget.NewCheck(i18n.T("config.hide_keyboard_guide"), func(checked bool) {
+		s := c.settingsService.GetSettings()
+		s.Ui.HideKeyboardGuideLabel = checked
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving UI setting", "error", err)
+		}
+	})
+	hideGuideCheck.Checked = settings.Ui.HideKeyboardGuideLabel
+
+	return container.NewVBox(hideGuideCheck)
+}
+
+func (c *Configurator) getRulesTab() fyne.CanvasObject {
+	description := widget.NewLabel(i18n.T("config.rules_description"))
+	description.Wrapping = fyne.TextWrapWord
+
+	editButton := widget.NewButton(i18n.T("config.rules_edit_button"), func() {
+		configPath := c.settingsService.GetConfigFilePath()
+		if err := openFileInEditor(configPath); err != nil {
+			c.logger.Error("Error opening config file in editor", "error", err)
+		}
+	})
+
+	return container.NewVBox(
+		description,
+		layout.NewSpacer(),
+		editButton,
+	)
+}
+
 func (c *Configurator) getAboutTab() fyne.CanvasObject {
+	openURL := func() {
+		if err := c.openExternalURL("https://github.com/Strobotti/linkquisition"); err != nil {
+			c.logger.Error("Error opening URL", "error", err)
+		}
+	}
+
 	icon := widget.NewButtonWithIcon(
 		"",
 		resources.LinkquisitionIcon,
-		func() {
-			if err := c.browserService.OpenUrlWithDefaultBrowser("https://github.com/Strobotti/linkquisition"); err != nil {
-				c.logger.Error("Error opening URL", "error", err)
-			}
-		},
+		openURL,
 	)
 
-	return container.NewBorder(
-		container.NewBorder(nil, nil, icon, nil, widget.NewLabel(fmt.Sprintf("Linkquisition %s", version))),
-		nil,
-		nil,
-		nil,
+	title := widget.NewLabel(fmt.Sprintf("Linkquisition %s", version))
+	title.TextStyle = fyne.TextStyle{Bold: true}
+
+	description := widget.NewLabel(i18n.T("about.description"))
+	description.Wrapping = fyne.TextWrapWord
+
+	githubLink := widget.NewButton("github.com/Strobotti/linkquisition", openURL)
+	githubLink.Importance = widget.LowImportance
+
+	details := container.NewVBox(
+		container.NewHBox(widget.NewLabel(i18n.T("about.author_label")), widget.NewLabel("Juha Jantunen")),
+		container.NewHBox(widget.NewLabel(i18n.T("about.license_label")), widget.NewLabel("MIT")),
+		container.NewHBox(widget.NewLabel(i18n.T("about.github_label")), githubLink),
+	)
+
+	return container.NewVBox(
+		container.NewHBox(icon, title),
+		layout.NewSpacer(),
+		description,
+		layout.NewSpacer(),
+		details,
 		layout.NewSpacer(),
 	)
+}
+
+// openExternalURL opens a URL in a real browser, bypassing Linkquisition if it is
+// the default browser (which would otherwise cause a circular loop).
+func (c *Configurator) openExternalURL(rawURL string) error {
+	if !c.browserService.AreWeTheDefaultBrowser() {
+		return c.browserService.OpenUrlWithDefaultBrowser(rawURL)
+	}
+
+	// We are the default browser, so we need to pick a real browser to open with
+	browsers, err := c.browserService.GetAvailableBrowsers()
+	if err != nil || len(browsers) == 0 {
+		// Last resort: try anyway
+		return c.browserService.OpenUrlWithDefaultBrowser(rawURL)
+	}
+
+	return c.browserService.OpenUrlWithBrowser(rawURL, &browsers[0])
 }

@@ -8,6 +8,15 @@
   "config.tab_about": {
     "other": "Acerca de"
   },
+  "config.tab_rules": {
+    "other": "Reglas"
+  },
+  "config.rules_description": {
+    "other": "Las reglas determinan qué navegador abre una URL automáticamente.\n\nLas reglas pueden coincidir por sitio (ej. www.example.com), dominio (ej. example.com) o expresión regular.\n\nPor ahora, las reglas se gestionan editando el archivo de configuración directamente. Un editor visual se añadirá en una versión futura."
+  },
+  "config.rules_edit_button": {
+    "other": "Abrir archivo de configuración en editor"
+  },
   "config.make_default_label": {
     "other": "Para que Linkquisition funcione como selector de navegador,\ndebe establecerse como el navegador predeterminado:"
   },
@@ -48,7 +57,7 @@
     "other": "Recordar esta elección para {{.Site}}"
   },
   "picker.keyboard_guide": {
-    "other": "Pulsa 'ENTER' para elegir el primero, 'ESC' para salir, 'ctrl+c' para copiar la URL al portapapeles"
+    "other": "Pulsa 'ENTER' para elegir el primero, 'ESC' para salir, '{{.CopyShortcut}}' para copiar la URL al portapapeles"
   },
   "config.language_label": {
     "other": "Idioma:"
@@ -67,5 +76,20 @@
   },
   "config.scan_failed": {
     "other": "✗ La búsqueda falló"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Ocultar guía de atajos de teclado en el selector"
+  },
+  "about.description": {
+    "other": "Un selector de navegador rápido y configurable para Linux y macOS."
+  },
+  "about.author_label": {
+    "other": "Autor:"
+  },
+  "about.license_label": {
+    "other": "Licencia:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
   }
 }

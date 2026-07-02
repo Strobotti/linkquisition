@@ -8,6 +8,15 @@
   "config.tab_about": {
     "other": "About"
   },
+  "config.tab_rules": {
+    "other": "Rules"
+  },
+  "config.rules_description": {
+    "other": "Match rules determine which browser opens a given URL automatically.\n\nRules can match by site (e.g. www.example.com), domain (e.g. example.com), or regular expression.\n\nFor now, rules are managed by editing the configuration file directly. A visual editor will be added in a future version."
+  },
+  "config.rules_edit_button": {
+    "other": "Open config file in editor"
+  },
   "config.make_default_label": {
     "other": "In order to Linkquisition to function as a browser-picker\nit has to be set as the default browser:"
   },
@@ -48,7 +57,7 @@
     "other": "Remember this choice with {{.Site}}"
   },
   "picker.keyboard_guide": {
-    "other": "Press 'ENTER' to pick first, 'ESC' to quit, 'ctrl+c' to copy URL to clipboard"
+    "other": "Press 'ENTER' to pick first, 'ESC' to quit, '{{.CopyShortcut}}' to copy URL to clipboard"
   },
   "config.language_label": {
     "other": "Language:"
@@ -67,5 +76,20 @@
   },
   "config.scan_failed": {
     "other": "✗ Scan failed"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Hide keyboard shortcut guide in picker"
+  },
+  "about.description": {
+    "other": "A fast, configurable browser-picker for Linux and macOS."
+  },
+  "about.author_label": {
+    "other": "Author:"
+  },
+  "about.license_label": {
+    "other": "License:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
   }
 }
