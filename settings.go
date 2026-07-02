@@ -252,10 +252,10 @@ type SettingsService interface {
 	// ScanBrowsers scans (or re-scans) the system for available browsers and creates/updates the config-file
 	ScanBrowsers() error
 
-	// GetLogFilePath returns the path to the config-file
+	// GetLogFilePath returns the absolute path to the log-file
 	GetLogFilePath() string
 
-	// GetLogFolderPath returns the path to the config-file
+	// GetLogFolderPath returns the absolute path to the log-folder
 	GetLogFolderPath() string
 
 	// GetPluginFolderPath returns the absolute path to the plugin-folder
