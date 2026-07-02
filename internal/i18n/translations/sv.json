@@ -8,6 +8,15 @@
   "config.tab_about": {
     "other": "Om"
   },
+  "config.tab_rules": {
+    "other": "Regler"
+  },
+  "config.rules_description": {
+    "other": "Regler bestämmer vilken webbläsare som öppnar en URL automatiskt.\n\nRegler kan matcha efter webbplats (t.ex. www.example.com), domän (t.ex. example.com) eller reguljärt uttryck.\n\nFör tillfället hanteras regler genom att redigera konfigurationsfilen direkt. En visuell redigerare kommer i en framtida version."
+  },
+  "config.rules_edit_button": {
+    "other": "Öppna konfigurationsfil i redigerare"
+  },
   "config.make_default_label": {
     "other": "För att Linkquisition ska fungera som webbläsarväljare\nmåste den ställas in som standardwebbläsare:"
   },

@@ -40,6 +40,7 @@ func (c *Configurator) Run() error {
 
 	tabs := container.NewAppTabs(
 		container.NewTabItem(i18n.T("config.tab_general"), c.getGeneralTab()),
+		container.NewTabItem(i18n.T("config.tab_rules"), c.getRulesTab()),
 		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
@@ -202,6 +203,24 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	hideGuideCheck.Checked = settings.Ui.HideKeyboardGuideLabel
 
 	return container.NewVBox(hideGuideCheck)
+}
+
+func (c *Configurator) getRulesTab() fyne.CanvasObject {
+	description := widget.NewLabel(i18n.T("config.rules_description"))
+	description.Wrapping = fyne.TextWrapWord
+
+	editButton := widget.NewButton(i18n.T("config.rules_edit_button"), func() {
+		configPath := c.settingsService.GetConfigFilePath()
+		if err := openFileInEditor(configPath); err != nil {
+			c.logger.Error("Error opening config file in editor", "error", err)
+		}
+	})
+
+	return container.NewVBox(
+		description,
+		layout.NewSpacer(),
+		editButton,
+	)
 }
 
 func (c *Configurator) getAboutTab() fyne.CanvasObject {

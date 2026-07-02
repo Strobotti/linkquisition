@@ -8,6 +8,15 @@
   "config.tab_about": {
     "other": "Acerca de"
   },
+  "config.tab_rules": {
+    "other": "Reglas"
+  },
+  "config.rules_description": {
+    "other": "Las reglas determinan qué navegador abre una URL automáticamente.\n\nLas reglas pueden coincidir por sitio (ej. www.example.com), dominio (ej. example.com) o expresión regular.\n\nPor ahora, las reglas se gestionan editando el archivo de configuración directamente. Un editor visual se añadirá en una versión futura."
+  },
+  "config.rules_edit_button": {
+    "other": "Abrir archivo de configuración en editor"
+  },
   "config.make_default_label": {
     "other": "Para que Linkquisition funcione como selector de navegador,\ndebe establecerse como el navegador predeterminado:"
   },

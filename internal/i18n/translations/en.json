@@ -8,6 +8,15 @@
   "config.tab_about": {
     "other": "About"
   },
+  "config.tab_rules": {
+    "other": "Rules"
+  },
+  "config.rules_description": {
+    "other": "Match rules determine which browser opens a given URL automatically.\n\nRules can match by site (e.g. www.example.com), domain (e.g. example.com), or regular expression.\n\nFor now, rules are managed by editing the configuration file directly. A visual editor will be added in a future version."
+  },
+  "config.rules_edit_button": {
+    "other": "Open config file in editor"
+  },
   "config.make_default_label": {
     "other": "In order to Linkquisition to function as a browser-picker\nit has to be set as the default browser:"
   },

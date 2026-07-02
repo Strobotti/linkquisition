@@ -260,6 +260,9 @@ type SettingsService interface {
 
 	// GetPluginFolderPath returns the absolute path to the plugin-folder
 	GetPluginFolderPath() string
+
+	// GetConfigFilePath returns the absolute path to the config-file
+	GetConfigFilePath() string
 }
 
 func GetDefaultSettings() *Settings {

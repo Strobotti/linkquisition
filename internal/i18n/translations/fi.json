@@ -8,6 +8,15 @@
   "config.tab_about": {
     "other": "Tietoja"
   },
+  "config.tab_rules": {
+    "other": "Säännöt"
+  },
+  "config.rules_description": {
+    "other": "Säännöt määrittävät mikä selain avaa tietyn URL-osoitteen automaattisesti.\n\nSäännöt voivat perustua sivustoon (esim. www.example.com), verkkotunnukseen (esim. example.com) tai säännölliseen lausekkeeseen.\n\nToistaiseksi sääntöjä hallitaan muokkaamalla asetustiedostoa suoraan. Visuaalinen muokkain lisätään tulevassa versiossa."
+  },
+  "config.rules_edit_button": {
+    "other": "Avaa asetustiedosto editorissa"
+  },
   "config.make_default_label": {
     "other": "Jotta Linkquisition toimisi selainvalitsimena,\nse täytyy asettaa oletusselaimeksi:"
   },
