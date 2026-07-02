@@ -18,6 +18,11 @@ The file is JSON and is managed either manually or via the configuration screen
 
 # TOP-LEVEL KEYS
 
+*locale* (string, optional)
+	Override the UI language (e.g. _"fi"_, _"es"_, _"sv"_). If empty or omitted,
+	the system locale is auto-detected. Falls back to English when no matching
+	translation is available.
+
 *logLevel* (string, optional)
 	Log verbosity. One of: _debug_, _info_, _warn_, _error_. Default: _info_.
 
