@@ -48,7 +48,7 @@
     "other": "Muista tämä valinta sivustolle {{.Site}}"
   },
   "picker.keyboard_guide": {
-    "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, 'ctrl+c' kopioidaksesi URL:n leikepöydälle"
+    "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, '{{.CopyShortcut}}' kopioidaksesi URL:n leikepöydälle"
   },
   "config.language_label": {
     "other": "Kieli:"

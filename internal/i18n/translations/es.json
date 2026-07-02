@@ -48,7 +48,7 @@
     "other": "Recordar esta elección para {{.Site}}"
   },
   "picker.keyboard_guide": {
-    "other": "Pulsa 'ENTER' para elegir el primero, 'ESC' para salir, 'ctrl+c' para copiar la URL al portapapeles"
+    "other": "Pulsa 'ENTER' para elegir el primero, 'ESC' para salir, '{{.CopyShortcut}}' para copiar la URL al portapapeles"
   },
   "config.language_label": {
     "other": "Idioma:"
