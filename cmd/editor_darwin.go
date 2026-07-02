@@ -2,8 +2,11 @@
 
 package main
 
-import "os/exec"
+import (
+	"context"
+	"os/exec"
+)
 
 func openFileInEditor(path string) error {
-	return exec.Command("open", "-t", path).Start()
+	return exec.CommandContext(context.Background(), "open", "-t", path).Start()
 }
