@@ -70,5 +70,17 @@
   },
   "config.hide_keyboard_guide": {
     "other": "Hide keyboard shortcut guide in picker"
+  },
+  "about.description": {
+    "other": "A fast, configurable browser-picker for Linux and macOS."
+  },
+  "about.author_label": {
+    "other": "Author:"
+  },
+  "about.license_label": {
+    "other": "License:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
   }
 }

@@ -70,5 +70,17 @@
   },
   "config.hide_keyboard_guide": {
     "other": "Ocultar guía de atajos de teclado en el selector"
+  },
+  "about.description": {
+    "other": "Un selector de navegador rápido y configurable para Linux y macOS."
+  },
+  "about.author_label": {
+    "other": "Autor:"
+  },
+  "about.license_label": {
+    "other": "Licencia:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
   }
 }

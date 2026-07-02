@@ -70,5 +70,17 @@
   },
   "config.hide_keyboard_guide": {
     "other": "Piilota pikanäppäinohje valitsimessa"
+  },
+  "about.description": {
+    "other": "Nopea ja muokattava selainvalitsin Linuxille ja macOS:lle."
+  },
+  "about.author_label": {
+    "other": "Tekijä:"
+  },
+  "about.license_label": {
+    "other": "Lisenssi:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
   }
 }

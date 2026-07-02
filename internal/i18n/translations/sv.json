@@ -70,5 +70,17 @@
   },
   "config.hide_keyboard_guide": {
     "other": "Dölj tangentbordsguide i väljaren"
+  },
+  "about.description": {
+    "other": "En snabb och konfigurerbar webbläsarväljare för Linux och macOS."
+  },
+  "about.author_label": {
+    "other": "Författare:"
+  },
+  "about.license_label": {
+    "other": "Licens:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
   }
 }

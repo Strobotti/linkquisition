@@ -205,21 +205,56 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 }
 
 func (c *Configurator) getAboutTab() fyne.CanvasObject {
+	openURL := func() {
+		if err := c.openExternalURL("https://github.com/Strobotti/linkquisition"); err != nil {
+			c.logger.Error("Error opening URL", "error", err)
+		}
+	}
+
 	icon := widget.NewButtonWithIcon(
 		"",
 		resources.LinkquisitionIcon,
-		func() {
-			if err := c.browserService.OpenUrlWithDefaultBrowser("https://github.com/Strobotti/linkquisition"); err != nil {
-				c.logger.Error("Error opening URL", "error", err)
-			}
-		},
+		openURL,
 	)
 
-	return container.NewBorder(
-		container.NewBorder(nil, nil, icon, nil, widget.NewLabel(fmt.Sprintf("Linkquisition %s", version))),
-		nil,
-		nil,
-		nil,
+	title := widget.NewLabel(fmt.Sprintf("Linkquisition %s", version))
+	title.TextStyle = fyne.TextStyle{Bold: true}
+
+	description := widget.NewLabel(i18n.T("about.description"))
+	description.Wrapping = fyne.TextWrapWord
+
+	githubLink := widget.NewButton("github.com/Strobotti/linkquisition", openURL)
+	githubLink.Importance = widget.LowImportance
+
+	details := container.NewVBox(
+		container.NewHBox(widget.NewLabel(i18n.T("about.author_label")), widget.NewLabel("Juha Jantunen")),
+		container.NewHBox(widget.NewLabel(i18n.T("about.license_label")), widget.NewLabel("MIT")),
+		container.NewHBox(widget.NewLabel(i18n.T("about.github_label")), githubLink),
+	)
+
+	return container.NewVBox(
+		container.NewHBox(icon, title),
+		layout.NewSpacer(),
+		description,
+		layout.NewSpacer(),
+		details,
 		layout.NewSpacer(),
 	)
+}
+
+// openExternalURL opens a URL in a real browser, bypassing Linkquisition if it is
+// the default browser (which would otherwise cause a circular loop).
+func (c *Configurator) openExternalURL(rawURL string) error {
+	if !c.browserService.AreWeTheDefaultBrowser() {
+		return c.browserService.OpenUrlWithDefaultBrowser(rawURL)
+	}
+
+	// We are the default browser, so we need to pick a real browser to open with
+	browsers, err := c.browserService.GetAvailableBrowsers()
+	if err != nil || len(browsers) == 0 {
+		// Last resort: try anyway
+		return c.browserService.OpenUrlWithDefaultBrowser(rawURL)
+	}
+
+	return c.browserService.OpenUrlWithBrowser(rawURL, &browsers[0])
 }
