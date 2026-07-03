@@ -44,7 +44,10 @@ func TestDefang_Setup_Defaults(t *testing.T) {
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{})
+	testedPlugin.Setup(provider, map[string]interface{}{
+		"sources":        []interface{}{},
+		"updateInterval": "87600h",
+	})
 
 	// With no cached lists, should not block anything
 	result := testedPlugin.ModifyUrl("https://example.com/page")
@@ -58,6 +61,7 @@ func TestDefang_Setup_InvalidConfig(t *testing.T) {
 
 	testedPlugin := newPlugin()
 	testedPlugin.Setup(provider, map[string]interface{}{
+		"sources":        []interface{}{},
 		"updateInterval": "not-a-duration",
 		"action":         123, // wrong type
 	})
@@ -74,7 +78,9 @@ func TestDefang_Setup_InvalidAction(t *testing.T) {
 
 	testedPlugin := newPlugin()
 	testedPlugin.Setup(provider, map[string]interface{}{
-		"action": "unknown_action",
+		"sources":        []interface{}{},
+		"updateInterval": "87600h",
+		"action":         "unknown_action",
 	})
 
 	// Should fall back to "block" action
