@@ -5,6 +5,7 @@ package darwin
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -265,6 +266,40 @@ func TestGetHTTPHandlers_ScansAppDirectories(t *testing.T) {
 	// Non-browser should not be detected
 	_, _, isHTTPHandler = parseBrowserPlist(nonBrowserPlist, "TextEditor.app")
 	assert.False(t, isHTTPHandler)
+}
+
+func TestGetAvailableBrowsers_NoDuplicates(t *testing.T) {
+	svc := &BrowserService{}
+	browsers, err := svc.GetAvailableBrowsers()
+	require.NoError(t, err)
+
+	seen := make(map[string]bool)
+	for _, b := range browsers {
+		if seen[b.Command] {
+			t.Errorf("duplicate browser bundle ID found: %s (%s)", b.Command, b.Name)
+		}
+		seen[b.Command] = true
+	}
+}
+
+func TestGetAvailableBrowsers_ExcludesLinkquisition(t *testing.T) {
+	svc := &BrowserService{}
+	browsers, err := svc.GetAvailableBrowsers()
+	require.NoError(t, err)
+
+	for _, b := range browsers {
+		if strings.Contains(strings.ToLower(b.Command), "linkquisition") {
+			t.Errorf("linkquisition should be excluded from browser list but found: %s", b.Command)
+		}
+	}
+}
+
+func TestGetAvailableBrowsers_ReturnsNonEmptyList(t *testing.T) {
+	// On any macOS system, at least Safari should be available
+	svc := &BrowserService{}
+	browsers, err := svc.GetAvailableBrowsers()
+	require.NoError(t, err)
+	assert.NotEmpty(t, browsers, "expected at least one browser on macOS")
 }
 
 func TestParseBrowserPlist_CaseInsensitiveSchemes(t *testing.T) {
