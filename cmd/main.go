@@ -11,6 +11,13 @@ import (
 var version string // Will be set by the build script Taskfile.build.yml
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("FATAL: unrecovered panic: %v\n", r)
+			os.Exit(2)
+		}
+	}()
+
 	ctx, stop := context.WithCancel(context.Background())
 
 	app := NewApplication()

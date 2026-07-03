@@ -442,7 +442,9 @@ func (p *defang) downloadSource(client *http.Client, sourceURL string, destPath 
 	return nil
 }
 
-var Plugin = &defang{}
+// Plugin is the exported symbol loaded by the plugin system.
+// plugin.Lookup("Plugin") returns *defang which satisfies linkquisition.Plugin (pointer receiver methods).
+var Plugin defang
 
 // NewForTesting creates a fresh defang instance for use in tests (avoids mutex copy issues with the global Plugin var)
 func NewForTesting() linkquisition.Plugin {

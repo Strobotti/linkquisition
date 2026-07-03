@@ -56,25 +56,40 @@ func setupPlugins(
 			if _, err := os.Stat(pluginPathToCheck); err == nil {
 				pluginPath = pluginPathToCheck
 			} else {
-				logger.Error("Error loading plugin", "plugin", pluginSettings.Path, "error", err.Error())
+				logger.Error("Error loading plugin: file not found", "plugin", pluginSettings.Path, "checked", pluginPathToCheck, "error", err.Error())
 				continue
 			}
 		}
 
-		plug, err := plugin.Open(pluginPath)
-		if err != nil {
-			logger.Error("Error loading plugin", "plugin", pluginSettings.Path, "error", err.Error())
+		plug, err := openPlugin(pluginPath, logger)
+		if plug == nil || err != nil {
+			logger.Error("Error opening plugin", "plugin", pluginSettings.Path, "path", pluginPath, "error", err.Error())
 			continue
 		}
 
 		if p, err := setupPlugin(plug, pluginSettings.Settings, pluginServiceProvider); err != nil {
 			logger.Error("Error setting up plugin", "plugin", pluginSettings.Path, "error", err.Error())
 		} else {
+			logger.Debug("Plugin loaded successfully", "plugin", pluginSettings.Path)
 			plugins = append(plugins, p)
 		}
 	}
 
 	return plugins
+}
+
+// openPlugin wraps plugin.Open with panic recovery — Go plugin loading can panic
+// on interface mismatches or incompatible builds rather than returning an error.
+func openPlugin(path string, logger *slog.Logger) (p *plugin.Plugin, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic while opening plugin %s: %v", path, r)
+			logger.Error("Plugin open panicked", "path", path, "panic", fmt.Sprintf("%v", r))
+		}
+	}()
+
+	p, err = plugin.Open(path)
+	return p, err
 }
 
 func setupPlugin(
@@ -100,7 +115,11 @@ func setupPlugin(
 	var ok bool
 	p, ok = symbol.(linkquisition.Plugin)
 	if !ok {
-		return nil, fmt.Errorf("unexpected type from plugin lookup symbol: %T", symbol)
+		return nil, fmt.Errorf(
+			"plugin symbol does not implement linkquisition.Plugin interface (got %T) — "+
+				"this usually means the plugin was built against a different version of the app",
+			symbol,
+		)
 	} else {
 		p.Setup(pluginServiceProvider, settings)
 	}
