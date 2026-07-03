@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -12,6 +13,79 @@ import (
 	"github.com/strobotti/linkquisition/mock"
 	. "github.com/strobotti/linkquisition/plugins/terminus"
 )
+
+func TestTerminus_Setup_Defaults(t *testing.T) {
+	mockIoWriter := mock.Writer{
+		WriteFunc: func(p []byte) (n int, err error) {
+			return len(p), nil
+		},
+	}
+	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+
+	testedPlugin := Plugin
+	testedPlugin.Setup(provider, map[string]interface{}{})
+
+	assert.Equal(t, 5, testedPlugin.MaxRedirects)
+	assert.Equal(t, 2000*time.Millisecond, testedPlugin.RequestTimeout)
+}
+
+func TestTerminus_Setup_CustomSettings(t *testing.T) {
+	mockIoWriter := mock.Writer{
+		WriteFunc: func(p []byte) (n int, err error) {
+			return len(p), nil
+		},
+	}
+	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+
+	testedPlugin := Plugin
+	testedPlugin.Setup(provider, map[string]interface{}{
+		"maxRedirects":   10,
+		"requestTimeout": "5s",
+	})
+
+	assert.Equal(t, 10, testedPlugin.MaxRedirects)
+	assert.Equal(t, 5*time.Second, testedPlugin.RequestTimeout)
+}
+
+func TestTerminus_Setup_MalformedTimeout(t *testing.T) {
+	mockIoWriter := mock.Writer{
+		WriteFunc: func(p []byte) (n int, err error) {
+			return len(p), nil
+		},
+	}
+	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+
+	testedPlugin := Plugin
+	testedPlugin.Setup(provider, map[string]interface{}{
+		"requestTimeout": "not-a-duration",
+	})
+
+	// Should fall back to default timeout when parsing fails
+	assert.Equal(t, 2000*time.Millisecond, testedPlugin.RequestTimeout)
+}
+
+func TestTerminus_Setup_InvalidConfigType(t *testing.T) {
+	mockIoWriter := mock.Writer{
+		WriteFunc: func(p []byte) (n int, err error) {
+			return len(p), nil
+		},
+	}
+	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+
+	testedPlugin := Plugin
+	// Pass a config with wrong types — mapstructure.Decode will produce an error
+	testedPlugin.Setup(provider, map[string]interface{}{
+		"maxRedirects": "not-an-int",
+	})
+
+	// Should fall back to defaults when decoding fails
+	assert.Equal(t, 5, testedPlugin.MaxRedirects)
+	assert.Equal(t, 2000*time.Millisecond, testedPlugin.RequestTimeout)
+}
 
 func TestTerminus_ModifyUrl(t *testing.T) {
 	mockIoWriter := mock.Writer{
