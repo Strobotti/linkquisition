@@ -1,7 +1,9 @@
 package linkquisition_test
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -208,4 +210,74 @@ func TestFileSettingsService_GetSettings_ReturnsDefaultForCorruptFile(t *testing
 	// Should not panic, should return defaults
 	settings := svc.GetSettings()
 	assert.Equal(t, GetDefaultSettings(), settings)
+}
+
+func TestFileSettingsService_ScanBrowsers_ReturnsErrorWhenGetAvailableBrowsersFails(t *testing.T) {
+	svc := &FileSettingsService{
+		BrowserService: &mockBrowserService{browsers: nil, err: fmt.Errorf("no browsers found")},
+		PathProvider:   &testPathProvider{dir: t.TempDir()},
+	}
+
+	err := svc.ScanBrowsers()
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to scan browsers")
+}
+
+func TestFileSettingsService_ScanBrowsers_ReturnsErrorWhenWriteFails(t *testing.T) {
+	// Use a path that cannot be written to (non-existent nested directory with read-only parent)
+	tmpDir := t.TempDir()
+	readOnlyDir := filepath.Join(tmpDir, "readonly")
+	require.NoError(t, os.MkdirAll(readOnlyDir, 0555))
+
+	svc := &FileSettingsService{
+		BrowserService: &mockBrowserService{
+			browsers: []Browser{{Name: "Firefox", Command: "firefox"}},
+		},
+		PathProvider: &testPathProvider{dir: filepath.Join(readOnlyDir, "subdir")},
+	}
+
+	err := svc.ScanBrowsers()
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to scan browsers")
+}
+
+func TestFileSettingsService_ScanBrowsers_MergesWithExistingConfigOnRescan(t *testing.T) {
+	browsers := []Browser{
+		{Name: "Firefox", Command: "firefox"},
+		{Name: "Chrome", Command: "chrome"},
+	}
+	svc := newTestService(t, browsers)
+
+	// First scan creates config
+	require.NoError(t, svc.ScanBrowsers())
+
+	// Simulate a browser being uninstalled by changing the mock
+	svc.BrowserService = &mockBrowserService{
+		browsers: []Browser{{Name: "Firefox", Command: "firefox"}},
+	}
+
+	// Re-scan should drop Chrome (auto-added, no longer present)
+	require.NoError(t, svc.ScanBrowsers())
+
+	settings, err := svc.ReadSettings()
+	require.NoError(t, err)
+	assert.Len(t, settings.Browsers, 1)
+	assert.Equal(t, "Firefox", settings.Browsers[0].Name)
+}
+
+func TestFileSettingsService_WriteSettings_ReturnsErrorForUnwritablePath(t *testing.T) {
+	tmpDir := t.TempDir()
+	readOnlyDir := filepath.Join(tmpDir, "readonly")
+	require.NoError(t, os.MkdirAll(readOnlyDir, 0555))
+
+	svc := &FileSettingsService{
+		BrowserService: &mockBrowserService{},
+		PathProvider:   &testPathProvider{dir: filepath.Join(readOnlyDir, "nested", "deep")},
+	}
+
+	err := svc.WriteSettings(GetDefaultSettings())
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to write settings")
 }
