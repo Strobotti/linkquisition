@@ -186,8 +186,9 @@ See [plugins](./plugins/README.md) for more information.
 <img src="Icon.png" width="142" height="142" alt="Linkquisition" align="left"/>
 
 With the above list the most interesting feature for me personally is the plugins -feature, as it would allow for
-doing some more complex processing of the URL before opening it in a browser. For example, I could write a plugin that
-strips any tracking parameters from the URL before opening it in the browser.
+doing some more complex processing of the URL before opening it in a browser. ~~For example, I could write a plugin that
+strips any tracking parameters from the URL before opening it in the browser.~~ See
+[Sanitize](./plugins/sanitize/sanitize.go) -plugin for more information.
 
 ~~I also would like to have a plugin that checks if the opened url is a Microsoft Defender (Evergreen) URL and then,
 with
