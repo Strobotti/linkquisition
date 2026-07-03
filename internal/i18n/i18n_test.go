@@ -177,6 +177,30 @@ func TestTWithCount_FallbackOnMissingPluralForms(t *testing.T) {
 	}
 }
 
+func TestTWithCount_WithCustomTemplateData(t *testing.T) {
+	Init("en")
+
+	// TWithCount with explicit template data should use that data
+	// even though no plural forms are defined, the error path returns fallback
+	got := TWithCount("nonexistent.key", 5, map[string]interface{}{"Count": 5, "Extra": "data"})
+	want := "[nonexistent.key]"
+	if got != want {
+		t.Errorf("TWithCount with custom data = %q, want %q", got, want)
+	}
+}
+
+func TestTWithCount_ZeroCount(t *testing.T) {
+	Init("en")
+
+	// Zero count with a message that has an "other" form should still resolve
+	// go-i18n uses PluralCount to select the plural form; 0 maps to "other" in English
+	got := TWithCount("nonexistent.key", 0)
+	want := "[nonexistent.key]"
+	if got != want {
+		t.Errorf("TWithCount with 0 count for missing key = %q, want %q", got, want)
+	}
+}
+
 func TestT_NilTemplateData(t *testing.T) {
 	Init("en")
 
