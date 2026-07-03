@@ -84,7 +84,7 @@ func TestUnwrap_ModifyUrl_EdgeCases(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			testedPlugin := Plugin
-			provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+			provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, "")
 			testedPlugin.Setup(provider, tt.config)
 
 			assert.Equal(t, tt.expectedUrl, testedPlugin.ModifyUrl(tt.inputUrl))
@@ -99,7 +99,7 @@ func TestUnwrap_Setup_InvalidConfig(t *testing.T) {
 		},
 	}
 	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
-	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, "")
 
 	testedPlugin := Plugin
 	// Pass config with wrong type for "rules" field — triggers mapstructure decode error
@@ -209,7 +209,7 @@ func TestUnwrap_ModifyUrl(t *testing.T) {
 		t.Run(
 			tt.name, func(t *testing.T) {
 				testedPlugin := Plugin
-				provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{Browsers: tt.browserSettings})
+				provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{Browsers: tt.browserSettings}, "")
 				testedPlugin.Setup(provider, tt.config)
 
 				assert.Equal(t, tt.expectedUrl, testedPlugin.ModifyUrl(tt.inputUrl))

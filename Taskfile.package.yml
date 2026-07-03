@@ -45,6 +45,7 @@ tasks:
       - mkdir -p dist/Linkquisition.app/Contents/MacOS
       - mkdir -p dist/Linkquisition.app/Contents/Resources
       - cp bin/linkquisition-darwin-arm64 dist/Linkquisition.app/Contents/MacOS/linkquisition
+      - task build:plugins-darwin
       - sed 's/${VERSION}/{{.VERSION}}/g' package/darwin/Info.plist > dist/Linkquisition.app/Contents/Info.plist
       - sips -s format icns Icon.png --out dist/Linkquisition.app/Contents/Resources/Icon.icns 2>/dev/null || cp Icon.png dist/Linkquisition.app/Contents/Resources/Icon.icns
       - echo "dist/Linkquisition.app created successfully"

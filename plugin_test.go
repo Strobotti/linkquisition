@@ -18,16 +18,17 @@ func TestNewPluginServiceProvider(t *testing.T) {
 		},
 	}
 
-	provider := NewPluginServiceProvider(logger, settings)
+	provider := NewPluginServiceProvider(logger, settings, "/tmp/test-config")
 
 	assert.Equal(t, logger, provider.GetLogger())
 	assert.Equal(t, settings, provider.GetSettings())
+	assert.Equal(t, "/tmp/test-config", provider.GetConfigFolderPath())
 }
 
 func TestNewPluginServiceProvider_NilLogger(t *testing.T) {
 	settings := &Settings{}
 
-	provider := NewPluginServiceProvider(nil, settings)
+	provider := NewPluginServiceProvider(nil, settings, "")
 
 	assert.Nil(t, provider.GetLogger())
 	assert.Equal(t, settings, provider.GetSettings())

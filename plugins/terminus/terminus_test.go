@@ -21,7 +21,7 @@ func TestTerminus_Setup_Defaults(t *testing.T) {
 		},
 	}
 	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
-	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, "")
 
 	testedPlugin := Plugin
 	testedPlugin.Setup(provider, map[string]interface{}{})
@@ -37,7 +37,7 @@ func TestTerminus_Setup_CustomSettings(t *testing.T) {
 		},
 	}
 	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
-	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, "")
 
 	testedPlugin := Plugin
 	testedPlugin.Setup(provider, map[string]interface{}{
@@ -56,7 +56,7 @@ func TestTerminus_Setup_MalformedTimeout(t *testing.T) {
 		},
 	}
 	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
-	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, "")
 
 	testedPlugin := Plugin
 	testedPlugin.Setup(provider, map[string]interface{}{
@@ -74,7 +74,7 @@ func TestTerminus_Setup_InvalidConfigType(t *testing.T) {
 		},
 	}
 	logger := slog.New(slog.NewTextHandler(mockIoWriter, nil))
-	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, "")
 
 	testedPlugin := Plugin
 	// Pass a config with wrong types — mapstructure.Decode will produce an error
@@ -192,7 +192,7 @@ func TestTerminus_ModifyUrl(t *testing.T) {
 			tt.name, func(t *testing.T) {
 				testedPlugin := Plugin
 
-				provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{})
+				provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, "")
 				testedPlugin.Setup(provider, map[string]interface{}{})
 				testedPlugin.Client.Transport = &mock.RoundTripper{
 					RoundTripFunc: func(r *http.Request) (*http.Response, error) {

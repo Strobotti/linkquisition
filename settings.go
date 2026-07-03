@@ -263,6 +263,9 @@ type SettingsService interface {
 
 	// GetConfigFilePath returns the absolute path to the config-file
 	GetConfigFilePath() string
+
+	// GetConfigFolderPath returns the absolute path to the config-folder
+	GetConfigFolderPath() string
 }
 
 func GetDefaultSettings() *Settings {

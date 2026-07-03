@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -199,6 +200,10 @@ func (p *sanitize) shouldStrip(param string) bool {
 	}
 
 	return false
+}
+
+func (p *sanitize) Shutdown(_ context.Context) {
+	// no-op: sanitize has no background work
 }
 
 var Plugin sanitize

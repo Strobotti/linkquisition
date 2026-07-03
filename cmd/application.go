@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"plugin"
 	"strings"
+	"sync"
+	"time"
 
 	"fyne.io/fyne/v2"
 
@@ -19,6 +21,7 @@ import (
 
 const logDirPerms = 0755
 const logFilePerms = 0644
+const pluginShutdownTimeout = 10 * time.Second
 
 type Application struct {
 	Fapp            fyne.App
@@ -53,25 +56,40 @@ func setupPlugins(
 			if _, err := os.Stat(pluginPathToCheck); err == nil {
 				pluginPath = pluginPathToCheck
 			} else {
-				logger.Error("Error loading plugin", "plugin", pluginSettings.Path, "error", err.Error())
+				logger.Error("Error loading plugin: file not found", "plugin", pluginSettings.Path, "checked", pluginPathToCheck, "error", err.Error())
 				continue
 			}
 		}
 
-		plug, err := plugin.Open(pluginPath)
-		if err != nil {
-			logger.Error("Error loading plugin", "plugin", pluginSettings.Path, "error", err.Error())
+		plug, err := openPlugin(pluginPath, logger)
+		if plug == nil || err != nil {
+			logger.Error("Error opening plugin", "plugin", pluginSettings.Path, "path", pluginPath, "error", err.Error())
 			continue
 		}
 
 		if p, err := setupPlugin(plug, pluginSettings.Settings, pluginServiceProvider); err != nil {
 			logger.Error("Error setting up plugin", "plugin", pluginSettings.Path, "error", err.Error())
 		} else {
+			logger.Debug("Plugin loaded successfully", "plugin", pluginSettings.Path)
 			plugins = append(plugins, p)
 		}
 	}
 
 	return plugins
+}
+
+// openPlugin wraps plugin.Open with panic recovery — Go plugin loading can panic
+// on interface mismatches or incompatible builds rather than returning an error.
+func openPlugin(path string, logger *slog.Logger) (p *plugin.Plugin, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic while opening plugin %s: %v", path, r)
+			logger.Error("Plugin open panicked", "path", path, "panic", fmt.Sprintf("%v", r))
+		}
+	}()
+
+	p, err = plugin.Open(path)
+	return p, err
 }
 
 func setupPlugin(
@@ -97,7 +115,11 @@ func setupPlugin(
 	var ok bool
 	p, ok = symbol.(linkquisition.Plugin)
 	if !ok {
-		return nil, fmt.Errorf("unexpected type from plugin lookup symbol: %T", symbol)
+		return nil, fmt.Errorf(
+			"plugin symbol does not implement linkquisition.Plugin interface (got %T) — "+
+				"this usually means the plugin was built against a different version of the app",
+			symbol,
+		)
 	} else {
 		p.Setup(pluginServiceProvider, settings)
 	}
@@ -135,6 +157,8 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 }
 
 func (a *Application) Run(_ context.Context) error {
+	defer a.shutdownPlugins()
+
 	// Initialize localization before any UI strings are used
 	i18n.Init(a.SettingsService.GetSettings().Locale)
 
@@ -169,6 +193,12 @@ func (a *Application) Run(_ context.Context) error {
 		urlToOpen = plug.ModifyUrl(urlToOpen)
 	}
 
+	// If a plugin rewrote the URL to a local file (e.g. defang warning page),
+	// open it directly in the first available browser — no picker needed.
+	if strings.HasPrefix(urlToOpen, "file://") {
+		return a.openInFirstBrowser(urlToOpen)
+	}
+
 	var browsers []linkquisition.Browser
 
 	isConfigured, configErr := a.SettingsService.IsConfigured()
@@ -194,4 +224,44 @@ func (a *Application) Run(_ context.Context) error {
 
 	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService, a.Logger)
 	return bp.Run(context.Background(), urlToOpen)
+}
+
+func (a *Application) shutdownPlugins() {
+	if len(a.plugins) == 0 {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), pluginShutdownTimeout)
+	defer cancel()
+
+	var wg sync.WaitGroup
+	for _, plug := range a.plugins {
+		wg.Add(1)
+		go func(p linkquisition.Plugin) {
+			defer wg.Done()
+			p.Shutdown(ctx)
+		}(plug)
+	}
+	wg.Wait()
+}
+
+func (a *Application) openInFirstBrowser(urlToOpen string) error {
+	var browsers []linkquisition.Browser
+
+	if isConfigured, _ := a.SettingsService.IsConfigured(); isConfigured {
+		browsers = a.SettingsService.GetSettings().GetSelectableBrowsers()
+	} else {
+		var err error
+		if browsers, err = a.BrowserService.GetAvailableBrowsers(); err != nil {
+			return err
+		}
+	}
+
+	if len(browsers) == 0 {
+		a.Logger.Error("no browsers available to open file URL", "url", urlToOpen)
+		return fmt.Errorf("no browsers available")
+	}
+
+	a.Logger.Debug(fmt.Sprintf("opening file URL in first browser: %s", browsers[0].Name), "url", urlToOpen)
+	return a.BrowserService.OpenUrlWithBrowser(urlToOpen, &browsers[0])
 }
