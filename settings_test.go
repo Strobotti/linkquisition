@@ -177,6 +177,80 @@ func TestBrowserSettings_MatchesUrl(t *testing.T) {
 	}
 }
 
+func TestBrowserSettings_MatchesUrl_CaseInsensitive(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		settings BrowserSettings
+		url      string
+		expected bool
+	}{
+		{
+			name: "site match is case-insensitive (rule uppercase, URL lowercase)",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Matches: []BrowserMatch{
+					{Type: BrowserMatchTypeSite, Value: "WWW.EXAMPLE.COM"},
+				},
+			},
+			url:      "https://www.example.com/page",
+			expected: true,
+		},
+		{
+			name: "site match is case-insensitive (rule mixed case, URL lowercase)",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Matches: []BrowserMatch{
+					{Type: BrowserMatchTypeSite, Value: "Www.Example.Com"},
+				},
+			},
+			url:      "https://www.example.com/page",
+			expected: true,
+		},
+		{
+			name: "domain match is case-insensitive (rule uppercase)",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Matches: []BrowserMatch{
+					{Type: BrowserMatchTypeDomain, Value: "EXAMPLE.COM"},
+				},
+			},
+			url:      "https://www.example.com/page",
+			expected: true,
+		},
+		{
+			name: "domain match is case-insensitive (URL uppercase)",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Matches: []BrowserMatch{
+					{Type: BrowserMatchTypeDomain, Value: "example.com"},
+				},
+			},
+			url:      "https://WWW.EXAMPLE.COM/page",
+			expected: true,
+		},
+		{
+			name: "site match is case-insensitive (URL uppercase)",
+			settings: BrowserSettings{
+				Name:    "Firefox",
+				Command: "firefox",
+				Matches: []BrowserMatch{
+					{Type: BrowserMatchTypeSite, Value: "www.example.com"},
+				},
+			},
+			url:      "https://WWW.EXAMPLE.COM/page",
+			expected: true,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.settings.MatchesUrl(tt.url))
+		})
+	}
+}
+
 func TestSettings_NormalizeBrowsers(t *testing.T) {
 	for _, tt := range [...]struct {
 		name             string
