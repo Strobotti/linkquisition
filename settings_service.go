@@ -30,6 +30,10 @@ func (s *FileSettingsService) GetConfigFilePath() string {
 	return filepath.Join(s.PathProvider.GetConfigFolderPath(), "config.json")
 }
 
+func (s *FileSettingsService) GetConfigFolderPath() string {
+	return s.PathProvider.GetConfigFolderPath()
+}
+
 func (s *FileSettingsService) GetLogFilePath() string {
 	return filepath.Join(s.PathProvider.GetLogFolderPath(), "linkquisition.log")
 }

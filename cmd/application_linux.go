@@ -38,7 +38,7 @@ func NewApplication() *Application {
 	browserService, settingsService := newPlatformServices()
 
 	logger := setupLogger(settingsService)
-	pluginServiceProvider := linkquisition.NewPluginServiceProvider(logger, settingsService.GetSettings())
+	pluginServiceProvider := linkquisition.NewPluginServiceProvider(logger, settingsService.GetSettings(), settingsService.GetConfigFolderPath())
 
 	return &Application{
 		Fapp:            fapp,

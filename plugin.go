@@ -1,12 +1,16 @@
 package linkquisition
 
-import "log/slog"
+import (
+	"log/slog"
+	"time"
+)
 
 // PluginServiceProvider is an interface that provides the logger and settings to the plugin
 // This is passed to the plugin as a dependency when being setup.
 type PluginServiceProvider interface {
 	GetLogger() *slog.Logger
 	GetSettings() *Settings
+	GetConfigFolderPath() string
 }
 
 // Plugin is an interface that all plugins must implement
@@ -17,12 +21,18 @@ type Plugin interface {
 	// ModifyUrl is called just before the URL is being matched against the browser-rules
 	// The plugin can modify the URL and return it (or otherwise just return the original URL)
 	ModifyUrl(url string) string
+
+	// Shutdown is called when the application is about to exit.
+	// Plugins should use this to finish any background work (e.g. writing files).
+	// The timeout indicates how long the plugin has before the process exits.
+	Shutdown(timeout time.Duration)
 }
 
 // pluginServiceProvider is a struct that implements the PluginServiceProvider interface, providing services that the plugin might need
 type pluginServiceProvider struct {
-	logger   *slog.Logger
-	Settings *Settings
+	logger           *slog.Logger
+	Settings         *Settings
+	configFolderPath string
 }
 
 func (p *pluginServiceProvider) GetLogger() *slog.Logger {
@@ -33,6 +43,10 @@ func (p *pluginServiceProvider) GetSettings() *Settings {
 	return p.Settings
 }
 
-func NewPluginServiceProvider(logger *slog.Logger, settings *Settings) PluginServiceProvider {
-	return &pluginServiceProvider{logger: logger, Settings: settings}
+func (p *pluginServiceProvider) GetConfigFolderPath() string {
+	return p.configFolderPath
+}
+
+func NewPluginServiceProvider(logger *slog.Logger, settings *Settings, configFolderPath string) PluginServiceProvider {
+	return &pluginServiceProvider{logger: logger, Settings: settings, configFolderPath: configFolderPath}
 }

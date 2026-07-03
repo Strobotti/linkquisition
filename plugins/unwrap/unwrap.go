@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/mitchellh/mapstructure"
 
@@ -84,6 +85,10 @@ func (p *unwrap) ModifyUrl(u string) string {
 	}
 
 	return u
+}
+
+func (p *unwrap) Shutdown(_ time.Duration) {
+	// no-op: unwrap has no background work
 }
 
 var Plugin unwrap

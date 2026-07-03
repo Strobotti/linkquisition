@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"plugin"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 
@@ -19,6 +20,7 @@ import (
 
 const logDirPerms = 0755
 const logFilePerms = 0644
+const pluginShutdownTimeout = 10 * time.Second
 
 type Application struct {
 	Fapp            fyne.App
@@ -135,6 +137,8 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 }
 
 func (a *Application) Run(_ context.Context) error {
+	defer a.shutdownPlugins()
+
 	// Initialize localization before any UI strings are used
 	i18n.Init(a.SettingsService.GetSettings().Locale)
 
@@ -194,4 +198,10 @@ func (a *Application) Run(_ context.Context) error {
 
 	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService, a.Logger)
 	return bp.Run(context.Background(), urlToOpen)
+}
+
+func (a *Application) shutdownPlugins() {
+	for _, plug := range a.plugins {
+		plug.Shutdown(pluginShutdownTimeout)
+	}
 }
