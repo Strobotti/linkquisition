@@ -179,9 +179,9 @@ whatever is cached and updates lazily.
 
 ### Actions
 
-- `block` — replaces the URL with `about:blank`, preventing the browser from opening the malicious site
-- `warn` — same as `block` for now (future: show a confirmation dialog)
-- `log` — logs the blocked domain but still opens the URL (useful for monitoring without disruption)
+- `block` — opens a warning page in the browser showing the blocked domain, without an option to proceed
+- `warn` — opens a warning page with an "Open anyway (unsafe)" link, letting the user choose to proceed
+- `log` — logs the blocked domain but still opens the URL normally (useful for monitoring without disruption)
 
 ## Developing plugins
 
