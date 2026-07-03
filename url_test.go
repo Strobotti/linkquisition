@@ -89,6 +89,73 @@ func TestURL_GetDomain_ErrorCases(t *testing.T) {
 	}
 }
 
+func TestURL_GetDomain_WithPorts(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		url      string
+		expected string
+	}{
+		{
+			name:     "port is stripped from standard domain",
+			url:      "https://www.example.com:443/path",
+			expected: "example.com",
+		},
+		{
+			name:     "port is stripped from localhost-like domain",
+			url:      "http://myapp.local:8080/api",
+			expected: "myapp.local",
+		},
+		{
+			name:     "port is stripped from IP address",
+			url:      "http://192.168.1.1:3000/admin",
+			expected: "192.168.1.1",
+		},
+		{
+			name:     "non-standard port on subdomain",
+			url:      "https://api.example.com:8443/v1/resource",
+			expected: "example.com",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			u := NewURL(tt.url)
+			domain, err := u.GetDomain()
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, domain)
+		})
+	}
+}
+
+func TestURL_GetSite_WithPorts(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		url      string
+		expected string
+	}{
+		{
+			name:     "site includes port number",
+			url:      "http://localhost:8080/path",
+			expected: "localhost:8080",
+		},
+		{
+			name:     "site includes explicit standard port",
+			url:      "https://www.example.com:443/page",
+			expected: "www.example.com:443",
+		},
+		{
+			name:     "site includes non-standard port on IP",
+			url:      "http://192.168.1.1:3000/api",
+			expected: "192.168.1.1:3000",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			u := NewURL(tt.url)
+			site, err := u.GetSite()
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, site)
+		})
+	}
+}
+
 func TestURL_GetSite(t *testing.T) {
 	for _, tt := range [...]struct {
 		name      string
