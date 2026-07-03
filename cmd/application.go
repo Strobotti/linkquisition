@@ -193,6 +193,12 @@ func (a *Application) Run(_ context.Context) error {
 		urlToOpen = plug.ModifyUrl(urlToOpen)
 	}
 
+	// If a plugin rewrote the URL to a local file (e.g. defang warning page),
+	// open it directly in the first available browser — no picker needed.
+	if strings.HasPrefix(urlToOpen, "file://") {
+		return a.openInFirstBrowser(urlToOpen)
+	}
+
 	var browsers []linkquisition.Browser
 
 	isConfigured, configErr := a.SettingsService.IsConfigured()
@@ -237,4 +243,25 @@ func (a *Application) shutdownPlugins() {
 		}(plug)
 	}
 	wg.Wait()
+}
+
+func (a *Application) openInFirstBrowser(urlToOpen string) error {
+	var browsers []linkquisition.Browser
+
+	if isConfigured, _ := a.SettingsService.IsConfigured(); isConfigured {
+		browsers = a.SettingsService.GetSettings().GetSelectableBrowsers()
+	} else {
+		var err error
+		if browsers, err = a.BrowserService.GetAvailableBrowsers(); err != nil {
+			return err
+		}
+	}
+
+	if len(browsers) == 0 {
+		a.Logger.Error("no browsers available to open file URL", "url", urlToOpen)
+		return fmt.Errorf("no browsers available")
+	}
+
+	a.Logger.Debug(fmt.Sprintf("opening file URL in first browser: %s", browsers[0].Name), "url", urlToOpen)
+	return a.BrowserService.OpenUrlWithBrowser(urlToOpen, &browsers[0])
 }
