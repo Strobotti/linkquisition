@@ -133,7 +133,7 @@ func (p *terminus) ModifyUrl(address string) string {
 	return modifiedUrl
 }
 
-func (p *terminus) Shutdown(_ time.Duration) {
+func (p *terminus) Shutdown(_ context.Context) {
 	// no-op: terminus has no background work
 }
 

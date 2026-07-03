@@ -100,8 +100,13 @@ parameters or regex patterns, and optionally limit sanitization to specific URLs
       "path": "sanitize.so",
       "settings": {
         "stripDefaults": true,
-        "extraParams": ["ref", "igshid"],
-        "extraPatterns": ["^_ga"],
+        "extraParams": [
+          "ref",
+          "igshid"
+        ],
+        "extraPatterns": [
+          "^_ga"
+        ],
         "onlyMatchingUrls": ""
       }
     }
@@ -127,12 +132,68 @@ HubSpot (`_hsenc`, `_hsmi`, `__hssc`, `__hstc`, `__hsfp`, `hsCtaTracking`),
 Mailchimp (`mc_cid`, `mc_eid`), Yandex (`yclid`, `ymclid`), Vero (`vero_id`, `vero_conv`),
 Marketo (`mkt_tok`), Adobe (`s_cid`), and common social/affiliate trackers (`igshid`, `si`, `ref_src`, `ref_url`).
 
+## [Defang](./defang/defang.go) -plugin
+
+This plugin checks URLs against known-malicious domain blocklists before they reach the browser. It downloads and
+caches hosts-format blocklists locally, checking them on every URL open without any network request in the hot path.
+
+By default, it uses two well-known, trusted sources:
+
+- [URLhaus](https://urlhaus.abuse.ch/) (abuse.ch) — malware distribution URLs
+- [Steven Black's hosts](https://github.com/StevenBlack/hosts) — aggregated malware/adware/phishing domains
+
+The blocklists are cached in the config directory (e.g. `~/.config/linkquisition/defang/` on Linux) and refreshed
+in the background when older than the configured update interval. The app never blocks on network I/O — it uses
+whatever is cached and updates lazily.
+
+### Configuration
+
+```json
+{
+  "browsers": [
+    ...
+  ],
+  "plugins": [
+    {
+      "path": "defang.so",
+      "settings": {
+        "sources": [
+          "https://urlhaus.abuse.ch/downloads/hostfile/",
+          "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+        ],
+        "updateInterval": "168h",
+        "action": "block"
+      }
+    }
+  ]
+}
+```
+
+### Settings
+
+| Setting          | Type     | Default     | Description                                                                      |
+|------------------|----------|-------------|----------------------------------------------------------------------------------|
+| `sources`        | []string | (see above) | URLs to download hosts-format blocklists from                                    |
+| `updateInterval` | string   | `"168h"`    | How often to refresh the cached blocklists (Go duration format, default: 7 days) |
+| `action`         | string   | `"block"`   | What to do when a blocked domain is detected: `block`, `warn`, or `log`          |
+
+### Actions
+
+- `block` — replaces the URL with `about:blank`, preventing the browser from opening the malicious site
+- `warn` — same as `block` for now (future: show a confirmation dialog)
+- `log` — logs the blocked domain but still opens the URL (useful for monitoring without disruption)
+
 ## Developing plugins
 
 As stated before, the plugins-feature is experimental, the API is not stable and therefore subject to change. However,
 the plugin-interface is quite simple and should be easy to implement.
 
 The plugin is a shared object file (`.so`) that is loaded by the main application. The plugin must implement the
-[linkquisition.Plugin](../plugin.go) -interface and the only currently supported feature is the `ModifyUrl` -function.
-The function is called just before the URL is matched against the browser-rules and should return the modified URL, or
-the original if no modification is needed.
+[linkquisition.Plugin](../plugin.go) -interface which has three methods:
+
+- `Setup(serviceProvider, config)` — called once when the plugin is loaded. The `serviceProvider` gives access to the
+  logger, settings, and the config folder path (for storing cache files etc.)
+- `ModifyUrl(url) string` — called just before the URL is matched against the browser-rules. Should return the modified
+  URL, or the original if no modification is needed.
+- `Shutdown(ctx context.Context)` — called when the application is about to exit. Plugins with background work (e.g.
+  downloads) should use this to finish gracefully before the context deadline expires.

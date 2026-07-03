@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"plugin"
 	"strings"
+	"sync"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -201,7 +202,20 @@ func (a *Application) Run(_ context.Context) error {
 }
 
 func (a *Application) shutdownPlugins() {
-	for _, plug := range a.plugins {
-		plug.Shutdown(pluginShutdownTimeout)
+	if len(a.plugins) == 0 {
+		return
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), pluginShutdownTimeout)
+	defer cancel()
+
+	var wg sync.WaitGroup
+	for _, plug := range a.plugins {
+		wg.Add(1)
+		go func(p linkquisition.Plugin) {
+			defer wg.Done()
+			p.Shutdown(ctx)
+		}(plug)
+	}
+	wg.Wait()
 }

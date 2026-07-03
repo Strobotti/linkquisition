@@ -1,8 +1,8 @@
 package linkquisition
 
 import (
+	"context"
 	"log/slog"
-	"time"
 )
 
 // PluginServiceProvider is an interface that provides the logger and settings to the plugin
@@ -24,8 +24,8 @@ type Plugin interface {
 
 	// Shutdown is called when the application is about to exit.
 	// Plugins should use this to finish any background work (e.g. writing files).
-	// The timeout indicates how long the plugin has before the process exits.
-	Shutdown(timeout time.Duration)
+	// The context carries a deadline — plugins must return before it expires.
+	Shutdown(ctx context.Context)
 }
 
 // pluginServiceProvider is a struct that implements the PluginServiceProvider interface, providing services that the plugin might need

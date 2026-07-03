@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
-	"time"
 
 	"github.com/mitchellh/mapstructure"
 
@@ -87,7 +87,7 @@ func (p *unwrap) ModifyUrl(u string) string {
 	return u
 }
 
-func (p *unwrap) Shutdown(_ time.Duration) {
+func (p *unwrap) Shutdown(_ context.Context) {
 	// no-op: unwrap has no background work
 }
 

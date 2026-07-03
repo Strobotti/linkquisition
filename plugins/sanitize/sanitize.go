@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
-	"time"
 
 	"github.com/mitchellh/mapstructure"
 
@@ -202,7 +202,7 @@ func (p *sanitize) shouldStrip(param string) bool {
 	return false
 }
 
-func (p *sanitize) Shutdown(_ time.Duration) {
+func (p *sanitize) Shutdown(_ context.Context) {
 	// no-op: sanitize has no background work
 }
 

@@ -59,7 +59,7 @@ tasks:
   build-plugins:
     internal: true
     vars:
-      PLUGINS: "unwrap terminus sanitize"
+      PLUGINS: "unwrap terminus sanitize defang"
     cmds:
       - mkdir -p {{.OUTPUT_DIR}}
       - for: { var: PLUGINS }
