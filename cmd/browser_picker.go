@@ -40,7 +40,7 @@ func NewBrowserPicker(
 	}
 }
 
-//nolint:funlen
+//nolint:funlen,unparam
 func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	var buttons []fyne.CanvasObject
 	remember := binding.NewBool()

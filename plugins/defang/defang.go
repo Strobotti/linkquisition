@@ -34,13 +34,25 @@ var warningPageTemplate = template.Must(template.New("warn").Parse(`<!DOCTYPE ht
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>⚠️ Linkquisition — Blocked URL</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 600px; margin: 80px auto; padding: 0 20px; color: #333; background: #fafafa; }
-  .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 600px; margin: 80px auto; padding: 0 20px; color: #333; background: #fafafa;
+  }
+  .card {
+    background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;
+    padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
   h1 { color: #c0392b; margin-top: 0; font-size: 1.4em; }
   .domain { font-family: monospace; background: #fee; padding: 2px 6px; border-radius: 3px; color: #c0392b; }
-  .url { word-break: break-all; font-family: monospace; font-size: 0.85em; background: #f5f5f5; padding: 8px; border-radius: 4px; margin: 12px 0; }
+  .url {
+    word-break: break-all; font-family: monospace; font-size: 0.85em;
+    background: #f5f5f5; padding: 8px; border-radius: 4px; margin: 12px 0;
+  }
   .actions { margin-top: 24px; display: flex; gap: 12px; }
-  .btn { padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 500; cursor: pointer; border: none; font-size: 0.95em; }
+  .btn {
+    padding: 10px 20px; border-radius: 5px; text-decoration: none;
+    font-weight: 500; cursor: pointer; border: none; font-size: 0.95em;
+  }
   .btn-safe { background: #27ae60; color: #fff; }
   .btn-proceed { background: #e0e0e0; color: #555; font-size: 0.85em; }
   .btn-proceed:hover { background: #ccc; }
@@ -74,6 +86,17 @@ type DefangPluginSettings struct {
 	Action string `json:"action,omitempty"`
 }
 
+const (
+	actionBlock = "block"
+	actionWarn  = "warn"
+	actionLog   = "log"
+
+	fallbackURL = "about:blank"
+
+	maxEncodedFilenameLen = 64
+	cacheDirPerms         = 0700
+)
+
 var _ linkquisition.Plugin = (*defang)(nil)
 
 // defang is a plugin that checks URLs against known-malicious domain blocklists
@@ -94,7 +117,7 @@ type defang struct {
 func (p *defang) Setup(serviceProvider linkquisition.PluginServiceProvider, config map[string]interface{}) {
 	p.serviceProvider = serviceProvider
 	p.blockedDomains = make(map[string]struct{})
-	p.action = "block"
+	p.action = actionBlock
 	p.updateInterval = 168 * time.Hour // 7 days
 	p.sources = defaultSources
 
@@ -122,7 +145,7 @@ func (p *defang) Setup(serviceProvider linkquisition.PluginServiceProvider, conf
 
 		if settings.Action != "" {
 			switch settings.Action {
-			case "warn", "block", "log":
+			case actionWarn, actionBlock, actionLog:
 				p.action = settings.Action
 			default:
 				serviceProvider.GetLogger().Warn(
@@ -165,12 +188,12 @@ func (p *defang) ModifyUrl(address string) string {
 	)
 
 	switch p.action {
-	case "block":
+	case actionBlock:
 		return p.generateWarningPage(address, host, false)
-	case "log":
+	case actionLog:
 		// Log but still open the URL
 		return address
-	case "warn":
+	case actionWarn:
 		return p.generateWarningPage(address, host, true)
 	default:
 		return p.generateWarningPage(address, host, false)
@@ -185,12 +208,12 @@ type warningPageData struct {
 }
 
 // generateWarningPage creates a temporary HTML file with a warning/block page and returns its file:// URL
-func (p *defang) generateWarningPage(originalURL string, domain string, showProceed bool) string {
+func (p *defang) generateWarningPage(originalURL, domain string, showProceed bool) string {
 	// Use a deterministic filename based on the URL to avoid accumulating temp files
 	// for repeated clicks on the same link
 	encoded := base64.RawURLEncoding.EncodeToString([]byte(originalURL))
-	if len(encoded) > 64 {
-		encoded = encoded[:64]
+	if len(encoded) > maxEncodedFilenameLen {
+		encoded = encoded[:maxEncodedFilenameLen]
 	}
 	fileName := fmt.Sprintf("linkquisition-defang-%s.html", encoded)
 	filePath := filepath.Join(os.TempDir(), fileName)
@@ -198,7 +221,7 @@ func (p *defang) generateWarningPage(originalURL string, domain string, showProc
 	file, err := os.Create(filePath)
 	if err != nil {
 		p.serviceProvider.GetLogger().Warn("error creating warning page", "error", err.Error(), "plugin", "defang")
-		return "about:blank"
+		return fallbackURL
 	}
 	defer file.Close()
 
@@ -210,7 +233,7 @@ func (p *defang) generateWarningPage(originalURL string, domain string, showProc
 
 	if err := warningPageTemplate.Execute(file, data); err != nil {
 		p.serviceProvider.GetLogger().Warn("error rendering warning page", "error", err.Error(), "plugin", "defang")
-		return "about:blank"
+		return fallbackURL
 	}
 
 	return "file://" + filePath
@@ -371,7 +394,7 @@ func (p *defang) fetchUpdates() {
 
 	p.serviceProvider.GetLogger().Debug("starting blocklist update", "plugin", "defang")
 
-	if err := os.MkdirAll(p.cacheDir, 0700); err != nil {
+	if err := os.MkdirAll(p.cacheDir, cacheDirPerms); err != nil {
 		p.serviceProvider.GetLogger().Warn("error creating cache directory", "error", err.Error(), "plugin", "defang")
 		return
 	}
@@ -408,8 +431,13 @@ func (p *defang) fetchUpdates() {
 }
 
 // downloadSource downloads a single blocklist source to a file
-func (p *defang) downloadSource(client *http.Client, sourceURL string, destPath string) error {
-	resp, err := client.Get(sourceURL)
+func (p *defang) downloadSource(client *http.Client, sourceURL, destPath string) error {
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, sourceURL, http.NoBody)
+	if err != nil {
+		return fmt.Errorf("error creating request: %w", err)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("HTTP request failed: %w", err)
 	}

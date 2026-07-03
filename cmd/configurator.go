@@ -35,6 +35,7 @@ func NewConfigurator(
 	}
 }
 
+//nolint:unparam
 func (c *Configurator) Run() error {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))
 
