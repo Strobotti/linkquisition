@@ -69,6 +69,7 @@ func initRootCmd() {
 	rootCmd.SetVersionTemplate("Version: {{.Version}}\n")
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(pluginCmd)
+	rootCmd.AddCommand(browsersCmd)
 }
 
 func execute() int {
