@@ -194,7 +194,12 @@ func (c *Configurator) buildLanguageSection() fyne.CanvasObject {
 }
 
 func (c *Configurator) buildLogLevelSection() fyne.CanvasObject {
-	levels := []string{"debug", linkquisition.LogLevelInfo, linkquisition.LogLevelWarn, "error"}
+	levels := []string{
+		linkquisition.LogLevelDebug,
+		linkquisition.LogLevelInfo,
+		linkquisition.LogLevelWarn,
+		linkquisition.LogLevelError,
+	}
 	currentLevel := c.settingsService.GetSettings().LogLevel
 	if currentLevel == "" {
 		currentLevel = linkquisition.LogLevelWarn
