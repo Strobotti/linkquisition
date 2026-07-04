@@ -71,6 +71,7 @@ func initRootCmd() {
 	rootCmd.AddCommand(pluginCmd)
 	rootCmd.AddCommand(browsersCmd)
 	rootCmd.AddCommand(setDefaultCmd)
+	rootCmd.AddCommand(ruleCmd)
 }
 
 func execute() int {
