@@ -126,11 +126,13 @@ func TestConfigGetSet_Integration(t *testing.T) {
 		t.Fatalf("failed to read settings: %v", err)
 	}
 
-	if err := setSettingsValue(settings, "logLevel", "debug"); err != nil {
+	err = setSettingsValue(settings, "logLevel", "debug")
+	if err != nil {
 		t.Fatalf("failed to set logLevel: %v", err)
 	}
 
-	if err := svc.WriteSettings(settings); err != nil {
+	err = svc.WriteSettings(settings)
+	if err != nil {
 		t.Fatalf("failed to write modified settings: %v", err)
 	}
 

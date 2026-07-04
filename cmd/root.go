@@ -67,6 +67,12 @@ func runRoot(cmd *cobra.Command, args []string) error {
 func initRootCmd() {
 	rootCmd.Version = version
 	rootCmd.SetVersionTemplate("Version: {{.Version}}\n")
+
+	initConfigCmd()
+	initPluginCmd()
+	initBrowsersCmd()
+	initRuleCmd()
+
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(pluginCmd)
 	rootCmd.AddCommand(browsersCmd)

@@ -125,7 +125,8 @@ func TestSetPluginDisabledState_Integration(t *testing.T) {
 
 	settings.Plugins[idx].IsDisabled = true
 
-	if err := svc.WriteSettings(settings); err != nil {
+	err = svc.WriteSettings(settings)
+	if err != nil {
 		t.Fatalf("failed to write settings: %v", err)
 	}
 

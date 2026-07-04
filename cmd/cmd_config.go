@@ -10,6 +10,11 @@ import (
 	"github.com/strobotti/linkquisition"
 )
 
+const (
+	configKeyLocale   = "locale"
+	configKeyLogLevel = "loglevel"
+)
+
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "View or modify configuration",
@@ -47,7 +52,7 @@ var configPathCmd = &cobra.Command{
 	RunE:  runConfigPath,
 }
 
-func init() {
+func initConfigCmd() {
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configPathCmd)
@@ -122,9 +127,9 @@ func runConfigPath(_ *cobra.Command, _ []string) error {
 
 func getSettingsValue(settings *linkquisition.Settings, key string) (string, error) {
 	switch strings.ToLower(key) {
-	case "locale":
+	case configKeyLocale:
 		return settings.Locale, nil
-	case "loglevel":
+	case configKeyLogLevel:
 		return settings.LogLevel, nil
 	default:
 		return "", fmt.Errorf("unknown configuration key: %s\nAvailable keys: locale, logLevel", key)
@@ -133,9 +138,9 @@ func getSettingsValue(settings *linkquisition.Settings, key string) (string, err
 
 func setSettingsValue(settings *linkquisition.Settings, key, value string) error {
 	switch strings.ToLower(key) {
-	case "locale":
+	case configKeyLocale:
 		settings.Locale = value
-	case "loglevel":
+	case configKeyLogLevel:
 		validLevels := []string{
 			linkquisition.LogLevelDebug,
 			linkquisition.LogLevelInfo,

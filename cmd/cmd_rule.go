@@ -57,7 +57,7 @@ Example:
 	RunE: runRuleRemove,
 }
 
-func init() {
+func initRuleCmd() {
 	ruleCmd.AddCommand(ruleListCmd)
 	ruleCmd.AddCommand(ruleAddCmd)
 	ruleCmd.AddCommand(ruleRemoveCmd)
@@ -220,7 +220,7 @@ func findBrowserByName(settings *linkquisition.Settings, name string) (int, erro
 	var matches []int
 
 	for i, b := range settings.Browsers {
-		if strings.ToLower(b.Name) == nameLower {
+		if strings.EqualFold(b.Name, name) {
 			// Exact match — return immediately
 			return i, nil
 		}

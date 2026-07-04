@@ -11,6 +11,11 @@ import (
 	"github.com/strobotti/linkquisition"
 )
 
+const (
+	statusEnabled  = "enabled"
+	statusDisabled = "disabled"
+)
+
 var pluginCmd = &cobra.Command{
 	Use:   "plugin",
 	Short: "Manage plugins",
@@ -19,7 +24,7 @@ var pluginCmd = &cobra.Command{
 }
 
 var pluginListCmd = &cobra.Command{
-	Use:   "list",
+	Use:   cmdUseList,
 	Short: "List configured and available plugins",
 	RunE:  runPluginList,
 }
@@ -51,7 +56,7 @@ Use "plugin list" to see available plugins. The plugin is added with default set
 	RunE: runPluginAdd,
 }
 
-func init() {
+func initPluginCmd() {
 	pluginCmd.AddCommand(pluginListCmd)
 	pluginCmd.AddCommand(pluginEnableCmd)
 	pluginCmd.AddCommand(pluginDisableCmd)
@@ -65,9 +70,9 @@ func runPluginList(_ *cobra.Command, _ []string) error {
 	if len(settings.Plugins) > 0 {
 		fmt.Println("Configured plugins:")
 		for _, p := range settings.Plugins {
-			status := "enabled"
+			status := statusEnabled
 			if p.IsDisabled {
-				status = "disabled"
+				status = statusDisabled
 			}
 
 			name := pluginDisplayName(p.Path)
@@ -121,9 +126,9 @@ func setPluginDisabledState(name string, disabled bool) error {
 		return fmt.Errorf("failed to write settings: %w", err)
 	}
 
-	action := "enabled"
+	action := statusEnabled
 	if disabled {
-		action = "disabled"
+		action = statusDisabled
 	}
 
 	fmt.Printf("%s: %s\n", pluginDisplayName(settings.Plugins[idx].Path), action)

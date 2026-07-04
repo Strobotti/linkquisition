@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const cmdUseList = "list"
+
 var browsersCmd = &cobra.Command{
 	Use:   "browsers",
 	Short: "List and manage browsers",
@@ -14,7 +16,7 @@ var browsersCmd = &cobra.Command{
 }
 
 var browsersListCmd = &cobra.Command{
-	Use:   "list",
+	Use:   cmdUseList,
 	Short: "List configured browsers",
 	RunE:  runBrowsersList,
 }
@@ -30,7 +32,7 @@ are preserved during re-scanning.`,
 	RunE: runBrowsersScan,
 }
 
-func init() {
+func initBrowsersCmd() {
 	browsersCmd.AddCommand(browsersListCmd)
 	browsersCmd.AddCommand(browsersScanCmd)
 }

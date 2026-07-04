@@ -140,7 +140,8 @@ func TestRuleAdd_Integration(t *testing.T) {
 		Value: "www.twitter.com",
 	})
 
-	if err := svc.WriteSettings(settings); err != nil {
+	err = svc.WriteSettings(settings)
+	if err != nil {
 		t.Fatalf("failed to write settings: %v", err)
 	}
 
@@ -186,7 +187,8 @@ func TestRuleRemove_Integration(t *testing.T) {
 		settings.Browsers[idx].Matches[ruleIndex+1:]...,
 	)
 
-	if err := svc.WriteSettings(settings); err != nil {
+	err = svc.WriteSettings(settings)
+	if err != nil {
 		t.Fatalf("failed to write settings: %v", err)
 	}
 
