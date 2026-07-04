@@ -24,7 +24,7 @@ The file is JSON and is managed either manually or via the configuration screen
 	translation is available.
 
 *logLevel* (string, optional)
-	Log verbosity. One of: _debug_, _info_, _warn_, _error_. Default: _info_.
+	Log verbosity. One of: _debug_, _info_, _warn_, _error_. Default: _warn_.
 
 *browsers* (array)
 	List of browser objects. See *BROWSER OBJECT* below.
