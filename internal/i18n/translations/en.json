@@ -77,6 +77,9 @@
   "config.scan_failed": {
     "other": "✗ Scan failed"
   },
+  "config.log_level_label": {
+    "other": "Log level:"
+  },
   "config.hide_keyboard_guide": {
     "other": "Hide keyboard shortcut guide in picker"
   },

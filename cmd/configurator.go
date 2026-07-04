@@ -65,6 +65,8 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		layout.NewSpacer(),
 		c.buildLanguageSection(),
 		layout.NewSpacer(),
+		c.buildLogLevelSection(),
+		layout.NewSpacer(),
 		c.buildUiSection(),
 	)
 }
@@ -189,6 +191,25 @@ func (c *Configurator) buildLanguageSection() fyne.CanvasObject {
 		container.NewBorder(nil, nil, widget.NewLabel(i18n.T("config.language_label")), nil, languageSelect),
 		restartNote,
 	)
+}
+
+func (c *Configurator) buildLogLevelSection() fyne.CanvasObject {
+	levels := []string{"debug", linkquisition.LogLevelInfo, "warn", "error"}
+	currentLevel := c.settingsService.GetSettings().LogLevel
+	if currentLevel == "" {
+		currentLevel = linkquisition.LogLevelInfo
+	}
+
+	logLevelSelect := widget.NewSelect(levels, func(selected string) {
+		settings := c.settingsService.GetSettings()
+		settings.LogLevel = selected
+		if err := c.settingsService.WriteSettings(settings); err != nil {
+			c.logger.Error("Error saving log level setting", "error", err)
+		}
+	})
+	logLevelSelect.Selected = currentLevel
+
+	return container.NewBorder(nil, nil, widget.NewLabel(i18n.T("config.log_level_label")), nil, logLevelSelect)
 }
 
 func (c *Configurator) buildUiSection() fyne.CanvasObject {
