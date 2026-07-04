@@ -68,9 +68,12 @@ When making changes, ensure ALL relevant documentation is updated:
 
 ## Linting
 
-The project uses `golangci-lint`. Key rules to watch for:
+The project uses `golangci-lint`. The full rule configuration is in `.golangci.yml` — refer to
+it for the authoritative list of enabled linters and their settings. The linter runs in CI only
+(the CI version may differ from what's installed locally). Key rules to watch for:
 
 - **goconst** — extract repeated strings (3+ occurrences) into constants
+- **gosec** — security checks (e.g. `G306`: file permissions must be 0600 or less)
 - **mnd** — no magic numbers in arguments/conditions; use named constants
 - **lll** — max 140 characters per line
 - **noctx** — use `http.NewRequestWithContext` instead of `http.Get` / `client.Get`
@@ -84,6 +87,25 @@ The project uses `golangci-lint`. Key rules to watch for:
 - `cmd/application_linux.go` — Linux-specific setup (build tag `//go:build linux`)
 - `cmd/application_darwin.go` — macOS-specific setup (build tag `//go:build darwin`)
 - Both must stay in sync for shared patterns (e.g. `NewPluginServiceProvider` call)
+
+## The `cmd` package
+
+The `cmd/` directory is `package main` — it cannot be imported by other packages.
+Tests for code in `cmd/` must live in `cmd/*_test.go` files (same package). Use
+the `linkquisition.FileSettingsService` with a test `PathProvider` for integration-style
+tests (see `cmd/log_rotation_test.go` for an example).
+
+The app has two UI modes, both in `cmd/`:
+- **Configurator** (`cmd/configurator.go`) — settings screen, shown when launched with no args.
+  The General tab is composed of `build*Section()` methods. Add new sections there.
+- **BrowserPicker** (`cmd/browser_picker.go`) — the URL picker, shown when launched with a URL.
+
+## Settings and config model
+
+- `settings.go` — `Settings` struct, constants (`LogLevel*`, `BrowserMatchType*`, `Source*`),
+  `SettingsService` interface, `MapSettingsLogLevelToSlog`
+- `settings_service.go` — `FileSettingsService` (shared, platform-independent implementation)
+- Use named constants for repeated string values (log levels, match types, sources)
 
 ## Paths on each platform
 

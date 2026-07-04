@@ -787,8 +787,8 @@ func TestMapSettingsLogLevelToSlog(t *testing.T) {
 		{name: "info", input: "info", expected: 0},
 		{name: "warn", input: "warn", expected: 4},
 		{name: "error", input: "error", expected: 8},
-		{name: "unknown defaults to info", input: "something", expected: 0},
-		{name: "empty defaults to info", input: "", expected: 0},
+		{name: "unknown defaults to warn", input: "something", expected: 4},
+		{name: "empty defaults to warn", input: "", expected: 4},
 		{name: "case insensitive DEBUG", input: "DEBUG", expected: -4},
 		{name: "case insensitive Warn", input: "Warn", expected: 4},
 	} {

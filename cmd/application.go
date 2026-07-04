@@ -22,6 +22,7 @@ import (
 const logDirPerms = 0755
 const logFilePerms = 0644
 const pluginShutdownTimeout = 10 * time.Second
+const maxLogFileSize = 1 << 20 // 1 MB
 
 type Application struct {
 	Fapp            fyne.App
@@ -156,6 +157,25 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 	return slog.New(slog.NewTextHandler(logWriter, logHandlerOpts))
 }
 
+// rotateLogFile checks the log file size and rotates it if it exceeds the threshold.
+// Keeps at most one backup (linkquisition.log.1).
+func rotateLogFile(settingsService linkquisition.SettingsService) {
+	logPath := settingsService.GetLogFilePath()
+
+	info, err := os.Stat(logPath)
+	if err != nil {
+		return // file doesn't exist yet, nothing to rotate
+	}
+
+	if info.Size() < maxLogFileSize {
+		return
+	}
+
+	backupPath := logPath + ".1"
+	_ = os.Remove(backupPath)
+	_ = os.Rename(logPath, backupPath)
+}
+
 func (a *Application) Run(_ context.Context) error {
 	defer a.shutdownPlugins()
 
@@ -186,6 +206,10 @@ func (a *Application) Run(_ context.Context) error {
 		a.Logger.Error("Invalid URL: " + urlToOpen)
 		return nil
 	}
+
+	// Rotate the log file if it has grown too large. Deferred so it runs as one
+	// of the last things before the process exits in the URL-opening path.
+	defer rotateLogFile(a.SettingsService)
 
 	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with URL: `%s`", urlToOpen))
 

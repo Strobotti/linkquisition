@@ -77,6 +77,9 @@
   "config.scan_failed": {
     "other": "✗ La búsqueda falló"
   },
+  "config.log_level_label": {
+    "other": "Nivel de registro:"
+  },
   "config.hide_keyboard_guide": {
     "other": "Ocultar guía de atajos de teclado en el selector"
   },
