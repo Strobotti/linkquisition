@@ -24,7 +24,6 @@ Automatically chooses a browser based on domain, site, or regex rules.
 
 Author:  %s
 GitHub:  %s`, appAuthor, appGithubURL),
-	Version:           version,
 	Args:              cobra.MaximumNArgs(1),
 	SilenceUsage:      true,
 	SilenceErrors:     true,
@@ -66,6 +65,7 @@ func runRoot(cmd *cobra.Command, args []string) error {
 }
 
 func initRootCmd() {
+	rootCmd.Version = version
 	rootCmd.SetVersionTemplate("Version: {{.Version}}\n")
 	rootCmd.AddCommand(configCmd)
 }

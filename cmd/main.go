@@ -7,7 +7,9 @@ import (
 	"os"
 )
 
-var version string // Will be set by the build script Taskfile.build.yml
+// version is set at build time via -ldflags '-X main.version=...' (see Taskfile.build.yml).
+// The default "dev" ensures --version always works during development.
+var version = "dev"
 
 const exitCodePanic = 2
 
