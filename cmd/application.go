@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net/url"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -176,35 +175,17 @@ func rotateLogFile(settingsService linkquisition.SettingsService) {
 	_ = os.Rename(logPath, backupPath)
 }
 
-func (a *Application) Run(_ context.Context) error {
+// RunGUI launches the GUI mode of the application. If urlToOpen is empty, the
+// configurator is shown; otherwise the browser picker handles the URL.
+func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 	defer a.shutdownPlugins()
 
 	// Initialize localization before any UI strings are used
 	i18n.Init(a.SettingsService.GetSettings().Locale)
 
-	args := os.Args
-
-	urlToOpen := ""
-
-	if len(args) >= 2 { //nolint:mnd
-		if args[1] == "--version" || args[1] == "-v" || args[1] == "version" {
-			fmt.Printf("Version: %s\n", version)
-			return nil
-		}
-		urlToOpen = args[1]
-	} else {
-		// No CLI args — check if a URL arrived via platform event (macOS Apple Events)
-		urlToOpen = getURLFromPlatformEvent()
-	}
-
 	if urlToOpen == "" {
 		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService, a.Logger)
 		return configurator.Run()
-	}
-
-	if _, err := url.ParseRequestURI(urlToOpen); err != nil {
-		a.Logger.Error("Invalid URL: " + urlToOpen)
-		return nil
 	}
 
 	// Rotate the log file if it has grown too large. Deferred so it runs as one

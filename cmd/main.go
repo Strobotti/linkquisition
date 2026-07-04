@@ -3,7 +3,6 @@ package main
 //go:generate fyne bundle -o resources/bundled.go --package resources --name LinkquisitionIcon Icon.png
 
 import (
-	"context"
 	"log"
 	"os"
 )
@@ -24,24 +23,5 @@ func run() (exitCode int) {
 		}
 	}()
 
-	ctx, stop := context.WithCancel(context.Background())
-
-	app := NewApplication()
-
-	if err := app.Run(ctx); err != nil {
-		log.Println(
-			"main: app.Run returned an error",
-			"error", err.Error(),
-		)
-
-		stop()
-		<-ctx.Done()
-
-		return 1
-	}
-
-	stop()
-	<-ctx.Done()
-
-	return 0
+	return execute()
 }
