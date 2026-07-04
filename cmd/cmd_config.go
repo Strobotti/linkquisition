@@ -58,6 +58,11 @@ func newSettingsServiceForCLI() linkquisition.SettingsService {
 	return settingsService
 }
 
+func newBrowserServiceForCLI() linkquisition.BrowserService {
+	browserService, _ := newPlatformServices()
+	return browserService
+}
+
 func runConfigShow(_ *cobra.Command, _ []string) error {
 	settingsService := newSettingsServiceForCLI()
 	settings := settingsService.GetSettings()
