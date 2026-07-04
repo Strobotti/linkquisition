@@ -44,7 +44,7 @@ func TestRotateLogFile_SmallFile(t *testing.T) {
 	logPath := svc.GetLogFilePath()
 
 	// Create a small log file (under threshold)
-	if err := os.WriteFile(logPath, []byte("small log content\n"), 0644); err != nil {
+	if err := os.WriteFile(logPath, []byte("small log content\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -71,7 +71,7 @@ func TestRotateLogFile_LargeFile(t *testing.T) {
 		largeContent[i] = 'x'
 	}
 
-	if err := os.WriteFile(logPath, largeContent, 0644); err != nil {
+	if err := os.WriteFile(logPath, largeContent, 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -99,13 +99,13 @@ func TestRotateLogFile_OverwritesOldBackup(t *testing.T) {
 	backupPath := logPath + ".1"
 
 	// Create an existing backup
-	if err := os.WriteFile(backupPath, []byte("old backup"), 0644); err != nil {
+	if err := os.WriteFile(backupPath, []byte("old backup"), 0600); err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a large current log
 	largeContent := make([]byte, maxLogFileSize+100)
-	if err := os.WriteFile(logPath, largeContent, 0644); err != nil {
+	if err := os.WriteFile(logPath, largeContent, 0600); err != nil {
 		t.Fatal(err)
 	}
 
