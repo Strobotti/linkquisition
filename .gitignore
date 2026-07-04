@@ -4,7 +4,6 @@
 !.goreleaser.yaml
 !.golangci.yml
 !.release.yml
-!.agent-instructions.md
 /bin/
 /package/linux/
 /dist/
