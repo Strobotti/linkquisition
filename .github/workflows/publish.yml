@@ -49,7 +49,7 @@ jobs:
         run: task test
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: test/coverage.latest/coverage.xml
@@ -122,7 +122,7 @@ jobs:
           VERSION: ${{ needs.version.outputs.version }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.target }}
           path: dist/
