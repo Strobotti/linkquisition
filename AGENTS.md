@@ -39,6 +39,8 @@ When making changes, ensure ALL relevant documentation is updated:
 ### When adding CLI flags or changing app behavior
 
 - [ ] Update `doc/linkquisition.1.scd` man page
+- [ ] Update the "Command-line interface" section in `README.md`
+- [ ] Add new subcommands via `rootCmd.AddCommand()` in `cmd/root.go` `initRootCmd()`
 
 ## Plugin system conventions
 
@@ -95,7 +97,28 @@ Tests for code in `cmd/` must live in `cmd/*_test.go` files (same package). Use
 the `linkquisition.FileSettingsService` with a test `PathProvider` for integration-style
 tests (see `cmd/log_rotation_test.go` for an example).
 
+### CLI architecture (cobra)
+
+The CLI uses `github.com/spf13/cobra`. Key files:
+
+- `cmd/root.go` — root command, `initRootCmd()` registers all subcommands
+- `cmd/cmd_config.go` — `config` subcommand + `newSettingsServiceForCLI()` / `newBrowserServiceForCLI()` helpers
+- `cmd/cmd_plugin.go` — `plugin` subcommand (list/enable/disable/add + plugin discovery)
+- `cmd/cmd_browsers.go` — `browsers` subcommand (list/scan)
+- `cmd/cmd_rule.go` — `rule` subcommand (list/add/remove + `findBrowserByName()`)
+- `cmd/cmd_set_default.go` — `set-default` subcommand
+
+Design principles:
+
+- CLI commands only create `SettingsService` / `BrowserService` — no fyne/GUI initialization
+- GUI is only initialized in `runRoot()` when no subcommand is matched
+- `Application.RunGUI(ctx, url)` is the entry point for GUI modes (configurator or picker)
+- Add new subcommands via `rootCmd.AddCommand()` in `initRootCmd()`
+
+### GUI modes
+
 The app has two UI modes, both in `cmd/`:
+
 - **Configurator** (`cmd/configurator.go`) — settings screen, shown when launched with no args.
   The General tab is composed of `build*Section()` methods. Add new sections there.
 - **BrowserPicker** (`cmd/browser_picker.go`) — the URL picker, shown when launched with a URL.

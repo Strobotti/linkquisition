@@ -129,6 +129,51 @@ Currently supported languages:
 To contribute a new translation, add a JSON file to `internal/i18n/translations/` following the
 format of the existing files (e.g. `en.json`). The filename should be the locale code (e.g. `de.json` for German).
 
+## Command-line interface
+
+In addition to the GUI, Linkquisition provides a full CLI for scriptable configuration:
+
+```bash
+# Show help
+linkquisition --help
+
+# Version
+linkquisition --version
+
+# Configuration
+linkquisition config                        # show full config as JSON
+linkquisition config get logLevel           # get a single value
+linkquisition config set logLevel debug     # set a value
+linkquisition config path                   # print config file path
+
+# Plugin management
+linkquisition plugin list                   # list configured + available plugins
+linkquisition plugin enable <name>          # enable a plugin
+linkquisition plugin disable <name>         # disable a plugin
+linkquisition plugin add <name>             # add an available plugin with defaults
+
+# Browser management
+linkquisition browsers list                 # list configured browsers
+linkquisition browsers scan                 # scan system for installed browsers
+
+# Match rules
+linkquisition rule list                     # list all URL match rules
+linkquisition rule list firefox             # list rules for a specific browser
+linkquisition rule add firefox site github.com        # add a rule
+linkquisition rule add chrome regex ".*\.example\.com"  # add a regex rule
+linkquisition rule remove firefox 1         # remove rule by index
+
+# Set as default browser
+linkquisition set-default
+```
+
+On macOS, the binary is located at `/Applications/Linkquisition.app/Contents/MacOS/linkquisition`.
+You can create a symlink for convenience:
+
+```bash
+ln -s /Applications/Linkquisition.app/Contents/MacOS/linkquisition /usr/local/bin/linkquisition
+```
+
 ## Development
 
 I am using Ubuntu Linux for development, so the instructions are tailored for that. However, the code should work on any

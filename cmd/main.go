@@ -3,12 +3,13 @@ package main
 //go:generate fyne bundle -o resources/bundled.go --package resources --name LinkquisitionIcon Icon.png
 
 import (
-	"context"
 	"log"
 	"os"
 )
 
-var version string // Will be set by the build script Taskfile.build.yml
+// version is set at build time via -ldflags '-X main.version=...' (see Taskfile.build.yml).
+// The default "dev" ensures --version always works during development.
+var version = "dev"
 
 const exitCodePanic = 2
 
@@ -24,24 +25,5 @@ func run() (exitCode int) {
 		}
 	}()
 
-	ctx, stop := context.WithCancel(context.Background())
-
-	app := NewApplication()
-
-	if err := app.Run(ctx); err != nil {
-		log.Println(
-			"main: app.Run returned an error",
-			"error", err.Error(),
-		)
-
-		stop()
-		<-ctx.Done()
-
-		return 1
-	}
-
-	stop()
-	<-ctx.Done()
-
-	return 0
+	return execute()
 }

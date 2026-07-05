@@ -13,8 +13,10 @@ _~/.config/linkquisition/config.json_
 The configuration file controls which browsers are available, how URLs are
 matched to browsers, and which plugins are loaded.
 
-The file is JSON and is managed either manually or via the configuration screen
-(launched by running *linkquisition* with no arguments).
+The file is JSON and is managed either manually, via the configuration screen
+(launched by running *linkquisition* with no arguments), or via the command-line
+interface (see *linkquisition*(1) for details on *config*, *plugin*, *browsers*,
+and *rule* subcommands).
 
 # TOP-LEVEL KEYS
 
