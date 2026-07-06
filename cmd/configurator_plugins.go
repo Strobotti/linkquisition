@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,18 +41,12 @@ func (c *Configurator) rebuildPluginsList(content *fyne.Container) {
 	available := c.discoverUnconfiguredPlugins(settings)
 	if len(available) > 0 {
 		content.Add(layout.NewSpacer())
-		content.Add(widget.NewLabel(i18n.T("config.plugins_available")))
+		availLabel := widget.NewLabel(i18n.T("config.plugins_available"))
+		availLabel.TextStyle = fyne.TextStyle{Bold: true}
+		content.Add(availLabel)
 
 		for _, name := range available {
-			pluginName := name
-			addBtn := widget.NewButton(
-				fmt.Sprintf("%s  [%s]", pluginName, i18n.T("config.plugins_add")),
-				func() {
-					c.addPlugin(pluginName, content)
-				},
-			)
-			addBtn.Importance = widget.LowImportance
-			content.Add(addBtn)
+			content.Add(c.buildAvailablePluginRow(name, content))
 		}
 	} else if len(settings.Plugins) == 0 {
 		content.Add(widget.NewLabel(i18n.T("config.plugins_none_available")))
@@ -88,11 +81,10 @@ func (c *Configurator) buildPluginCard(
 	})
 	enableCheck.Checked = !ps.IsDisabled
 
-	// Configure button
+	// Configure button — uses default importance (visible border)
 	configBtn := widget.NewButton(i18n.T("config.plugins_configure"), func() {
 		c.showPluginSettings(idx, listContainer)
 	})
-	configBtn.Importance = widget.LowImportance
 
 	// Only show configure button if plugin has settings
 	if len(meta.Settings) == 0 {
@@ -103,7 +95,6 @@ func (c *Configurator) buildPluginCard(
 	upBtn := widget.NewButton(i18n.T("config.plugins_move_up"), func() {
 		c.movePlugin(idx, -1, listContainer)
 	})
-	upBtn.Importance = widget.LowImportance
 	if idx == 0 {
 		upBtn.Disable()
 	}
@@ -111,7 +102,6 @@ func (c *Configurator) buildPluginCard(
 	downBtn := widget.NewButton(i18n.T("config.plugins_move_down"), func() {
 		c.movePlugin(idx, 1, listContainer)
 	})
-	downBtn.Importance = widget.LowImportance
 	if idx == len(settings.Plugins)-1 {
 		downBtn.Disable()
 	}
@@ -126,6 +116,26 @@ func (c *Configurator) buildPluginCard(
 	actionRow := container.NewHBox(configBtn)
 
 	card := container.NewVBox(headerRow, desc, actionRow)
+
+	return widget.NewCard("", "", card)
+}
+
+func (c *Configurator) buildAvailablePluginRow(name string, listContainer *fyne.Container) fyne.CanvasObject {
+	pluginName := name
+	meta := c.getPluginMetadata(pluginName + ".so")
+
+	title := widget.NewLabel(meta.Name)
+	title.TextStyle = fyne.TextStyle{Bold: true}
+
+	desc := widget.NewLabel(meta.Description)
+	desc.Wrapping = fyne.TextWrapWord
+
+	addBtn := widget.NewButton(i18n.T("config.plugins_add"), func() {
+		c.addPlugin(pluginName, listContainer)
+	})
+
+	headerRow := container.NewBorder(nil, nil, title, addBtn)
+	card := container.NewVBox(headerRow, desc)
 
 	return widget.NewCard("", "", card)
 }
