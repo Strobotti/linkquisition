@@ -142,5 +142,89 @@
   },
   "config.plugins_restart_note": {
     "other": "Los cambios de plugins se aplican en la próxima apertura de URL."
+  },
+  "config.tab_browsers": {
+    "other": "Navegadores"
+  },
+  "config.browsers_empty": {
+    "other": "No hay navegadores configurados.\n\nHaga clic en el botón de abajo para buscar navegadores instalados en su sistema. Esto es necesario para que Linkquisition funcione como selector de navegador."
+  },
+  "config.browsers_show_in_picker": {
+    "other": "Mostrar en selector"
+  },
+  "config.browsers_add": {
+    "other": "Añadir navegador..."
+  },
+  "config.browsers_add_title": {
+    "other": "Añadir navegador"
+  },
+  "config.browsers_edit": {
+    "other": "Editar..."
+  },
+  "config.browsers_edit_title": {
+    "other": "Editar navegador"
+  },
+  "config.browsers_delete": {
+    "other": "Eliminar"
+  },
+  "config.browsers_delete_confirm": {
+    "other": "¿Está seguro de que desea eliminar \"{{.Name}}\"?"
+  },
+  "config.browsers_name": {
+    "other": "Nombre"
+  },
+  "config.browsers_command": {
+    "other": "Comando"
+  },
+  "config.browsers_name_placeholder": {
+    "other": "ej. Firefox privado"
+  },
+  "config.browsers_command_placeholder": {
+    "other": "ej. firefox --private-window %u"
+  },
+  "config.browsers_source_auto": {
+    "other": "(automático)"
+  },
+  "config.browsers_source_manual": {
+    "other": "(manual)"
+  },
+  "config.browsers_rules_count": {
+    "other": "{{.Count}} regla(s)"
+  },
+  "config.no_browsers_warning": {
+    "other": "⚠ No hay navegadores configurados. Vaya a la pestaña Navegadores para buscar navegadores instalados."
+  },
+  "config.rules_no_browsers": {
+    "other": "No hay navegadores configurados. Añada navegadores primero en la pestaña Navegadores."
+  },
+  "config.rules_empty": {
+    "other": "No hay reglas configuradas.\n\nLas reglas determinan qué navegador abre una URL automáticamente. Use el botón \"+ Añadir regla\" junto al nombre del navegador para crear una."
+  },
+  "config.rules_add": {
+    "other": "+ Añadir regla"
+  },
+  "config.rules_add_title": {
+    "other": "Añadir regla a {{.Name}}"
+  },
+  "config.rules_type": {
+    "other": "Tipo"
+  },
+  "config.rules_value": {
+    "other": "Valor"
+  },
+  "config.rules_value_placeholder": {
+    "other": "ej. www.example.com"
+  },
+  "config.rules_none_for_browser": {
+    "other": "Sin reglas configuradas"
+  },
+  "config.rules_regex_invalid": {
+    "other": "Expresión regular no válida"
+  },
+  "config.rules_filter_placeholder": {
+    "other": "Filtrar reglas..."
+  },
+  "config.rules_no_match": {
+    "other": "Ninguna regla coincide con el filtro."
   }
 }

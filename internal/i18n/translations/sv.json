@@ -142,5 +142,89 @@
   },
   "config.plugins_restart_note": {
     "other": "Pluginändringar träder i kraft vid nästa URL-öppning."
+  },
+  "config.tab_browsers": {
+    "other": "Webbläsare"
+  },
+  "config.browsers_empty": {
+    "other": "Inga webbläsare konfigurerade.\n\nKlicka på knappen nedan för att söka efter installerade webbläsare. Detta krävs för att Linkquisition ska fungera som webbläsarväljare."
+  },
+  "config.browsers_show_in_picker": {
+    "other": "Visa i väljaren"
+  },
+  "config.browsers_add": {
+    "other": "Lägg till webbläsare..."
+  },
+  "config.browsers_add_title": {
+    "other": "Lägg till webbläsare"
+  },
+  "config.browsers_edit": {
+    "other": "Redigera..."
+  },
+  "config.browsers_edit_title": {
+    "other": "Redigera webbläsare"
+  },
+  "config.browsers_delete": {
+    "other": "Ta bort"
+  },
+  "config.browsers_delete_confirm": {
+    "other": "Är du säker på att du vill ta bort \"{{.Name}}\"?"
+  },
+  "config.browsers_name": {
+    "other": "Namn"
+  },
+  "config.browsers_command": {
+    "other": "Kommando"
+  },
+  "config.browsers_name_placeholder": {
+    "other": "t.ex. Firefox privat"
+  },
+  "config.browsers_command_placeholder": {
+    "other": "t.ex. firefox --private-window %u"
+  },
+  "config.browsers_source_auto": {
+    "other": "(automatisk)"
+  },
+  "config.browsers_source_manual": {
+    "other": "(manuell)"
+  },
+  "config.browsers_rules_count": {
+    "other": "{{.Count}} regel/regler"
+  },
+  "config.no_browsers_warning": {
+    "other": "⚠ Inga webbläsare konfigurerade. Gå till fliken Webbläsare för att söka efter installerade webbläsare."
+  },
+  "config.rules_no_browsers": {
+    "other": "Inga webbläsare konfigurerade. Lägg till webbläsare först i fliken Webbläsare."
+  },
+  "config.rules_empty": {
+    "other": "Inga regler konfigurerade.\n\nRegler bestämmer vilken webbläsare som öppnar en URL automatiskt. Använd knappen \"+ Lägg till regel\" bredvid webbläsarnamnet för att skapa en."
+  },
+  "config.rules_add": {
+    "other": "+ Lägg till regel"
+  },
+  "config.rules_add_title": {
+    "other": "Lägg till regel för {{.Name}}"
+  },
+  "config.rules_type": {
+    "other": "Typ"
+  },
+  "config.rules_value": {
+    "other": "Värde"
+  },
+  "config.rules_value_placeholder": {
+    "other": "t.ex. www.example.com"
+  },
+  "config.rules_none_for_browser": {
+    "other": "Inga regler konfigurerade"
+  },
+  "config.rules_regex_invalid": {
+    "other": "Ogiltigt reguljärt uttryck"
+  },
+  "config.rules_filter_placeholder": {
+    "other": "Filtrera regler..."
+  },
+  "config.rules_no_match": {
+    "other": "Inga regler matchar filtret."
   }
 }

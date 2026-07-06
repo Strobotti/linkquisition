@@ -142,5 +142,89 @@
   },
   "config.plugins_restart_note": {
     "other": "Plugin changes take effect on next URL open."
+  },
+  "config.tab_browsers": {
+    "other": "Browsers"
+  },
+  "config.browsers_empty": {
+    "other": "No browsers configured yet.\n\nClick the button below to scan your system for installed browsers. This is required for Linkquisition to work as a browser picker."
+  },
+  "config.browsers_show_in_picker": {
+    "other": "Show in picker"
+  },
+  "config.browsers_add": {
+    "other": "Add browser..."
+  },
+  "config.browsers_add_title": {
+    "other": "Add Browser"
+  },
+  "config.browsers_edit": {
+    "other": "Edit..."
+  },
+  "config.browsers_edit_title": {
+    "other": "Edit Browser"
+  },
+  "config.browsers_delete": {
+    "other": "Delete"
+  },
+  "config.browsers_delete_confirm": {
+    "other": "Are you sure you want to delete \"{{.Name}}\"?"
+  },
+  "config.browsers_name": {
+    "other": "Name"
+  },
+  "config.browsers_command": {
+    "other": "Command"
+  },
+  "config.browsers_name_placeholder": {
+    "other": "e.g. Firefox Private"
+  },
+  "config.browsers_command_placeholder": {
+    "other": "e.g. firefox --private-window %u"
+  },
+  "config.browsers_source_auto": {
+    "other": "(auto)"
+  },
+  "config.browsers_source_manual": {
+    "other": "(manual)"
+  },
+  "config.browsers_rules_count": {
+    "other": "{{.Count}} rule(s)"
+  },
+  "config.no_browsers_warning": {
+    "other": "⚠ No browsers configured. Go to the Browsers tab to scan for installed browsers."
+  },
+  "config.rules_no_browsers": {
+    "other": "No browsers configured. Add browsers first in the Browsers tab."
+  },
+  "config.rules_empty": {
+    "other": "No match rules configured yet.\n\nRules determine which browser opens a URL automatically. Use the \"+ Add rule\" button next to a browser name to create one."
+  },
+  "config.rules_add": {
+    "other": "+ Add rule"
+  },
+  "config.rules_add_title": {
+    "other": "Add Rule to {{.Name}}"
+  },
+  "config.rules_type": {
+    "other": "Type"
+  },
+  "config.rules_value": {
+    "other": "Value"
+  },
+  "config.rules_value_placeholder": {
+    "other": "e.g. www.example.com"
+  },
+  "config.rules_none_for_browser": {
+    "other": "No rules configured"
+  },
+  "config.rules_regex_invalid": {
+    "other": "Invalid regular expression"
+  },
+  "config.rules_filter_placeholder": {
+    "other": "Filter rules..."
+  },
+  "config.rules_no_match": {
+    "other": "No rules match the filter."
   }
 }
