@@ -244,11 +244,10 @@ func (c *Configurator) getAboutTab() fyne.CanvasObject {
 
 	return container.NewVBox(
 		container.NewHBox(icon, title),
-		layout.NewSpacer(),
+		widget.NewSeparator(),
 		description,
-		layout.NewSpacer(),
+		widget.NewSeparator(),
 		details,
-		layout.NewSpacer(),
 	)
 }
 
