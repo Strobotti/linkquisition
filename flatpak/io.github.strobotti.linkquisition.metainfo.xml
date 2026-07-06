@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>io.github.strobotti.linkquisition</id>
+
+    <name>Linkquisition</name>
+    <summary>A fast, configurable browser-picker for Linux</summary>
+
+    <metadata_license>MIT</metadata_license>
+    <project_license>MIT</project_license>
+
+    <developer id="io.github.strobotti">
+        <name>Juha Jantunen</name>
+    </developer>
+
+    <description>
+        <p>
+            Linkquisition is a browser-picker that lets you choose which browser opens
+            a link, or automatically routes URLs based on configurable rules. Set it as
+            your default browser and every link click shows a fast picker window, or
+            goes directly to the right browser based on domain, site, or regex rules.
+        </p>
+        <p>Features:</p>
+        <ul>
+            <li>Fast picker window with keyboard shortcuts (number keys, Enter, Ctrl+C)</li>
+            <li>Automatic browser selection based on domain, site, or regex rules</li>
+            <li>Remember choice for a given site</li>
+            <li>Plugin system for URL processing (sanitize tracking params, unwrap redirects, etc.)</li>
+            <li>Hide browsers from the list or add custom browser entries</li>
+            <li>Full CLI for scriptable configuration</li>
+            <li>Localization support (English, Finnish, Spanish, Swedish)</li>
+        </ul>
+    </description>
+
+    <launchable type="desktop-id">io.github.strobotti.linkquisition.desktop</launchable>
+
+    <url type="homepage">https://github.com/Strobotti/linkquisition</url>
+    <url type="bugtracker">https://github.com/Strobotti/linkquisition/issues</url>
+    <url type="vcs-browser">https://github.com/Strobotti/linkquisition</url>
+
+    <provides>
+        <binary>linkquisition</binary>
+    </provides>
+
+    <branding>
+        <color type="primary" scheme_preference="light">#4a90d9</color>
+        <color type="primary" scheme_preference="dark">#1c4a7e</color>
+    </branding>
+
+    <content_rating type="oars-1.1"/>
+
+    <releases>
+    </releases>
+
+    <screenshots>
+        <screenshot type="default">
+            <caption>The browser picker window</caption>
+            <image>https://raw.githubusercontent.com/Strobotti/linkquisition/main/screenshot.png</image>
+        </screenshot>
+        <screenshot>
+            <caption>The configuration screen</caption>
+            <image>https://raw.githubusercontent.com/Strobotti/linkquisition/main/screenshot-config.png</image>
+        </screenshot>
+    </screenshots>
+</component>

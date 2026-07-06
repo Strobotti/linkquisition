@@ -53,10 +53,46 @@ builds:
       - -X main.commitSHA={{.FullCommit}}
       - -X main.buildDate={{.Date}}
 
+  - id: "sanitize-plugin"
+    binary: "plugins/sanitize.so"
+    buildmode: plugin
+    no_main_check: true
+    goos:
+      - linux
+    goarch:
+      - amd64
+    main: ./plugins/sanitize/
+    flags:
+      - -trimpath
+      - -buildvcs=false
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commitSHA={{.FullCommit}}
+      - -X main.buildDate={{.Date}}
+
+  - id: "defang-plugin"
+    binary: "plugins/defang.so"
+    buildmode: plugin
+    no_main_check: true
+    goos:
+      - linux
+    goarch:
+      - amd64
+    main: ./plugins/defang/
+    flags:
+      - -trimpath
+      - -buildvcs=false
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commitSHA={{.FullCommit}}
+      - -X main.buildDate={{.Date}}
+
 nfpms:
   - meta: true
     package_name: linkquisition
-    homepage: https://www.strobotti.com
+    homepage: https://github.com/Strobotti/linkquisition
     maintainer: Juha Jantunen <juha@strobotti.com>
     description: |-
       Linkquisition is a browser-picker tool for opening links in a specific browser.
@@ -64,6 +100,7 @@ nfpms:
       - deb
       - rpm
     priority: optional
+    section: utils
     dependencies:
       - libgl1
     contents:
@@ -73,6 +110,10 @@ nfpms:
         dst: /usr/lib/linkquisition/plugins/unwrap.so
       - src: ./dist/terminus-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/terminus.so
         dst: /usr/lib/linkquisition/plugins/terminus.so
+      - src: ./dist/sanitize-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/sanitize.so
+        dst: /usr/lib/linkquisition/plugins/sanitize.so
+      - src: ./dist/defang-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/defang.so
+        dst: /usr/lib/linkquisition/plugins/defang.so
       - src: package/linux
         dst: /
         type: tree

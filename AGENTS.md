@@ -36,6 +36,7 @@ When making changes, ensure ALL relevant documentation is updated:
 
 - [ ] Add a section in `plugins/README.md` with description, config example, and settings table
 - [ ] Update `Taskfile.build.yml` — add the plugin name to the `PLUGINS` variable in `build-plugins`
+- [ ] Update `.goreleaser.yaml` — add a build entry for the plugin and a contents entry in the `nfpms` section
 - [ ] Update `README.md` if it references plugin capabilities or the TODO list
 - [ ] Ensure the plugin's behavior is accurately described (don't leave "for now" placeholders in released docs)
 
@@ -170,3 +171,59 @@ The app has two UI modes, both in `cmd/`:
 - Supported: `en`, `fi`, `es`, `sv`
 - The `locale` config key overrides system detection
 - Plugins do NOT currently have access to the i18n system
+
+## Linux packaging
+
+The project produces `.deb`, `.rpm`, and AppImage packages.
+
+### Key files
+
+- `.goreleaser.yaml` — build entries for the binary + all plugins, nfpm packaging config
+- `Taskfile.build.yml` — `PLUGINS` variable (source of truth for which plugins exist)
+- `Taskfile.package.yml` — local packaging tasks (for dev testing only)
+- `scripts/build-appimage.sh` — AppImage build script (downloads linuxdeploy, bundles deps)
+- `templates/DEBIAN/control.tpl` — local deb control template (used by `task package:deb`)
+- `templates/linkquisition.desktop` — `.desktop` file installed to `/usr/share/applications/`
+- `.github/workflows/publish.yml` — CI release workflow
+
+### Keeping packaging in sync
+
+The `PLUGINS` variable in `Taskfile.build.yml` is the canonical list of plugins.
+When adding or removing a plugin, ALL of the following must be updated:
+
+1. `Taskfile.build.yml` — `PLUGINS` variable
+2. `.goreleaser.yaml` — add/remove a `builds` entry AND a `contents` entry under `nfpms`
+3. `.github/workflows/publish.yml` — if the workflow references plugins explicitly
+
+The `.goreleaser.yaml` plugin build ID pattern is `"<name>-plugin"` and the contents
+path pattern is `./dist/<name>-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/<name>.so`
+→ `/usr/lib/linkquisition/plugins/<name>.so`.
+
+### AppImage
+
+The AppImage is built by `scripts/build-appimage.sh` which:
+
+1. Assembles an AppDir with the binary, plugins, desktop file, icon, and man pages
+2. Uses `linuxdeploy` to bundle shared library dependencies (libGL, X11, etc.)
+3. Outputs `dist/Linkquisition-<VERSION>-x86_64.AppImage`
+
+The script downloads `linuxdeploy` automatically into `dist/tools/` on first run.
+Use `--appimage-extract-and-run` mode so it works in CI without FUSE.
+
+To build locally: `task package:appimage` (Linux only).
+
+### Flatpak / Flathub
+
+Flatpak packaging files live in `flatpak/`. See `flatpak/README.md` for the full
+submission and build guide. Key points:
+
+- **App ID**: `io.github.strobotti.linkquisition`
+- **Manifest**: `flatpak/io.github.strobotti.linkquisition.yml`
+- **MetaInfo**: `flatpak/io.github.strobotti.linkquisition.metainfo.xml`
+- **Runtime**: `org.freedesktop.Platform//24.08` with `org.freedesktop.Sdk.Extension.golang`
+- **Dependencies**: Go modules must be vendored (`go mod vendor`) — no network during build
+- **Plugins**: built inside the Flatpak sandbox alongside the main binary
+
+When releasing a new version, update the `<releases>` section in the metainfo XML.
+The Flathub manifest (in the separate Flathub repo) must be updated with the new
+tag and commit SHA.

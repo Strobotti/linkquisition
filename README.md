@@ -36,13 +36,24 @@ Motivation behind this project is:
 
 ### Linux
 
-You can download the latest `.deb` package from
+You can download the latest `.deb` package or portable AppImage from
 the [releases page](https://github.com/Strobotti/linkquisition/releases).
 
-The installation contains everything needed to launch the application using the desktop-environment, e.g. you should be
+#### .deb package (Ubuntu/Debian)
+
+The `.deb` package contains everything needed to launch the application using the desktop-environment, e.g. you should be
 able to press `Super`-key in Ubuntu and type "Linkquisition" to see the launcher. To do the same in terminal just run
 `linkquisition` command. Launching the application without any arguments will show the configuration screen which allows
 you to set it as the default browser and scan for installed browsers for faster startup and easier configuration.
+
+#### AppImage (any distribution)
+
+The AppImage is a single portable file that works on any Linux distribution without installation:
+
+```bash
+chmod +x Linkquisition-*-x86_64.AppImage
+./Linkquisition-*-x86_64.AppImage
+```
 
 ### macOS
 

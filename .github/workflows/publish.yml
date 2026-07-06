@@ -111,6 +111,14 @@ jobs:
         env:
           VERSION: v${{ needs.version.outputs.version }}
 
+      - name: Build AppImage
+        if: matrix.target == 'linux-amd64'
+        run: |
+          task package:manpages
+          ./scripts/build-appimage.sh
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+
       - name: Package macOS .app
         if: matrix.target == 'darwin-universal'
         run: |
@@ -164,6 +172,28 @@ jobs:
           name: darwin-universal
           path: artifacts/
 
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: linux-amd64
+          path: artifacts/
+
+      - name: Update Flatpak metainfo with release version
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          METAINFO="flatpak/io.github.strobotti.linkquisition.metainfo.xml"
+
+          # Insert a new <release> entry after the <releases> tag
+          sed -i "s|<releases>|<releases>\n    <release version=\"${VERSION}\" date=\"${DATE}\">\n      <description>\n        <p>See https://github.com/Strobotti/linkquisition/releases/tag/v${VERSION} for details.</p>\n      </description>\n    </release>|" "$METAINFO"
+
+          # Commit the update so it's included in the release tag
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$METAINFO"
+          git commit -m "chore: update Flatpak metainfo for v${VERSION}" || echo "No changes to commit"
+          git push
+
       - uses: go-semantic-release/action@v1
         id: semrel
         with:
@@ -176,6 +206,12 @@ jobs:
       - name: Upload macOS asset to release
         if: steps.semrel.outputs.version != ''
         run: gh release upload "v${{ steps.semrel.outputs.version }}" artifacts/Linkquisition_macOS_universal.zip --clobber
+        env:
+          GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
+
+      - name: Upload AppImage to release
+        if: steps.semrel.outputs.version != ''
+        run: gh release upload "v${{ steps.semrel.outputs.version }}" artifacts/Linkquisition-*.AppImage --clobber
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
