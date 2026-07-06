@@ -215,7 +215,7 @@ The following command will build a `.deb` package in the `dist` directory:
 task package:deb # results in dist/linkquisition_0.0.0_amd64.deb
 ```
 
-## Experimental plugin-system
+## Plugin system
 
 See [plugins](./plugins/README.md) for more information.
 

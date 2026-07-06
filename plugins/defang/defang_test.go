@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -33,42 +32,36 @@ func newPlugin() linkquisition.Plugin {
 	return NewForTesting()
 }
 
-// isWarningPage checks if a URL points to a defang warning page file
-func isWarningPage(url string) bool {
-	return strings.HasPrefix(url, "file://") && strings.Contains(url, "linkquisition-defang-")
-}
-
 func TestDefang_Setup_Defaults(t *testing.T) {
 	logger := newTestLogger()
 	tmpDir := t.TempDir()
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"sources":        []interface{}{},
 		"updateInterval": "87600h",
 	})
+	require.NoError(t, err)
 
 	// With no cached lists, should not block anything
-	result := testedPlugin.ModifyUrl("https://example.com/page")
-	assert.Equal(t, "https://example.com/page", result)
+	result := testedPlugin.ProcessURL(context.Background(), "https://example.com/page")
+	assert.Equal(t, linkquisition.ActionContinue, result.Action)
+	assert.Equal(t, "https://example.com/page", result.URL)
 }
 
-func TestDefang_Setup_InvalidConfig(t *testing.T) {
+func TestDefang_Setup_InvalidDuration(t *testing.T) {
 	logger := newTestLogger()
 	tmpDir := t.TempDir()
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"sources":        []interface{}{},
 		"updateInterval": "not-a-duration",
-		"action":         123, // wrong type
 	})
-
-	// Should still work with defaults
-	result := testedPlugin.ModifyUrl("https://example.com/page")
-	assert.Equal(t, "https://example.com/page", result)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid updateInterval")
 }
 
 func TestDefang_Setup_InvalidAction(t *testing.T) {
@@ -77,18 +70,16 @@ func TestDefang_Setup_InvalidAction(t *testing.T) {
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"sources":        []interface{}{},
 		"updateInterval": "87600h",
 		"action":         "unknown_action",
 	})
-
-	// Should fall back to "block" action
-	result := testedPlugin.ModifyUrl("https://example.com/page")
-	assert.Equal(t, "https://example.com/page", result)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unknown action")
 }
 
-func TestDefang_ModifyUrl_WithCachedBlocklist(t *testing.T) {
+func TestDefang_ProcessURL_WithCachedBlocklist(t *testing.T) {
 	logger := newTestLogger()
 	tmpDir := t.TempDir()
 
@@ -107,76 +98,95 @@ func TestDefang_ModifyUrl_WithCachedBlocklist(t *testing.T) {
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	for _, tt := range []struct {
-		name        string
-		config      map[string]interface{}
-		inputUrl    string
-		expectedUrl string
+		name           string
+		config         map[string]interface{}
+		inputURL       string
+		expectedAction linkquisition.PluginAction
+		expectedURL    string
+		hasMessage     bool
 	}{
 		{
-			name:        "blocked domain returns warning page",
-			config:      map[string]interface{}{},
-			inputUrl:    "https://malware.example.com/payload",
-			expectedUrl: "WARNING_PAGE",
+			name:           "blocked domain returns ActionBlock",
+			config:         map[string]interface{}{},
+			inputURL:       "https://malware.example.com/payload",
+			expectedAction: linkquisition.ActionBlock,
+			expectedURL:    "https://malware.example.com/payload",
+			hasMessage:     true,
 		},
 		{
-			name:        "another blocked domain returns warning page",
-			config:      map[string]interface{}{},
-			inputUrl:    "https://phishing.example.net/login",
-			expectedUrl: "WARNING_PAGE",
+			name:           "another blocked domain returns ActionBlock",
+			config:         map[string]interface{}{},
+			inputURL:       "https://phishing.example.net/login",
+			expectedAction: linkquisition.ActionBlock,
+			expectedURL:    "https://phishing.example.net/login",
+			hasMessage:     true,
 		},
 		{
-			name:        "127.0.0.1 entries are also blocked",
-			config:      map[string]interface{}{},
-			inputUrl:    "https://ads.tracker.io/track?id=123",
-			expectedUrl: "WARNING_PAGE",
+			name:           "127.0.0.1 entries are also blocked",
+			config:         map[string]interface{}{},
+			inputURL:       "https://ads.tracker.io/track?id=123",
+			expectedAction: linkquisition.ActionBlock,
+			expectedURL:    "https://ads.tracker.io/track?id=123",
+			hasMessage:     true,
 		},
 		{
-			name:        "safe domain is not blocked",
-			config:      map[string]interface{}{},
-			inputUrl:    "https://safe.example.com/page",
-			expectedUrl: "https://safe.example.com/page",
+			name:           "safe domain is not blocked",
+			config:         map[string]interface{}{},
+			inputURL:       "https://safe.example.com/page",
+			expectedAction: linkquisition.ActionContinue,
+			expectedURL:    "https://safe.example.com/page",
 		},
 		{
-			name:        "localhost is not blocked",
-			config:      map[string]interface{}{},
-			inputUrl:    "http://localhost:8080/api",
-			expectedUrl: "http://localhost:8080/api",
+			name:           "localhost is not blocked",
+			config:         map[string]interface{}{},
+			inputURL:       "http://localhost:8080/api",
+			expectedAction: linkquisition.ActionContinue,
+			expectedURL:    "http://localhost:8080/api",
 		},
 		{
-			name:        "action=log returns original URL",
-			config:      map[string]interface{}{"action": "log"},
-			inputUrl:    "https://malware.example.com/payload",
-			expectedUrl: "https://malware.example.com/payload",
+			name:           "action=log returns ActionContinue",
+			config:         map[string]interface{}{"action": "log"},
+			inputURL:       "https://malware.example.com/payload",
+			expectedAction: linkquisition.ActionContinue,
+			expectedURL:    "https://malware.example.com/payload",
 		},
 		{
-			name:        "action=warn shows warning page with proceed option",
-			config:      map[string]interface{}{"action": "warn"},
-			inputUrl:    "https://malware.example.com/payload",
-			expectedUrl: "WARNING_PAGE_WITH_PROCEED",
+			name:           "action=warn returns ActionWarn",
+			config:         map[string]interface{}{"action": "warn"},
+			inputURL:       "https://malware.example.com/payload",
+			expectedAction: linkquisition.ActionWarn,
+			expectedURL:    "https://malware.example.com/payload",
+			hasMessage:     true,
 		},
 		{
-			name:        "subdomain of blocked domain is also blocked",
-			config:      map[string]interface{}{},
-			inputUrl:    "https://sub.malware.example.com/page",
-			expectedUrl: "WARNING_PAGE",
+			name:           "subdomain of blocked domain is also blocked",
+			config:         map[string]interface{}{},
+			inputURL:       "https://sub.malware.example.com/page",
+			expectedAction: linkquisition.ActionBlock,
+			expectedURL:    "https://sub.malware.example.com/page",
+			hasMessage:     true,
 		},
 		{
-			name:        "parent domain of blocked domain is NOT blocked",
-			config:      map[string]interface{}{},
-			inputUrl:    "https://example.com/page",
-			expectedUrl: "https://example.com/page",
+			name:           "parent domain of blocked domain is NOT blocked",
+			config:         map[string]interface{}{},
+			inputURL:       "https://example.com/page",
+			expectedAction: linkquisition.ActionContinue,
+			expectedURL:    "https://example.com/page",
 		},
 		{
-			name:        "URL with port on blocked domain is blocked",
-			config:      map[string]interface{}{},
-			inputUrl:    "https://malware.example.com:8443/path",
-			expectedUrl: "WARNING_PAGE",
+			name:           "URL with port on blocked domain is blocked",
+			config:         map[string]interface{}{},
+			inputURL:       "https://malware.example.com:8443/path",
+			expectedAction: linkquisition.ActionBlock,
+			expectedURL:    "https://malware.example.com:8443/path",
+			hasMessage:     true,
 		},
 		{
-			name:        "invalid URL is returned unchanged",
-			config:      map[string]interface{}{},
-			inputUrl:    "://invalid",
-			expectedUrl: "://invalid",
+			name:           "invalid URL is returned unchanged",
+			config:         map[string]interface{}{},
+			inputURL:       "://invalid",
+			expectedAction: linkquisition.ActionContinue,
+			expectedURL:    "://invalid",
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -189,25 +199,15 @@ func TestDefang_ModifyUrl_WithCachedBlocklist(t *testing.T) {
 			for k, v := range tt.config {
 				cfg[k] = v
 			}
-			testedPlugin.Setup(provider, cfg)
+			err := testedPlugin.Setup(provider, cfg)
+			require.NoError(t, err)
 
-			result := testedPlugin.ModifyUrl(tt.inputUrl)
-			switch tt.expectedUrl {
-			case "WARNING_PAGE":
-				assert.True(t, isWarningPage(result), "expected warning page, got: %s", result)
-				// Verify the file exists and does NOT contain "Open anyway"
-				content, err := os.ReadFile(strings.TrimPrefix(result, "file://"))
-				require.NoError(t, err)
-				assert.Contains(t, string(content), "blocklist")
-				assert.NotContains(t, string(content), "Open anyway")
-			case "WARNING_PAGE_WITH_PROCEED":
-				assert.True(t, isWarningPage(result), "expected warning page, got: %s", result)
-				// Verify the file exists and DOES contain "Open anyway"
-				content, err := os.ReadFile(strings.TrimPrefix(result, "file://"))
-				require.NoError(t, err)
-				assert.Contains(t, string(content), "Open anyway")
-			default:
-				assert.Equal(t, tt.expectedUrl, result)
+			result := testedPlugin.ProcessURL(context.Background(), tt.inputURL)
+			assert.Equal(t, tt.expectedAction, result.Action)
+			assert.Equal(t, tt.expectedURL, result.URL)
+			if tt.hasMessage {
+				assert.NotEmpty(t, result.Message)
+				assert.Contains(t, result.Message, "blocklist")
 			}
 		})
 	}
@@ -218,7 +218,7 @@ func TestDefang_BackgroundFetch(t *testing.T) {
 	hostsContent := `0.0.0.0 fetched-malware.test
 0.0.0.0 fetched-phishing.test
 `
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(hostsContent))
 	}))
@@ -229,10 +229,11 @@ func TestDefang_BackgroundFetch(t *testing.T) {
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"sources":        []interface{}{server.URL},
 		"updateInterval": "1ms", // Force immediate update
 	})
+	require.NoError(t, err)
 
 	// Wait for the background fetch to complete via Shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -240,19 +241,22 @@ func TestDefang_BackgroundFetch(t *testing.T) {
 	testedPlugin.Shutdown(ctx)
 
 	// Now the fetched domains should be blocked
-	result1 := testedPlugin.ModifyUrl("https://fetched-malware.test/page")
-	assert.True(t, isWarningPage(result1), "expected warning page, got: %s", result1)
-	result2 := testedPlugin.ModifyUrl("https://fetched-phishing.test/login")
-	assert.True(t, isWarningPage(result2), "expected warning page, got: %s", result2)
-	assert.Equal(t, "https://safe.test/page", testedPlugin.ModifyUrl("https://safe.test/page"))
+	result1 := testedPlugin.ProcessURL(context.Background(), "https://fetched-malware.test/page")
+	assert.Equal(t, linkquisition.ActionBlock, result1.Action)
+	result2 := testedPlugin.ProcessURL(context.Background(), "https://fetched-phishing.test/login")
+	assert.Equal(t, linkquisition.ActionBlock, result2.Action)
+
+	safeResult := testedPlugin.ProcessURL(context.Background(), "https://safe.test/page")
+	assert.Equal(t, linkquisition.ActionContinue, safeResult.Action)
+	assert.Equal(t, "https://safe.test/page", safeResult.URL)
 
 	// Verify the cache file was written
-	_, err := os.Stat(filepath.Join(tmpDir, "defang", "source_0.txt"))
-	assert.NoError(t, err)
+	_, statErr := os.Stat(filepath.Join(tmpDir, "defang", "source_0.txt"))
+	assert.NoError(t, statErr)
 }
 
 func TestDefang_BackgroundFetch_ServerError(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 	defer server.Close()
@@ -262,10 +266,11 @@ func TestDefang_BackgroundFetch_ServerError(t *testing.T) {
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"sources":        []interface{}{server.URL},
 		"updateInterval": "1ms",
 	})
+	require.NoError(t, err)
 
 	// Wait for fetch to complete
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -273,7 +278,9 @@ func TestDefang_BackgroundFetch_ServerError(t *testing.T) {
 	testedPlugin.Shutdown(ctx)
 
 	// Nothing should be blocked since the fetch failed
-	assert.Equal(t, "https://anything.test/page", testedPlugin.ModifyUrl("https://anything.test/page"))
+	result := testedPlugin.ProcessURL(context.Background(), "https://anything.test/page")
+	assert.Equal(t, linkquisition.ActionContinue, result.Action)
+	assert.Equal(t, "https://anything.test/page", result.URL)
 }
 
 func TestDefang_Shutdown_NoUpdate(t *testing.T) {
@@ -282,10 +289,11 @@ func TestDefang_Shutdown_NoUpdate(t *testing.T) {
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"sources":        []interface{}{},
 		"updateInterval": "87600h",
 	})
+	require.NoError(t, err)
 
 	// Shutdown should return immediately when no update is in progress
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
@@ -308,16 +316,17 @@ func TestDefang_CaseInsensitive(t *testing.T) {
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"updateInterval": "87600h",
 		"sources":        []interface{}{},
 	})
+	require.NoError(t, err)
 
 	// Domain lookup should be case-insensitive
-	result1 := testedPlugin.ModifyUrl("https://MALWARE.EXAMPLE.COM/page")
-	assert.True(t, isWarningPage(result1), "expected warning page, got: %s", result1)
-	result2 := testedPlugin.ModifyUrl("https://malware.example.com/page")
-	assert.True(t, isWarningPage(result2), "expected warning page, got: %s", result2)
+	result1 := testedPlugin.ProcessURL(context.Background(), "https://MALWARE.EXAMPLE.COM/page")
+	assert.Equal(t, linkquisition.ActionBlock, result1.Action)
+	result2 := testedPlugin.ProcessURL(context.Background(), "https://malware.example.com/page")
+	assert.Equal(t, linkquisition.ActionBlock, result2.Action)
 }
 
 func TestDefang_CustomSources(t *testing.T) {
@@ -326,11 +335,34 @@ func TestDefang_CustomSources(t *testing.T) {
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"sources":        []interface{}{"https://custom.source/hosts"},
 		"updateInterval": "87600h", // don't actually fetch
 	})
+	require.NoError(t, err)
 
 	// Should not crash with unreachable sources (just no domains loaded)
-	assert.Equal(t, "https://example.com/page", testedPlugin.ModifyUrl("https://example.com/page"))
+	result := testedPlugin.ProcessURL(context.Background(), "https://example.com/page")
+	assert.Equal(t, linkquisition.ActionContinue, result.Action)
+	assert.Equal(t, "https://example.com/page", result.URL)
+}
+
+func TestDefang_Metadata(t *testing.T) {
+	testedPlugin := newPlugin()
+	meta := testedPlugin.Metadata()
+
+	assert.Equal(t, "Defang", meta.Name)
+	assert.NotEmpty(t, meta.Description)
+	assert.NotEmpty(t, meta.Author)
+	assert.NotEmpty(t, meta.Version)
+	assert.Len(t, meta.Settings, 3)
+
+	// Verify settings descriptors
+	assert.Equal(t, "sources", meta.Settings[0].Key)
+	assert.Equal(t, linkquisition.SettingTypeStringList, meta.Settings[0].Type)
+	assert.Equal(t, "updateInterval", meta.Settings[1].Key)
+	assert.Equal(t, linkquisition.SettingTypeDuration, meta.Settings[1].Type)
+	assert.Equal(t, "action", meta.Settings[2].Key)
+	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[2].Type)
+	assert.Equal(t, []string{"block", "warn", "log"}, meta.Settings[2].Options)
 }

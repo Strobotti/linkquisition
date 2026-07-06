@@ -92,14 +92,51 @@ type sanitize struct {
 	serviceProvider linkquisition.PluginServiceProvider
 }
 
-func (p *sanitize) Setup(serviceProvider linkquisition.PluginServiceProvider, config map[string]interface{}) {
+func (p *sanitize) Metadata() linkquisition.PluginMetadata {
+	return linkquisition.PluginMetadata{
+		Name:        "Sanitize",
+		Description: "Strips tracking and marketing query parameters (UTM tags, click IDs, etc.) from URLs",
+		Author:      "Strobotti",
+		Version:     "2.0.0",
+		URL:         "https://github.com/Strobotti/linkquisition",
+		Settings: []linkquisition.PluginSettingDescriptor{
+			{
+				Key:         "stripDefaults",
+				Label:       "Strip Default Parameters",
+				Description: "Whether to strip the built-in list of known tracking parameters",
+				Type:        linkquisition.SettingTypeBool,
+				Default:     true,
+			},
+			{
+				Key:         "extraParams",
+				Label:       "Extra Parameters",
+				Description: "Additional exact parameter names to strip",
+				Type:        linkquisition.SettingTypeStringList,
+			},
+			{
+				Key:         "extraPatterns",
+				Label:       "Extra Patterns",
+				Description: "Regex patterns to match parameter names against (e.g. ^_ga)",
+				Type:        linkquisition.SettingTypeStringList,
+			},
+			{
+				Key:         "onlyMatchingUrls",
+				Label:       "Only Matching URLs",
+				Description: "Regex pattern; if set, only URLs matching this pattern are sanitized",
+				Type:        linkquisition.SettingTypeString,
+				Default:     "",
+			},
+		},
+	}
+}
+
+func (p *sanitize) Setup(serviceProvider linkquisition.PluginServiceProvider, config map[string]interface{}) error {
 	p.serviceProvider = serviceProvider
 	p.stripDefaults = true
 
 	var settings SanitizePluginSettings
 	if err := mapstructure.Decode(config, &settings); err != nil {
-		serviceProvider.GetLogger().Warn("error decoding settings", "error", err.Error(), "plugin", "sanitize")
-		return
+		return fmt.Errorf("error decoding settings: %w", err)
 	}
 
 	p.settings = settings
@@ -126,32 +163,29 @@ func (p *sanitize) Setup(serviceProvider linkquisition.PluginServiceProvider, co
 	if settings.OnlyMatchingUrls != "" {
 		compiled, err := regexp.Compile(settings.OnlyMatchingUrls)
 		if err != nil {
-			serviceProvider.GetLogger().Warn(
-				fmt.Sprintf("invalid onlyMatchingUrls regex: %s", settings.OnlyMatchingUrls),
-				"error", err.Error(),
-				"plugin", "sanitize",
-			)
-		} else {
-			p.urlFilter = compiled
+			return fmt.Errorf("invalid onlyMatchingUrls regex %q: %w", settings.OnlyMatchingUrls, err)
 		}
+		p.urlFilter = compiled
 	}
+
+	return nil
 }
 
-func (p *sanitize) ModifyUrl(address string) string {
+func (p *sanitize) ProcessURL(_ context.Context, address string) linkquisition.PluginResult {
 	// If a URL filter is configured, only sanitize matching URLs
 	if p.urlFilter != nil && !p.urlFilter.MatchString(address) {
-		return address
+		return linkquisition.PluginResult{URL: address, Action: linkquisition.ActionContinue, ContinueChain: true}
 	}
 
 	parsed, err := url.Parse(address)
 	if err != nil {
 		p.serviceProvider.GetLogger().Warn("error parsing URL", "error", err.Error(), "plugin", "sanitize")
-		return address
+		return linkquisition.PluginResult{URL: address, Action: linkquisition.ActionContinue, ContinueChain: true}
 	}
 
 	query := parsed.Query()
 	if len(query) == 0 {
-		return address
+		return linkquisition.PluginResult{URL: address, Action: linkquisition.ActionContinue, ContinueChain: true}
 	}
 
 	modified := false
@@ -163,15 +197,17 @@ func (p *sanitize) ModifyUrl(address string) string {
 	}
 
 	if !modified {
-		return address
+		return linkquisition.PluginResult{URL: address, Action: linkquisition.ActionContinue, ContinueChain: true}
 	}
 
 	parsed.RawQuery = query.Encode()
 
-	newUrl := parsed.String()
-	p.serviceProvider.GetLogger().Debug(fmt.Sprintf("url sanitized `%s` => `%s`", address, newUrl), "plugin", "sanitize")
+	newURL := parsed.String()
+	p.serviceProvider.GetLogger().Debug(
+		fmt.Sprintf("url sanitized `%s` => `%s`", address, newURL), "plugin", "sanitize",
+	)
 
-	return newUrl
+	return linkquisition.PluginResult{URL: newURL, Action: linkquisition.ActionContinue, ContinueChain: true}
 }
 
 // shouldStrip returns true if the given parameter name should be removed

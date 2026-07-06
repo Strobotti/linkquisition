@@ -94,5 +94,17 @@
   },
   "about.github_label": {
     "other": "GitHub:"
+  },
+  "plugin.blocked_title": {
+    "other": "Estetty lisäosan toimesta"
+  },
+  "plugin.warning_title": {
+    "other": "Varoitus"
+  },
+  "plugin.warn_cancel": {
+    "other": "Peruuta"
+  },
+  "plugin.warn_proceed": {
+    "other": "Avaa silti"
   }
 }
