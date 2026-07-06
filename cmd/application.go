@@ -134,6 +134,33 @@ func setupPlugin(
 	return p, nil
 }
 
+// probePluginMetadata opens a plugin .so file and retrieves its Metadata without calling Setup.
+// Used by the configurator to display plugin info without fully initializing plugins.
+func probePluginMetadata(path string, logger *slog.Logger) (meta linkquisition.PluginMetadata, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic while probing plugin %s: %v", path, r)
+		}
+	}()
+
+	plug, openErr := openPlugin(path, logger)
+	if plug == nil || openErr != nil {
+		return meta, fmt.Errorf("failed to open plugin: %w", openErr)
+	}
+
+	symbol, lookupErr := plug.Lookup("Plugin")
+	if lookupErr != nil {
+		return meta, fmt.Errorf("plugin symbol lookup failed: %w", lookupErr)
+	}
+
+	p, ok := symbol.(linkquisition.Plugin)
+	if !ok {
+		return meta, fmt.Errorf("plugin does not implement Plugin interface (got %T)", symbol)
+	}
+
+	return p.Metadata(), nil
+}
+
 func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 	fallbackLog := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	settings := settingsService.GetSettings()

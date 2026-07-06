@@ -106,5 +106,41 @@
   },
   "plugin.warn_proceed": {
     "other": "Öppna ändå"
+  },
+  "config.tab_plugins": {
+    "other": "Plugins"
+  },
+  "config.plugins_enabled": {
+    "other": "Aktiverad"
+  },
+  "config.plugins_configure": {
+    "other": "Konfigurera..."
+  },
+  "config.plugins_add": {
+    "other": "Lägg till"
+  },
+  "config.plugins_available": {
+    "other": "Tillgängliga (ej konfigurerade):"
+  },
+  "config.plugins_none_available": {
+    "other": "Inga ytterligare plugins tillgängliga."
+  },
+  "config.plugins_settings_title": {
+    "other": "Inställningar för {{.Name}}"
+  },
+  "config.plugins_save": {
+    "other": "Spara"
+  },
+  "config.plugins_cancel": {
+    "other": "Avbryt"
+  },
+  "config.plugins_move_up": {
+    "other": "▲"
+  },
+  "config.plugins_move_down": {
+    "other": "▼"
+  },
+  "config.plugins_restart_note": {
+    "other": "Pluginändringar träder i kraft vid nästa URL-öppning."
   }
 }

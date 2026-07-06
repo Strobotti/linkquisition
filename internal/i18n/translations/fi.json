@@ -106,5 +106,41 @@
   },
   "plugin.warn_proceed": {
     "other": "Avaa silti"
+  },
+  "config.tab_plugins": {
+    "other": "Lisäosat"
+  },
+  "config.plugins_enabled": {
+    "other": "Käytössä"
+  },
+  "config.plugins_configure": {
+    "other": "Asetukset..."
+  },
+  "config.plugins_add": {
+    "other": "Lisää"
+  },
+  "config.plugins_available": {
+    "other": "Saatavilla (ei määritetty):"
+  },
+  "config.plugins_none_available": {
+    "other": "Ei lisäosia saatavilla."
+  },
+  "config.plugins_settings_title": {
+    "other": "{{.Name}} — asetukset"
+  },
+  "config.plugins_save": {
+    "other": "Tallenna"
+  },
+  "config.plugins_cancel": {
+    "other": "Peruuta"
+  },
+  "config.plugins_move_up": {
+    "other": "▲"
+  },
+  "config.plugins_move_down": {
+    "other": "▼"
+  },
+  "config.plugins_restart_note": {
+    "other": "Muutokset tulevat voimaan seuraavalla URL-avauksella."
   }
 }
