@@ -36,18 +36,44 @@ type unwrap struct {
 	serviceProvider linkquisition.PluginServiceProvider
 }
 
-func (p *unwrap) Setup(serviceProvider linkquisition.PluginServiceProvider, config map[string]interface{}) {
-	var settings UnwrapPluginSettings
-	if err := mapstructure.Decode(config, &settings); err != nil {
-		serviceProvider.GetLogger().Warn("error decoding settings", "error", err.Error(), "plugin", "unwrap")
-	} else {
-		p.settings = settings
+func (p *unwrap) Metadata() linkquisition.PluginMetadata {
+	return linkquisition.PluginMetadata{
+		Name:        "Unwrap",
+		Description: "Unwraps URLs that are wrapped inside redirect/tracking URLs (e.g. Microsoft Defender SafeLinks)",
+		Author:      "Strobotti",
+		Version:     "2.0.0",
+		URL:         "https://github.com/Strobotti/linkquisition",
+		Settings: []linkquisition.PluginSettingDescriptor{
+			{
+				Key:         "rules",
+				Label:       "Unwrap Rules",
+				Description: "List of match/parameter pairs defining which URLs to unwrap",
+				Type:        linkquisition.SettingTypeStringList,
+			},
+			{
+				Key:         "requireBrowserMatchToUnwrap",
+				Label:       "Require Browser Match",
+				Description: "Only unwrap if a browser rule matches the unwrapped URL",
+				Type:        linkquisition.SettingTypeBool,
+				Default:     false,
+			},
+		},
 	}
-
-	p.serviceProvider = serviceProvider
 }
 
-func (p *unwrap) ModifyUrl(u string) string {
+func (p *unwrap) Setup(serviceProvider linkquisition.PluginServiceProvider, config map[string]interface{}) error {
+	var settings UnwrapPluginSettings
+	if err := mapstructure.Decode(config, &settings); err != nil {
+		return fmt.Errorf("error decoding settings: %w", err)
+	}
+
+	p.settings = settings
+	p.serviceProvider = serviceProvider
+
+	return nil
+}
+
+func (p *unwrap) ProcessURL(_ context.Context, u string) linkquisition.PluginResult {
 	for _, rule := range p.settings.Rules {
 		if rule.Match == "" {
 			p.serviceProvider.GetLogger().Warn("empty match rule", "plugin", "unwrap")
@@ -58,33 +84,33 @@ func (p *unwrap) ModifyUrl(u string) string {
 			parsed, err := url.Parse(u)
 			if err != nil {
 				p.serviceProvider.GetLogger().Warn("error parsing query", "error", err.Error(), "plugin", "unwrap")
-				return u
+				return linkquisition.PluginResult{URL: u, Action: linkquisition.ActionContinue, ContinueChain: true}
 			}
 
 			if parsed.Query().Has(rule.Parameter) {
-				newUrl := parsed.Query().Get(rule.Parameter)
-				p.serviceProvider.GetLogger().Debug(fmt.Sprintf("url modified `%s` => `%s`", u, newUrl), "plugin", "unwrap")
+				newURL := parsed.Query().Get(rule.Parameter)
+				p.serviceProvider.GetLogger().Debug(
+					fmt.Sprintf("url modified `%s` => `%s`", u, newURL), "plugin", "unwrap",
+				)
 
 				if !p.settings.RequireBrowserMatchToUnwrap {
-					// the plugin is configured to always unwrap even if there's no matching browser-rule for final URL
 					p.serviceProvider.GetLogger().Debug("unwrapping URL without browser match", "plugin", "unwrap")
-					return newUrl
-				} else if browser, err := p.serviceProvider.GetSettings().GetMatchingBrowser(newUrl); err == nil && browser != nil {
-					// the plugin is configured to only unwrap if there's a matching browser-rule for final URL
+					return linkquisition.PluginResult{URL: newURL, Action: linkquisition.ActionContinue, ContinueChain: true}
+				} else if browser, err := p.serviceProvider.GetSettings().GetMatchingBrowser(newURL); err == nil && browser != nil {
 					p.serviceProvider.GetLogger().Debug(
 						fmt.Sprintf(
 							"found a matching browser-rule for browser `%s` with URL `%s`",
 							browser.Name,
-							newUrl,
+							newURL,
 						), "plugin", "unwrap",
 					)
-					return newUrl
+					return linkquisition.PluginResult{URL: newURL, Action: linkquisition.ActionContinue, ContinueChain: true}
 				}
 			}
 		}
 	}
 
-	return u
+	return linkquisition.PluginResult{URL: u, Action: linkquisition.ActionContinue, ContinueChain: true}
 }
 
 func (p *unwrap) Shutdown(_ context.Context) {

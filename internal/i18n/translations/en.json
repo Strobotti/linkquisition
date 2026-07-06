@@ -94,5 +94,17 @@
   },
   "about.github_label": {
     "other": "GitHub:"
+  },
+  "plugin.blocked_title": {
+    "other": "Blocked by Plugin"
+  },
+  "plugin.warning_title": {
+    "other": "Warning"
+  },
+  "plugin.warn_cancel": {
+    "other": "Cancel"
+  },
+  "plugin.warn_proceed": {
+    "other": "Open anyway"
   }
 }

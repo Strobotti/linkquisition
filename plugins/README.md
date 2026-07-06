@@ -1,6 +1,7 @@
-# Plugins (experimental)
+# Plugins
 
-Plugins are a way to add more complex functionality to Linkquisition, beyond just simple rule-based matching.
+Plugins extend Linkquisition with URL processing capabilities beyond simple rule-based matching.
+Each plugin can inspect, modify, block, or warn about URLs before they reach the browser.
 
 ## [Unwrap](./unwrap/unwrap.go) -plugin
 
@@ -179,21 +180,25 @@ whatever is cached and updates lazily.
 
 ### Actions
 
-- `block` — opens a warning page in the browser showing the blocked domain, without an option to proceed
-- `warn` — opens a warning page with an "Open anyway (unsafe)" link, letting the user choose to proceed
+- `block` — shows a native dialog informing the user the domain is blocked, without opening anything
+- `warn` — shows a native dialog with an "Open anyway" option, letting the user choose to proceed
 - `log` — logs the blocked domain but still opens the URL normally (useful for monitoring without disruption)
 
 ## Developing plugins
 
-As stated before, the plugins-feature is experimental, the API is not stable and therefore subject to change. However,
-the plugin-interface is quite simple and should be easy to implement.
-
 The plugin is a shared object file (`.so`) that is loaded by the main application. The plugin must implement the
-[linkquisition.Plugin](../plugin.go) -interface which has three methods:
+[linkquisition.Plugin](../plugin.go) interface which has four methods:
 
-- `Setup(serviceProvider, config)` — called once when the plugin is loaded. The `serviceProvider` gives access to the
-  logger, settings, and the config folder path (for storing cache files etc.)
-- `ModifyUrl(url) string` — called just before the URL is matched against the browser-rules. Should return the modified
-  URL, or the original if no modification is needed.
+- `Metadata() PluginMetadata` — returns static information about the plugin (name, description, author, version,
+  and a list of `PluginSettingDescriptor` values describing the configurable settings). This is used by the CLI
+  and will be used by the GUI in a future version.
+- `Setup(serviceProvider, config) error` — called once when the plugin is loaded. The `serviceProvider` gives access
+  to the logger, settings, and the config folder path. Returns an error if the plugin cannot initialize.
+- `ProcessURL(ctx context.Context, url string) PluginResult` — called for each URL before browser matching.
+  Returns a `PluginResult` with the (possibly modified) URL and an action:
+    - `ActionContinue` — pass the URL to the next plugin or browser matching
+    - `ActionBlock` — stop processing and show a blocking message to the user
+    - `ActionWarn` — show a warning dialog with option to proceed or cancel
+    - `ActionOpenDirect` — bypass browser matching and open in the first available browser
 - `Shutdown(ctx context.Context)` — called when the application is about to exit. Plugins with background work (e.g.
   downloads) should use this to finish gracefully before the context deadline expires.

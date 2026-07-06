@@ -1,18 +1,20 @@
 package main_test
 
 import (
+	"context"
 	"log/slog"
 	"testing"
 
 	"github.com/strobotti/linkquisition/mock"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/strobotti/linkquisition"
 	. "github.com/strobotti/linkquisition/plugins/unwrap"
 )
 
-func TestUnwrap_ModifyUrl_EdgeCases(t *testing.T) {
+func TestUnwrap_ProcessURL_EdgeCases(t *testing.T) {
 	mockIoWriter := mock.Writer{
 		WriteFunc: func(p []byte) (n int, err error) {
 			return len(p), nil
@@ -23,8 +25,8 @@ func TestUnwrap_ModifyUrl_EdgeCases(t *testing.T) {
 	for _, tt := range []struct {
 		name        string
 		config      map[string]interface{}
-		inputUrl    string
-		expectedUrl string
+		inputURL    string
+		expectedURL string
 	}{
 		{
 			name: "empty match rule is skipped gracefully",
@@ -37,8 +39,8 @@ func TestUnwrap_ModifyUrl_EdgeCases(t *testing.T) {
 					},
 				},
 			},
-			inputUrl:    "https://www.example.com/?url=https%3A%2F%2Fgithub.com",
-			expectedUrl: "https://www.example.com/?url=https%3A%2F%2Fgithub.com",
+			inputURL:    "https://www.example.com/?url=https%3A%2F%2Fgithub.com",
+			expectedURL: "https://www.example.com/?url=https%3A%2F%2Fgithub.com",
 		},
 		{
 			name: "matching URL but missing query parameter returns original URL",
@@ -51,8 +53,8 @@ func TestUnwrap_ModifyUrl_EdgeCases(t *testing.T) {
 					},
 				},
 			},
-			inputUrl:    "https://safelinks.example.com/page?other=value&something=else",
-			expectedUrl: "https://safelinks.example.com/page?other=value&something=else",
+			inputURL:    "https://safelinks.example.com/page?other=value&something=else",
+			expectedURL: "https://safelinks.example.com/page?other=value&something=else",
 		},
 		{
 			name: "no rules configured returns original URL",
@@ -60,8 +62,8 @@ func TestUnwrap_ModifyUrl_EdgeCases(t *testing.T) {
 				"requireBrowserMatchToUnwrap": false,
 				"rules":                       []map[string]interface{}{},
 			},
-			inputUrl:    "https://www.example.com/something",
-			expectedUrl: "https://www.example.com/something",
+			inputURL:    "https://www.example.com/something",
+			expectedURL: "https://www.example.com/something",
 		},
 		{
 			name: "multiple rules, second one matches",
@@ -78,16 +80,20 @@ func TestUnwrap_ModifyUrl_EdgeCases(t *testing.T) {
 					},
 				},
 			},
-			inputUrl:    "https://second.example.com/link?redirect=https%3A%2F%2Ffinal.example.com",
-			expectedUrl: "https://final.example.com",
+			inputURL:    "https://second.example.com/link?redirect=https%3A%2F%2Ffinal.example.com",
+			expectedURL: "https://final.example.com",
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			testedPlugin := Plugin
 			provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, "")
-			testedPlugin.Setup(provider, tt.config)
+			err := testedPlugin.Setup(provider, tt.config)
+			require.NoError(t, err)
 
-			assert.Equal(t, tt.expectedUrl, testedPlugin.ModifyUrl(tt.inputUrl))
+			result := testedPlugin.ProcessURL(context.Background(), tt.inputURL)
+			assert.Equal(t, linkquisition.ActionContinue, result.Action)
+			assert.True(t, result.ContinueChain)
+			assert.Equal(t, tt.expectedURL, result.URL)
 		})
 	}
 }
@@ -103,16 +109,13 @@ func TestUnwrap_Setup_InvalidConfig(t *testing.T) {
 
 	testedPlugin := Plugin
 	// Pass config with wrong type for "rules" field — triggers mapstructure decode error
-	testedPlugin.Setup(provider, map[string]interface{}{
+	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"rules": "not-a-list",
 	})
-
-	// Plugin should still work — just with no rules, returning URLs unchanged
-	result := testedPlugin.ModifyUrl("https://example.com/something")
-	assert.Equal(t, "https://example.com/something", result)
+	assert.Error(t, err)
 }
 
-func TestUnwrap_ModifyUrl(t *testing.T) {
+func TestUnwrap_ProcessURL(t *testing.T) {
 	mockIoWriter := mock.Writer{
 		WriteFunc: func(p []byte) (n int, err error) {
 			return len(p), nil
@@ -123,12 +126,12 @@ func TestUnwrap_ModifyUrl(t *testing.T) {
 	for _, tt := range []struct {
 		name            string
 		config          map[string]interface{}
-		inputUrl        string
-		expectedUrl     string
+		inputURL        string
+		expectedURL     string
 		browserSettings []linkquisition.BrowserSettings
 	}{
 		{
-			name: "Microsoft Teams Defender Safelinks are unwapped",
+			name: "Microsoft Teams Defender Safelinks are unwrapped",
 			config: map[string]interface{}{
 				"requireBrowserMatchToUnwrap": false,
 				"rules": []map[string]interface{}{
@@ -138,11 +141,11 @@ func TestUnwrap_ModifyUrl(t *testing.T) {
 					},
 				},
 			},
-			inputUrl:    "https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition&locale=en-gb",
-			expectedUrl: "https://github.com/Strobotti/linkquisition",
+			inputURL:    "https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition&locale=en-gb",
+			expectedURL: "https://github.com/Strobotti/linkquisition",
 		},
 		{
-			name: "Microsoft Teams Defender Safelinks are not unwapped if the URL does not match the rule",
+			name: "Microsoft Teams Defender Safelinks are not unwrapped if the URL does not match the rule",
 			config: map[string]interface{}{
 				"requireBrowserMatchToUnwrap": false,
 				"rules": []map[string]interface{}{
@@ -152,11 +155,11 @@ func TestUnwrap_ModifyUrl(t *testing.T) {
 					},
 				},
 			},
-			inputUrl:    "https://www.example.com/path/to/something?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition",
-			expectedUrl: "https://www.example.com/path/to/something?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition",
+			inputURL:    "https://www.example.com/path/to/something?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition",
+			expectedURL: "https://www.example.com/path/to/something?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition",
 		},
 		{
-			name: "Microsoft Teams Defender Safelinks are not unwapped if the unwapped URL would not match any rule browsers rules",
+			name: "Microsoft Teams Defender Safelinks are not unwrapped if the unwrapped URL would not match any browser rules",
 			config: map[string]interface{}{
 				"requireBrowserMatchToUnwrap": true,
 				"rules": []map[string]interface{}{
@@ -166,8 +169,8 @@ func TestUnwrap_ModifyUrl(t *testing.T) {
 					},
 				},
 			},
-			inputUrl:    "https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition&locale=en-gb",
-			expectedUrl: "https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition&locale=en-gb",
+			inputURL:    "https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition&locale=en-gb",
+			expectedURL: "https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition&locale=en-gb",
 			browserSettings: []linkquisition.BrowserSettings{
 				{
 					Name: "Test Browser",
@@ -181,7 +184,7 @@ func TestUnwrap_ModifyUrl(t *testing.T) {
 			},
 		},
 		{
-			name: "Microsoft Teams Defender Safelinks are unwapped if the unwapped URL would match any browsers rule",
+			name: "Microsoft Teams Defender Safelinks are unwrapped if the unwrapped URL would match a browser rule",
 			config: map[string]interface{}{
 				"requireBrowserMatchToUnwrap": true,
 				"rules": []map[string]interface{}{
@@ -191,8 +194,8 @@ func TestUnwrap_ModifyUrl(t *testing.T) {
 					},
 				},
 			},
-			inputUrl:    "https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition",
-			expectedUrl: "https://github.com/Strobotti/linkquisition",
+			inputURL:    "https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html?url=https%3A%2F%2Fgithub.com%2FStrobotti%2Flinkquisition",
+			expectedURL: "https://github.com/Strobotti/linkquisition",
 			browserSettings: []linkquisition.BrowserSettings{
 				{
 					Name: "Test Browser",
@@ -206,14 +209,24 @@ func TestUnwrap_ModifyUrl(t *testing.T) {
 			},
 		},
 	} {
-		t.Run(
-			tt.name, func(t *testing.T) {
-				testedPlugin := Plugin
-				provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{Browsers: tt.browserSettings}, "")
-				testedPlugin.Setup(provider, tt.config)
+		t.Run(tt.name, func(t *testing.T) {
+			testedPlugin := Plugin
+			provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{Browsers: tt.browserSettings}, "")
+			err := testedPlugin.Setup(provider, tt.config)
+			require.NoError(t, err)
 
-				assert.Equal(t, tt.expectedUrl, testedPlugin.ModifyUrl(tt.inputUrl))
-			},
-		)
+			result := testedPlugin.ProcessURL(context.Background(), tt.inputURL)
+			assert.Equal(t, linkquisition.ActionContinue, result.Action)
+			assert.Equal(t, tt.expectedURL, result.URL)
+		})
 	}
+}
+
+func TestUnwrap_Metadata(t *testing.T) {
+	testedPlugin := Plugin
+	meta := testedPlugin.Metadata()
+
+	assert.Equal(t, "Unwrap", meta.Name)
+	assert.NotEmpty(t, meta.Description)
+	assert.Len(t, meta.Settings, 2)
 }

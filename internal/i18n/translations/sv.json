@@ -94,5 +94,17 @@
   },
   "about.github_label": {
     "other": "GitHub:"
+  },
+  "plugin.blocked_title": {
+    "other": "Blockerad av plugin"
+  },
+  "plugin.warning_title": {
+    "other": "Varning"
+  },
+  "plugin.warn_cancel": {
+    "other": "Avbryt"
+  },
+  "plugin.warn_proceed": {
+    "other": "Öppna ändå"
   }
 }

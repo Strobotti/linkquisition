@@ -78,6 +78,7 @@ func initRootCmd() {
 	rootCmd.AddCommand(browsersCmd)
 	rootCmd.AddCommand(setDefaultCmd)
 	rootCmd.AddCommand(ruleCmd)
+	rootCmd.AddCommand(testURLCmd)
 }
 
 func execute() int {

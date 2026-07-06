@@ -46,7 +46,10 @@ When making changes, ensure ALL relevant documentation is updated:
 
 - Plugins export `var Plugin <type>` as a package-level variable (value type, not pointer)
 - All methods use pointer receivers
-- The plugin interface has three methods: `Setup`, `ModifyUrl`, `Shutdown`
+- The plugin interface has four methods: `Metadata`, `Setup`, `ProcessURL`, `Shutdown`
+- `Metadata` returns `PluginMetadata` (name, description, author, version, settings descriptors)
+- `Setup` returns an `error` — invalid config should fail loudly
+- `ProcessURL` receives a `context.Context` and returns `PluginResult` (URL, Action, Message, ContinueChain)
 - `Shutdown` receives a `context.Context` — respect the deadline
 - Use `NewPluginServiceProvider` to access logger, settings, and config folder path
 - Plugin `.so` files MUST be built from the same source tree as the main binary (interface mismatch = crash)

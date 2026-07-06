@@ -165,6 +165,9 @@ linkquisition rule remove firefox 1         # remove rule by index
 
 # Set as default browser
 linkquisition set-default
+
+# Test/trace URL processing (dry run)
+linkquisition test-url "https://example.com/page?utm_source=twitter"
 ```
 
 On macOS, the binary is located at `/Applications/Linkquisition.app/Contents/MacOS/linkquisition`.
@@ -215,7 +218,7 @@ The following command will build a `.deb` package in the `dist` directory:
 task package:deb # results in dist/linkquisition_0.0.0_amd64.deb
 ```
 
-## Experimental plugin-system
+## Plugin system
 
 See [plugins](./plugins/README.md) for more information.
 

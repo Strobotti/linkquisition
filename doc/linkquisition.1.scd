@@ -12,7 +12,8 @@ linkquisition - a fast, configurable browser-picker for Linux and macOS
 *linkquisition* plugin [list|enable|disable|add]++
 *linkquisition* browsers [list|scan]++
 *linkquisition* rule [list|add|remove]++
-*linkquisition* set-default
+*linkquisition* set-default++
+*linkquisition* test-url _URL_
 
 # DESCRIPTION
 
@@ -104,6 +105,14 @@ matches take priority. Ambiguous partial matches produce an error.
 Set Linkquisition as the default browser. On Linux, this sets the
 default-web-browser via _xdg-settings_. On macOS, this registers
 Linkquisition as the handler for http/https URLs.
+
+## test-url
+
+*test-url* _URL_
+	Simulate opening a URL without actually opening it. Traces each plugin's
+	effect on the URL (modified, blocked, warned) and shows which browser
+	would be selected by the matching rules. Useful for debugging plugin
+	configurations and match rules.
 
 # KEYBOARD SHORTCUTS
 
