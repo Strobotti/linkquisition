@@ -1,0 +1,75 @@
+id: io.github.strobotti.linkquisition
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.golang
+command: linkquisition
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --talk-name=org.freedesktop.DBus
+  - --talk-name=org.freedesktop.portal.Desktop
+  - --talk-name=org.freedesktop.Notifications
+
+build-options:
+  env:
+    GOROOT: /usr/lib/sdk/golang
+    GOPATH: /run/build/linkquisition/go
+    PATH: /usr/lib/sdk/golang/bin:/run/build/linkquisition/go/bin:/app/bin:/usr/bin
+
+modules:
+  - name: linkquisition
+    buildsystem: simple
+    build-options:
+      env:
+        CGO_ENABLED: '1'
+        GOFLAGS: -mod=vendor
+    build-commands:
+      # Build the main binary
+      - go build -trimpath -buildvcs=false
+        -ldflags="-s -w -X main.version=${VERSION:-0.0.0}"
+        -o /app/bin/linkquisition ./cmd/
+
+      # Build plugins
+      - mkdir -p /app/lib/linkquisition/plugins
+      - go build -buildmode=plugin -trimpath -buildvcs=false
+        -o /app/lib/linkquisition/plugins/unwrap.so ./plugins/unwrap/
+      - go build -buildmode=plugin -trimpath -buildvcs=false
+        -o /app/lib/linkquisition/plugins/terminus.so ./plugins/terminus/
+      - go build -buildmode=plugin -trimpath -buildvcs=false
+        -o /app/lib/linkquisition/plugins/sanitize.so ./plugins/sanitize/
+      - go build -buildmode=plugin -trimpath -buildvcs=false
+        -o /app/lib/linkquisition/plugins/defang.so ./plugins/defang/
+
+      # Install desktop file (rename to match Flatpak app ID)
+      - sed 's/Icon=linkquisition/Icon=io.github.strobotti.linkquisition/'
+        templates/linkquisition.desktop >
+        linkquisition-flatpak.desktop
+      - install -Dm644 linkquisition-flatpak.desktop
+        /app/share/applications/io.github.strobotti.linkquisition.desktop
+
+      # Install icon
+      - install -Dm644 Icon.png
+        /app/share/icons/hicolor/256x256/apps/io.github.strobotti.linkquisition.png
+
+      # Install metainfo
+      - install -Dm644 flatpak/io.github.strobotti.linkquisition.metainfo.xml
+        /app/share/metainfo/io.github.strobotti.linkquisition.metainfo.xml
+
+      # Install license
+      - install -Dm644 LICENSE
+        /app/share/licenses/io.github.strobotti.linkquisition/LICENSE
+
+    sources:
+      - type: git
+        url: https://github.com/Strobotti/linkquisition.git
+        # Update this to the release tag when submitting to Flathub
+        tag: v1.0.0
+        commit: PLACEHOLDER
+      # Vendored dependencies — run 'go mod vendor' before building
+      # or use flatpak-builder-tools to generate go-modules sources

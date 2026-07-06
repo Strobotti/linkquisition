@@ -211,3 +211,19 @@ The script downloads `linuxdeploy` automatically into `dist/tools/` on first run
 Use `--appimage-extract-and-run` mode so it works in CI without FUSE.
 
 To build locally: `task package:appimage` (Linux only).
+
+### Flatpak / Flathub
+
+Flatpak packaging files live in `flatpak/`. See `flatpak/README.md` for the full
+submission and build guide. Key points:
+
+- **App ID**: `io.github.strobotti.linkquisition`
+- **Manifest**: `flatpak/io.github.strobotti.linkquisition.yml`
+- **MetaInfo**: `flatpak/io.github.strobotti.linkquisition.metainfo.xml`
+- **Runtime**: `org.freedesktop.Platform//24.08` with `org.freedesktop.Sdk.Extension.golang`
+- **Dependencies**: Go modules must be vendored (`go mod vendor`) — no network during build
+- **Plugins**: built inside the Flatpak sandbox alongside the main binary
+
+When releasing a new version, update the `<releases>` section in the metainfo XML.
+The Flathub manifest (in the separate Flathub repo) must be updated with the new
+tag and commit SHA.
