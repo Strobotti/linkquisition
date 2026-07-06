@@ -165,6 +165,9 @@ linkquisition rule remove firefox 1         # remove rule by index
 
 # Set as default browser
 linkquisition set-default
+
+# Test/trace URL processing (dry run)
+linkquisition test-url "https://example.com/page?utm_source=twitter"
 ```
 
 On macOS, the binary is located at `/Applications/Linkquisition.app/Contents/MacOS/linkquisition`.
