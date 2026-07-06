@@ -183,7 +183,9 @@ func rotateLogFile(settingsService linkquisition.SettingsService) {
 }
 
 // processPlugins runs the URL through all plugins and returns the final URL and action.
-func (a *Application) processPlugins(ctx context.Context, urlToOpen string) (string, linkquisition.PluginAction, string) {
+func (a *Application) processPlugins(
+	ctx context.Context, urlToOpen string,
+) (finalURL string, action linkquisition.PluginAction, message string) {
 	for _, plug := range a.plugins {
 		result := plug.ProcessURL(ctx, urlToOpen)
 
@@ -233,9 +235,11 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 
 	switch action {
 	case linkquisition.ActionBlock:
-		return a.showBlockDialog(message)
+		a.showBlockDialog(message)
+		return nil
 	case linkquisition.ActionWarn:
-		return a.showWarnDialog(processedURL, message)
+		a.showWarnDialog(processedURL, message)
+		return nil
 	case linkquisition.ActionOpenDirect:
 		return a.openInFirstBrowser(processedURL)
 	case linkquisition.ActionContinue:
@@ -246,7 +250,7 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 }
 
 // showBlockDialog displays a blocking dialog and exits without opening any URL.
-func (a *Application) showBlockDialog(message string) error {
+func (a *Application) showBlockDialog(message string) {
 	w := a.Fapp.NewWindow(i18n.T("plugin.blocked_title"))
 	w.Resize(fyne.NewSize(500, 300)) //nolint:mnd
 	w.CenterOnScreen()
@@ -258,14 +262,12 @@ func (a *Application) showBlockDialog(message string) error {
 	)
 
 	w.ShowAndRun()
-
-	return nil
 }
 
 // showWarnDialog displays a warning dialog with "Open anyway" and "Cancel" options.
 // Cancel is visually highlighted (primary) and is the default action.
 // Enter and Escape both dismiss without opening.
-func (a *Application) showWarnDialog(urlToOpen, message string) error {
+func (a *Application) showWarnDialog(urlToOpen, message string) {
 	w := a.Fapp.NewWindow(i18n.T("plugin.warning_title"))
 	w.Resize(fyne.NewSize(500, 300)) //nolint:mnd
 	w.CenterOnScreen()
@@ -309,8 +311,6 @@ func (a *Application) showWarnDialog(urlToOpen, message string) error {
 	})
 
 	w.ShowAndRun()
-
-	return nil
 }
 
 // openWithBrowserOrPicker handles the normal URL opening flow: match rules or show picker.

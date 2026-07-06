@@ -25,13 +25,18 @@ would be selected by the matching rules. Nothing is actually opened.`,
 	RunE: runTestURL,
 }
 
+type testURLResult struct {
+	url     string
+	action  linkquisition.PluginAction
+	message string
+}
+
 func runTestURL(_ *cobra.Command, args []string) error {
 	urlToOpen := args[0]
 
 	settingsService := newSettingsServiceForCLI()
 	settings := settingsService.GetSettings()
 
-	// Set up a logger that writes to stdout for tracing
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
 	pluginServiceProvider := linkquisition.NewPluginServiceProvider(
@@ -46,74 +51,99 @@ func runTestURL(_ *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), testURLTimeout)
 	defer cancel()
 
-	currentURL := urlToOpen
+	result := tracePlugins(ctx, plugins, urlToOpen)
+
+	fmt.Println()
+	printOutcome(result, urlToOpen)
+	printBrowserMatch(settings, result)
+
+	return nil
+}
+
+func tracePlugins(
+	ctx context.Context, plugins []linkquisition.Plugin, inputURL string,
+) testURLResult {
+	currentURL := inputURL
 	var finalAction linkquisition.PluginAction
 	var finalMessage string
 
 	for i, plug := range plugins {
 		meta := plug.Metadata()
-		result := plug.ProcessURL(ctx, currentURL)
+		r := plug.ProcessURL(ctx, currentURL)
 
-		switch result.Action {
+		printPluginStep(i+1, meta.Name, r, currentURL)
+
+		switch r.Action {
 		case linkquisition.ActionContinue:
-			if result.URL != currentURL {
-				fmt.Printf("  [%d] %s: %s → %s\n", i+1, meta.Name, currentURL, result.URL)
-				currentURL = result.URL
-			} else {
-				fmt.Printf("  [%d] %s: (unchanged)\n", i+1, meta.Name)
-			}
+			currentURL = r.URL
 		case linkquisition.ActionBlock:
-			fmt.Printf("  [%d] %s: ✗ BLOCKED\n", i+1, meta.Name)
-			fmt.Printf("      Message: %s\n", singleLine(result.Message))
 			finalAction = linkquisition.ActionBlock
-			finalMessage = result.Message
+			finalMessage = r.Message
 		case linkquisition.ActionWarn:
-			fmt.Printf("  [%d] %s: ⚠ WARN\n", i+1, meta.Name)
-			fmt.Printf("      Message: %s\n", singleLine(result.Message))
 			finalAction = linkquisition.ActionWarn
-			finalMessage = result.Message
-			currentURL = result.URL
+			finalMessage = r.Message
+			currentURL = r.URL
 		case linkquisition.ActionOpenDirect:
-			fmt.Printf("  [%d] %s: → OPEN DIRECT\n", i+1, meta.Name)
-			currentURL = result.URL
 			finalAction = linkquisition.ActionOpenDirect
+			currentURL = r.URL
 		}
 
-		// Stop the chain if the plugin says so
-		if result.Action != linkquisition.ActionContinue && !result.ContinueChain {
+		if r.Action != linkquisition.ActionContinue && !r.ContinueChain {
 			fmt.Printf("      (chain stopped)\n")
 			break
 		}
 	}
 
-	fmt.Println()
+	return testURLResult{url: currentURL, action: finalAction, message: finalMessage}
+}
 
-	// Show final outcome
-	switch finalAction {
+func printPluginStep(index int, name string, r linkquisition.PluginResult, prevURL string) {
+	switch r.Action {
+	case linkquisition.ActionContinue:
+		if r.URL != prevURL {
+			fmt.Printf("  [%d] %s: %s → %s\n", index, name, prevURL, r.URL)
+		} else {
+			fmt.Printf("  [%d] %s: (unchanged)\n", index, name)
+		}
+	case linkquisition.ActionBlock:
+		fmt.Printf("  [%d] %s: ✗ BLOCKED\n", index, name)
+		fmt.Printf("      Message: %s\n", singleLine(r.Message))
+	case linkquisition.ActionWarn:
+		fmt.Printf("  [%d] %s: ⚠ WARN\n", index, name)
+		fmt.Printf("      Message: %s\n", singleLine(r.Message))
+	case linkquisition.ActionOpenDirect:
+		fmt.Printf("  [%d] %s: → OPEN DIRECT\n", index, name)
+	}
+}
+
+func printOutcome(result testURLResult, inputURL string) {
+	switch result.action {
 	case linkquisition.ActionBlock:
 		fmt.Printf("Result: BLOCKED\n")
-		fmt.Printf("  %s\n", singleLine(finalMessage))
-		return nil
+		fmt.Printf("  %s\n", singleLine(result.message))
 	case linkquisition.ActionWarn:
 		fmt.Printf("Result: WARN (user would be prompted)\n")
-		fmt.Printf("  %s\n", singleLine(finalMessage))
-		fmt.Printf("  URL if user proceeds: %s\n", currentURL)
+		fmt.Printf("  %s\n", singleLine(result.message))
+		fmt.Printf("  URL if user proceeds: %s\n", result.url)
 	case linkquisition.ActionOpenDirect:
 		fmt.Printf("Result: OPEN DIRECT (bypass browser matching)\n")
-		fmt.Printf("  URL: %s\n", currentURL)
-		return nil
-	default:
-		// ActionContinue — proceed to browser matching
-		if currentURL != urlToOpen {
-			fmt.Printf("Final URL: %s\n", currentURL)
+		fmt.Printf("  URL: %s\n", result.url)
+	case linkquisition.ActionContinue:
+		if result.url != inputURL {
+			fmt.Printf("Final URL: %s\n", result.url)
 		}
 	}
+}
 
-	// Browser matching
+func printBrowserMatch(settings *linkquisition.Settings, result testURLResult) {
+	if result.action == linkquisition.ActionBlock || result.action == linkquisition.ActionOpenDirect {
+		return
+	}
+
 	fmt.Println()
 	fmt.Println("Browser matching:")
 
-	if browser, err := settings.GetMatchingBrowser(currentURL); err == nil {
+	if browser, err := settings.GetMatchingBrowser(result.url); err == nil {
 		fmt.Printf("  ✓ Matched: %s\n", browser.Name)
 		fmt.Printf("    Command: %s\n", browser.Command)
 	} else {
@@ -127,8 +157,6 @@ func runTestURL(_ *cobra.Command, args []string) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 // singleLine replaces newlines with spaces for compact CLI output
