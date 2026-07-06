@@ -39,6 +39,9 @@ func (c *Configurator) rebuildBrowsersList(content *fyne.Container) {
 	}
 
 	for idx := range settings.Browsers {
+		if idx > 0 {
+			content.Add(widget.NewSeparator())
+		}
 		content.Add(c.buildBrowserCard(settings, idx, content))
 	}
 

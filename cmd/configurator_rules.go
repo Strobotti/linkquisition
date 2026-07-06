@@ -44,6 +44,7 @@ func (c *Configurator) rebuildRulesList(content *fyne.Container, filter string) 
 
 	hasAnyRules := false
 	filterLower := strings.ToLower(filter)
+	sectionCount := 0
 
 	for idx := range settings.Browsers {
 		b := settings.Browsers[idx]
@@ -53,8 +54,12 @@ func (c *Configurator) rebuildRulesList(content *fyne.Container, filter string) 
 
 		section := c.buildBrowserRulesSection(settings, idx, content, filterLower)
 		if section != nil {
+			if sectionCount > 0 {
+				content.Add(widget.NewSeparator())
+			}
 			content.Add(section)
 			hasAnyRules = true
+			sectionCount++
 		}
 	}
 
@@ -67,8 +72,12 @@ func (c *Configurator) rebuildRulesList(content *fyne.Container, filter string) 
 
 		section := c.buildBrowserRulesSection(settings, idx, content, filterLower)
 		if section != nil {
+			if sectionCount > 0 {
+				content.Add(widget.NewSeparator())
+			}
 			content.Add(section)
 			hasAnyRules = true
+			sectionCount++
 		}
 	}
 
