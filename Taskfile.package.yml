@@ -57,3 +57,14 @@ tasks:
       - cp -r dist/Linkquisition.app /Applications/
       - /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -R -f /Applications/Linkquisition.app
       - echo "Installed to /Applications/Linkquisition.app and registered with Launch Services"
+
+  appimage:
+    description: "Builds an AppImage for Linux (requires linux-amd64 binary and plugins)"
+    cmds:
+      - task build
+      - task build:plugins
+      - task package:linux
+      - task package:manpages
+      - ./scripts/build-appimage.sh
+    env:
+      VERSION: "{{.VERSION}}"

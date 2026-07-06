@@ -174,13 +174,14 @@ The app has two UI modes, both in `cmd/`:
 
 ## Linux packaging
 
-The project produces `.deb` and `.rpm` packages via GoReleaser's nfpm integration.
+The project produces `.deb`, `.rpm`, and AppImage packages.
 
 ### Key files
 
 - `.goreleaser.yaml` — build entries for the binary + all plugins, nfpm packaging config
 - `Taskfile.build.yml` — `PLUGINS` variable (source of truth for which plugins exist)
 - `Taskfile.package.yml` — local packaging tasks (for dev testing only)
+- `scripts/build-appimage.sh` — AppImage build script (downloads linuxdeploy, bundles deps)
 - `templates/DEBIAN/control.tpl` — local deb control template (used by `task package:deb`)
 - `templates/linkquisition.desktop` — `.desktop` file installed to `/usr/share/applications/`
 - `.github/workflows/publish.yml` — CI release workflow
@@ -197,3 +198,16 @@ When adding or removing a plugin, ALL of the following must be updated:
 The `.goreleaser.yaml` plugin build ID pattern is `"<name>-plugin"` and the contents
 path pattern is `./dist/<name>-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/<name>.so`
 → `/usr/lib/linkquisition/plugins/<name>.so`.
+
+### AppImage
+
+The AppImage is built by `scripts/build-appimage.sh` which:
+
+1. Assembles an AppDir with the binary, plugins, desktop file, icon, and man pages
+2. Uses `linuxdeploy` to bundle shared library dependencies (libGL, X11, etc.)
+3. Outputs `dist/Linkquisition-<VERSION>-x86_64.AppImage`
+
+The script downloads `linuxdeploy` automatically into `dist/tools/` on first run.
+Use `--appimage-extract-and-run` mode so it works in CI without FUSE.
+
+To build locally: `task package:appimage` (Linux only).
