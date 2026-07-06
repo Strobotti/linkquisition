@@ -59,26 +59,30 @@ func (c *Configurator) Run() error {
 }
 
 func (c *Configurator) getGeneralTab() fyne.CanvasObject {
-	sections := container.NewVBox(
-		c.buildMakeDefaultSection(),
-	)
+	sections := container.NewVBox()
+
+	// Only show "make default" section if NOT already the default browser
+	if !c.browserService.AreWeTheDefaultBrowser() {
+		sections.Add(c.buildMakeDefaultSection())
+		sections.Add(widget.NewSeparator())
+	}
 
 	// Onboarding: show a warning if no browsers are configured
 	if settings := c.settingsService.GetSettings(); len(settings.Browsers) == 0 {
-		sections.Add(layout.NewSpacer())
 		sections.Add(c.buildNoBrowsersWarning())
+		sections.Add(widget.NewSeparator())
 	}
 
-	sections.Add(layout.NewSpacer())
 	sections.Add(c.buildLanguageSection())
-	sections.Add(layout.NewSpacer())
+	sections.Add(widget.NewSeparator())
 	sections.Add(c.buildLogLevelSection())
-	sections.Add(layout.NewSpacer())
+	sections.Add(widget.NewSeparator())
 	sections.Add(c.buildUiSection())
 
-	// Platform-specific note (e.g. macOS picker limitation)
+	// Platform-specific note (e.g. macOS picker limitation) anchored to bottom
 	if note := c.buildPlatformNote(); note != nil {
 		sections.Add(layout.NewSpacer())
+		sections.Add(widget.NewSeparator())
 		sections.Add(note)
 	}
 
