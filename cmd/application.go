@@ -27,6 +27,7 @@ const logFilePerms = 0644
 const pluginShutdownTimeout = 10 * time.Second
 const maxLogFileSize = 1 << 20 // 1 MB
 const pluginProcessTimeout = 30 * time.Second
+const pluginExtension = ".so"
 
 type Application struct {
 	Fapp            fyne.App
@@ -52,8 +53,8 @@ func setupPlugins(
 		}
 
 		pluginPath := pluginSettings.Path
-		if !strings.HasSuffix(pluginPath, ".so") {
-			pluginPath += ".so"
+		if !strings.HasSuffix(pluginPath, pluginExtension) {
+			pluginPath += pluginExtension
 		}
 
 		if _, err := os.Stat(pluginPath); err != nil {
@@ -132,6 +133,33 @@ func setupPlugin(
 	}
 
 	return p, nil
+}
+
+// probePluginMetadata opens a plugin .so file and retrieves its Metadata without calling Setup.
+// Used by the configurator to display plugin info without fully initializing plugins.
+func probePluginMetadata(path string, logger *slog.Logger) (meta linkquisition.PluginMetadata, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic while probing plugin %s: %v", path, r)
+		}
+	}()
+
+	plug, openErr := openPlugin(path, logger)
+	if plug == nil || openErr != nil {
+		return meta, fmt.Errorf("failed to open plugin: %w", openErr)
+	}
+
+	symbol, lookupErr := plug.Lookup("Plugin")
+	if lookupErr != nil {
+		return meta, fmt.Errorf("plugin symbol lookup failed: %w", lookupErr)
+	}
+
+	p, ok := symbol.(linkquisition.Plugin)
+	if !ok {
+		return meta, fmt.Errorf("plugin does not implement Plugin interface (got %T)", symbol)
+	}
+
+	return p.Metadata(), nil
 }
 
 func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {

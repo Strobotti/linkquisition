@@ -106,5 +106,41 @@
   },
   "plugin.warn_proceed": {
     "other": "Abrir de todos modos"
+  },
+  "config.tab_plugins": {
+    "other": "Plugins"
+  },
+  "config.plugins_enabled": {
+    "other": "Activado"
+  },
+  "config.plugins_configure": {
+    "other": "Configurar..."
+  },
+  "config.plugins_add": {
+    "other": "Añadir"
+  },
+  "config.plugins_available": {
+    "other": "Disponibles (no configurados):"
+  },
+  "config.plugins_none_available": {
+    "other": "No hay plugins adicionales disponibles."
+  },
+  "config.plugins_settings_title": {
+    "other": "Ajustes de {{.Name}}"
+  },
+  "config.plugins_save": {
+    "other": "Guardar"
+  },
+  "config.plugins_cancel": {
+    "other": "Cancelar"
+  },
+  "config.plugins_move_up": {
+    "other": "▲"
+  },
+  "config.plugins_move_down": {
+    "other": "▼"
+  },
+  "config.plugins_restart_note": {
+    "other": "Los cambios de plugins se aplican en la próxima apertura de URL."
   }
 }

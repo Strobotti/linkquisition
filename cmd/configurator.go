@@ -41,6 +41,7 @@ func (c *Configurator) Run() error {
 
 	tabs := container.NewAppTabs(
 		container.NewTabItem(i18n.T("config.tab_general"), c.getGeneralTab()),
+		container.NewTabItem(i18n.T("config.tab_plugins"), c.getPluginsTab()),
 		container.NewTabItem(i18n.T("config.tab_rules"), c.getRulesTab()),
 		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab()),
 	)
@@ -48,8 +49,7 @@ func (c *Configurator) Run() error {
 
 	w.SetContent(tabs)
 
-	w.SetFixedSize(true)
-	w.Resize(fyne.NewSize(500, 400)) //nolint:mnd
+	w.Resize(fyne.NewSize(650, 550)) //nolint:mnd
 	w.CenterOnScreen()
 
 	w.ShowAndRun()
