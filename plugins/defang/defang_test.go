@@ -345,6 +345,11 @@ func TestDefang_CustomSources(t *testing.T) {
 	result := testedPlugin.ProcessURL(context.Background(), "https://example.com/page")
 	assert.Equal(t, linkquisition.ActionContinue, result.Action)
 	assert.Equal(t, "https://example.com/page", result.URL)
+
+	// Wait for background update goroutine to finish before TempDir cleanup
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	testedPlugin.Shutdown(ctx)
 }
 
 func TestDefang_Metadata(t *testing.T) {
