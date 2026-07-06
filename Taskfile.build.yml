@@ -10,11 +10,12 @@ tasks:
     vars:
       OUTPUT: '{{default "linkquisition" .OUTPUT}}'
       TARGET: '{{default "linux" .TARGET}}'
+      ARCH: '{{default "" .ARCH}}'
       VERSION:
         sh: echo ${VERSION:-v0.0.0}
       OPTIONS: '{{default "" .DEVOPTIONS}}'
     cmds:
-      - CGO_ENABLED=1 GOOS={{.TARGET}} go build -tags release -ldflags '-s -w -X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} ./cmd/
+      - CGO_ENABLED=1 GOOS={{.TARGET}} {{if .ARCH}}GOARCH={{.ARCH}}{{end}} go build -tags release -ldflags '-s -w -X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} ./cmd/
       - echo "bin/{{.OUTPUT}}{{exeExt}} created successfully"
     sources:
       - ./**/*.go
@@ -29,6 +30,7 @@ tasks:
         vars:
           OUTPUT: "linkquisition-linux-amd64"
           TARGET: "linux"
+          ARCH: "amd64"
 
   darwin-arm64:
     cmds:
@@ -36,6 +38,7 @@ tasks:
         vars:
           OUTPUT: "linkquisition-darwin-arm64"
           TARGET: "darwin"
+          ARCH: "arm64"
 
   darwin-amd64:
     cmds:
@@ -43,6 +46,15 @@ tasks:
         vars:
           OUTPUT: "linkquisition-darwin-amd64"
           TARGET: "darwin"
+          ARCH: "amd64"
+
+  darwin-universal:
+    description: "Builds a universal macOS binary (arm64 + amd64) using lipo"
+    cmds:
+      - task: darwin-arm64
+      - task: darwin-amd64
+      - lipo -create -output bin/linkquisition-darwin-universal bin/linkquisition-darwin-arm64 bin/linkquisition-darwin-amd64
+      - echo "bin/linkquisition-darwin-universal created successfully"
 
   plugins:
     cmds:

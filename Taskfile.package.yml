@@ -38,13 +38,13 @@ tasks:
       - dpkg-deb --build package/linux dist/linkquisition_{{.VERSION}}_linux_amd64.deb
 
   app:
-    description: "Builds a macOS .app bundle and optionally installs it"
+    description: "Builds a macOS .app bundle with a universal binary (arm64 + amd64)"
     cmds:
-      - task build:darwin-arm64
+      - task build:darwin-universal
       - rm -rf dist/Linkquisition.app
       - mkdir -p dist/Linkquisition.app/Contents/MacOS
       - mkdir -p dist/Linkquisition.app/Contents/Resources
-      - cp bin/linkquisition-darwin-arm64 dist/Linkquisition.app/Contents/MacOS/linkquisition
+      - cp bin/linkquisition-darwin-universal dist/Linkquisition.app/Contents/MacOS/linkquisition
       - task build:plugins-darwin
       - sed 's/${VERSION}/{{.VERSION}}/g' package/darwin/Info.plist > dist/Linkquisition.app/Contents/Info.plist
       - sips -s format icns Icon.png --out dist/Linkquisition.app/Contents/Resources/Icon.icns 2>/dev/null || cp Icon.png dist/Linkquisition.app/Contents/Resources/Icon.icns
