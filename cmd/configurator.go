@@ -14,6 +14,9 @@ import (
 	"github.com/strobotti/linkquisition/resources"
 )
 
+// templateKeyName is the template data key used for name substitution in i18n strings.
+const templateKeyName = "Name"
+
 type Configurator struct {
 	fapp            fyne.App
 	browserService  linkquisition.BrowserService

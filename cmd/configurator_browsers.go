@@ -281,7 +281,7 @@ func (c *Configurator) confirmDeleteBrowser(idx int, listContainer *fyne.Contain
 
 	dialog.ShowConfirm(
 		i18n.T("config.browsers_delete"),
-		i18n.T("config.browsers_delete_confirm", map[string]interface{}{"Name": b.Name}),
+		i18n.T("config.browsers_delete_confirm", map[string]interface{}{templateKeyName: b.Name}),
 		func(confirmed bool) {
 			if !confirmed {
 				return

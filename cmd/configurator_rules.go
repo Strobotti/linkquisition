@@ -204,7 +204,7 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 	browserName := settings.Browsers[browserIdx].Name
 
 	d := dialog.NewCustomConfirm(
-		i18n.T("config.rules_add_title", map[string]interface{}{"Name": browserName}),
+		i18n.T("config.rules_add_title", map[string]interface{}{templateKeyName: browserName}),
 		i18n.T("config.plugins_save"),
 		i18n.T("config.plugins_cancel"),
 		form,
@@ -269,6 +269,6 @@ func (c *Configurator) deleteRule(browserIdx, ruleIdx int, listContainer *fyne.C
 // withSubtleBackground wraps a widget in a container with a very subtle
 // background tint, used for alternating row colors in rule lists.
 func withSubtleBackground(obj fyne.CanvasObject) fyne.CanvasObject {
-	bg := canvas.NewRectangle(color.NRGBA{R: 128, G: 128, B: 128, A: 15}) //nolint:mnd
+	bg := canvas.NewRectangle(color.NRGBA{R: 128, G: 128, B: 128, A: 15})
 	return container.NewStack(bg, obj)
 }
