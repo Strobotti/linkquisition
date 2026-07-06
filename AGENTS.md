@@ -57,6 +57,13 @@ When making changes, ensure ALL relevant documentation is updated:
 - [ ] Update the "Command-line interface" section in `README.md`
 - [ ] Add new subcommands via `rootCmd.AddCommand()` in `cmd/root.go` `initRootCmd()`
 
+### When changing macOS packaging or app identity
+
+- [ ] Update `package/darwin/Info.plist` — bundle metadata, URL schemes, version keys
+- [ ] If adding new URL schemes or entitlements, update the plist accordingly
+- [ ] If changing the minimum macOS version, update `LSMinimumSystemVersion`
+- [ ] Update `homebrew/Casks/linkquisition.rb` if install paths or dependencies change
+
 ## Plugin system conventions
 
 - Plugins export `var Plugin <type>` as a package-level variable (value type, not pointer)

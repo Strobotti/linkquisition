@@ -10,6 +10,8 @@
     <string>Linkquisition</string>
     <key>CFBundleDisplayName</key>
     <string>Linkquisition</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
     <key>CFBundleVersion</key>
     <string>${VERSION}</string>
     <key>CFBundleShortVersionString</key>
@@ -18,6 +20,10 @@
     <string>Icon.icns</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.utilities</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © Juha Jantunen. All rights reserved.</string>
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
@@ -33,6 +39,10 @@
     <key>LSMinimumSystemVersion</key>
     <string>11.0</string>
     <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSSupportsAutomaticTermination</key>
+    <true/>
+    <key>NSSupportsSuddenTermination</key>
     <true/>
 </dict>
 </plist>

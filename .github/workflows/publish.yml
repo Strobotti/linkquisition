@@ -66,9 +66,9 @@ jobs:
           - target: linux-amd64
             os: ubuntu-latest
             artifact: linkquisition-linux-amd64
-          - target: darwin-arm64
+          - target: darwin-universal
             os: macos-latest
-            artifact: Linkquisition_macOS_arm64.zip
+            artifact: Linkquisition_macOS_universal.zip
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -112,12 +112,11 @@ jobs:
           VERSION: v${{ needs.version.outputs.version }}
 
       - name: Package macOS .app
-        if: matrix.target == 'darwin-arm64'
+        if: matrix.target == 'darwin-universal'
         run: |
           task package:app
-          task build:plugins-darwin
           codesign --force --deep --sign - dist/Linkquisition.app
-          cd dist && ditto -c -k --keepParent Linkquisition.app Linkquisition_macOS_arm64.zip
+          cd dist && ditto -c -k --keepParent Linkquisition.app Linkquisition_macOS_universal.zip
         env:
           VERSION: ${{ needs.version.outputs.version }}
 
@@ -162,7 +161,7 @@ jobs:
       - name: Download macOS artifact
         uses: actions/download-artifact@v8
         with:
-          name: darwin-arm64
+          name: darwin-universal
           path: artifacts/
 
       - uses: go-semantic-release/action@v1
@@ -176,9 +175,44 @@ jobs:
 
       - name: Upload macOS asset to release
         if: steps.semrel.outputs.version != ''
-        run: gh release upload "v${{ steps.semrel.outputs.version }}" artifacts/Linkquisition_macOS_arm64.zip --clobber
+        run: gh release upload "v${{ steps.semrel.outputs.version }}" artifacts/Linkquisition_macOS_universal.zip --clobber
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
+
+  update-homebrew:
+    name: Update Homebrew Tap
+    needs: [ version, release ]
+    if: needs.version.outputs.new_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: darwin-universal
+          path: artifacts/
+
+      - name: Update Homebrew Cask
+        env:
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          SHA256=$(sha256sum artifacts/Linkquisition_macOS_universal.zip | awk '{print $1}')
+
+          git clone https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/Strobotti/homebrew-tap.git tap
+          cd tap
+
+          mkdir -p Casks
+          sed -e "s/\${VERSION}/${VERSION}/g" \
+              -e "s/\${SHA256}/${SHA256}/g" \
+              ../homebrew/Casks/linkquisition.rb > Casks/linkquisition.rb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/linkquisition.rb
+          git commit -m "Update linkquisition to v${VERSION}" || echo "No changes to commit"
+          git push
 
   coverage:
     name: Coverage Badge

@@ -44,11 +44,28 @@ able to press `Super`-key in Ubuntu and type "Linkquisition" to see the launcher
 `linkquisition` command. Launching the application without any arguments will show the configuration screen which allows
 you to set it as the default browser and scan for installed browsers for faster startup and easier configuration.
 
-### macOS (experimental)
+### macOS
 
-Download the latest `Linkquisition_macOS_arm64.zip` from
+#### Via Homebrew (recommended)
+
+```bash
+brew tap strobotti/tap
+brew install --cask linkquisition
+```
+
+Since the app is not notarized with Apple, macOS will block it on first launch. To fix this, run:
+
+```bash
+xattr -cr /Applications/Linkquisition.app
+```
+
+#### Manual installation
+
+Download the latest `Linkquisition_macOS_universal.zip` from
 the [releases page](https://github.com/Strobotti/linkquisition/releases), unzip it, and move
 `Linkquisition.app` to `/Applications`.
+
+The universal binary supports both Apple Silicon (arm64) and Intel (amd64) Macs.
 
 Since the app is not notarized with Apple, macOS will block it on first launch. To fix this, run:
 
