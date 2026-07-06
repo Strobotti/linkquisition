@@ -7,7 +7,7 @@ cask "linkquisition" do
   desc "Fast, configurable browser-picker for macOS and Linux"
   homepage "https://github.com/Strobotti/linkquisition"
 
-  depends_on macos: ">= :big_sur"
+  depends_on macos: :big_sur
 
   app "Linkquisition.app"
 
