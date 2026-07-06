@@ -226,5 +226,8 @@
   },
   "config.rules_no_match": {
     "other": "Ninguna regla coincide con el filtro."
+  },
+  "config.macos_picker_note": {
+    "other": "Nota: La ventana de selección de navegador no está disponible mientras esta pantalla de ajustes está abierta. Los enlaces se abrirán automáticamente en el primer navegador coincidente."
   }
 }

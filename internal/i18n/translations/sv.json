@@ -226,5 +226,8 @@
   },
   "config.rules_no_match": {
     "other": "Inga regler matchar filtret."
+  },
+  "config.macos_picker_note": {
+    "other": "Obs: Webbläsarväljaren är inte tillgänglig medan detta inställningsfönster är öppet. Länkar öppnas automatiskt i den första matchande webbläsaren."
   }
 }

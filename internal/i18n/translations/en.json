@@ -226,5 +226,8 @@
   },
   "config.rules_no_match": {
     "other": "No rules match the filter."
+  },
+  "config.macos_picker_note": {
+    "other": "Note: The browser picker window is not available while this settings screen is open. Links clicked while settings are open will be opened in the first matching browser automatically."
   }
 }

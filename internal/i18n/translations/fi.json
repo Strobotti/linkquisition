@@ -226,5 +226,8 @@
   },
   "config.rules_no_match": {
     "other": "Yksikään sääntö ei vastaa suodatinta."
+  },
+  "config.macos_picker_note": {
+    "other": "Huom: Selainvalitsinikkuna ei ole käytettävissä kun asetusikkuna on auki. Linkit avataan automaattisesti ensimmäisellä vastaavalla selaimella."
   }
 }

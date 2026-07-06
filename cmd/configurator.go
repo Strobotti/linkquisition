@@ -76,6 +76,12 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 	sections.Add(layout.NewSpacer())
 	sections.Add(c.buildUiSection())
 
+	// Platform-specific note (e.g. macOS picker limitation)
+	if note := c.buildPlatformNote(); note != nil {
+		sections.Add(layout.NewSpacer())
+		sections.Add(note)
+	}
+
 	return sections
 }
 
