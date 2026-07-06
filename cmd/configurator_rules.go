@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"regexp"
 	"strings"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
@@ -135,7 +137,11 @@ func (c *Configurator) buildBrowserRulesSection(
 		rulesBox.Add(noRules)
 	} else {
 		for ruleIdx := range b.Matches {
-			rulesBox.Add(c.buildRuleRow(browserIdx, ruleIdx, listContainer))
+			row := c.buildRuleRow(browserIdx, ruleIdx, listContainer)
+			if ruleIdx%2 == 1 {
+				row = withSubtleBackground(row)
+			}
+			rulesBox.Add(row)
 		}
 	}
 
@@ -258,4 +264,11 @@ func (c *Configurator) deleteRule(browserIdx, ruleIdx int, listContainer *fyne.C
 	}
 
 	c.rebuildRulesList(listContainer, "")
+}
+
+// withSubtleBackground wraps a widget in a container with a very subtle
+// background tint, used for alternating row colors in rule lists.
+func withSubtleBackground(obj fyne.CanvasObject) fyne.CanvasObject {
+	bg := canvas.NewRectangle(color.NRGBA{R: 128, G: 128, B: 128, A: 15}) //nolint:mnd
+	return container.NewStack(bg, obj)
 }
