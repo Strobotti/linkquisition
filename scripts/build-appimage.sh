@@ -60,8 +60,15 @@ cp "$PROJECT_ROOT/package/linux/usr/lib/linkquisition/plugins/"*.so \
 # Install desktop file
 cp "$PROJECT_ROOT/templates/linkquisition.desktop" "$APPDIR/usr/share/applications/"
 
-# Install icon
-cp "$PROJECT_ROOT/Icon.png" "$APPDIR/usr/share/icons/hicolor/256x256/apps/linkquisition.png"
+# Install icon (resize to 256x256 — linuxdeploy requires exact resolution match)
+if command -v convert &>/dev/null; then
+    convert "$PROJECT_ROOT/Icon.png" -resize 256x256 "$APPDIR/usr/share/icons/hicolor/256x256/apps/linkquisition.png"
+elif command -v magick &>/dev/null; then
+    magick "$PROJECT_ROOT/Icon.png" -resize 256x256 "$APPDIR/usr/share/icons/hicolor/256x256/apps/linkquisition.png"
+else
+    echo "WARNING: ImageMagick not found, attempting to use icon as-is"
+    cp "$PROJECT_ROOT/Icon.png" "$APPDIR/usr/share/icons/hicolor/256x256/apps/linkquisition.png"
+fi
 
 # Install man pages if available
 if [ -f "$PROJECT_ROOT/package/linux/usr/share/man/man1/linkquisition.1" ]; then
