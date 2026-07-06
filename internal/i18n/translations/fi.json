@@ -142,5 +142,92 @@
   },
   "config.plugins_restart_note": {
     "other": "Muutokset tulevat voimaan seuraavalla URL-avauksella."
+  },
+  "config.tab_browsers": {
+    "other": "Selaimet"
+  },
+  "config.browsers_empty": {
+    "other": "Selaimia ei ole vielä määritetty.\n\nHae asennetut selaimet alla olevalla painikkeella. Tämä on välttämätöntä, jotta Linkquisition voi toimia selainvalitsimena."
+  },
+  "config.browsers_show_in_picker": {
+    "other": "Näytä valitsimessa"
+  },
+  "config.browsers_add": {
+    "other": "Lisää selain..."
+  },
+  "config.browsers_add_title": {
+    "other": "Lisää selain"
+  },
+  "config.browsers_edit": {
+    "other": "Muokkaa..."
+  },
+  "config.browsers_edit_title": {
+    "other": "Muokkaa selainta"
+  },
+  "config.browsers_delete": {
+    "other": "Poista"
+  },
+  "config.browsers_delete_confirm": {
+    "other": "Haluatko varmasti poistaa selaimen \"{{.Name}}\"?"
+  },
+  "config.browsers_name": {
+    "other": "Nimi"
+  },
+  "config.browsers_command": {
+    "other": "Komento"
+  },
+  "config.browsers_name_placeholder": {
+    "other": "esim. Firefox yksityinen"
+  },
+  "config.browsers_command_placeholder": {
+    "other": "esim. firefox --private-window %u"
+  },
+  "config.browsers_source_auto": {
+    "other": "(automaattinen)"
+  },
+  "config.browsers_source_manual": {
+    "other": "(manuaalinen)"
+  },
+  "config.browsers_rules_count": {
+    "other": "{{.Count}} sääntö(ä)"
+  },
+  "config.no_browsers_warning": {
+    "other": "⚠ Selaimia ei ole määritetty. Siirry Selaimet-välilehdelle hakeaksesi asennetut selaimet."
+  },
+  "config.rules_no_browsers": {
+    "other": "Selaimia ei ole määritetty. Lisää selaimia ensin Selaimet-välilehdellä."
+  },
+  "config.rules_empty": {
+    "other": "Sääntöjä ei ole vielä määritetty.\n\nSäännöt määrittävät mikä selain avaa URL-osoitteen automaattisesti. Käytä \"+ Lisää sääntö\" -painiketta selaimen nimen vieressä luodaksesi säännön."
+  },
+  "config.rules_add": {
+    "other": "+ Lisää sääntö"
+  },
+  "config.rules_add_title": {
+    "other": "Lisää sääntö selaimelle {{.Name}}"
+  },
+  "config.rules_type": {
+    "other": "Tyyppi"
+  },
+  "config.rules_value": {
+    "other": "Arvo"
+  },
+  "config.rules_value_placeholder": {
+    "other": "esim. www.example.com"
+  },
+  "config.rules_none_for_browser": {
+    "other": "Ei sääntöjä"
+  },
+  "config.rules_regex_invalid": {
+    "other": "Virheellinen säännöllinen lauseke"
+  },
+  "config.rules_filter_placeholder": {
+    "other": "Suodata sääntöjä..."
+  },
+  "config.rules_no_match": {
+    "other": "Yksikään sääntö ei vastaa suodatinta."
+  },
+  "config.macos_picker_note": {
+    "other": "Huom: Selainvalitsinikkuna ei ole käytettävissä kun asetusikkuna on auki. Linkit avataan automaattisesti ensimmäisellä vastaavalla selaimella."
   }
 }

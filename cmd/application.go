@@ -246,8 +246,16 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 	i18n.Init(a.SettingsService.GetSettings().Locale)
 
 	if urlToOpen == "" {
+		// Start watching for URLs arriving via platform events (macOS Apple Events)
+		// while the configurator is open.
+		watchCtx, watchCancel := context.WithCancel(context.Background())
+		a.startURLWatcher(watchCtx)
+
 		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService, a.Logger)
-		return configurator.Run()
+		err := configurator.Run()
+		watchCancel()
+
+		return err
 	}
 
 	// Rotate the log file if it has grown too large. Deferred so it runs as one

@@ -14,6 +14,9 @@ import (
 	"github.com/strobotti/linkquisition/resources"
 )
 
+// templateKeyName is the template data key used for name substitution in i18n strings.
+const templateKeyName = "Name"
+
 type Configurator struct {
 	fapp            fyne.App
 	browserService  linkquisition.BrowserService
@@ -41,15 +44,16 @@ func (c *Configurator) Run() error {
 
 	tabs := container.NewAppTabs(
 		container.NewTabItem(i18n.T("config.tab_general"), c.getGeneralTab()),
-		container.NewTabItem(i18n.T("config.tab_plugins"), c.getPluginsTab()),
+		container.NewTabItem(i18n.T("config.tab_browsers"), c.getBrowsersTab()),
 		container.NewTabItem(i18n.T("config.tab_rules"), c.getRulesTab()),
+		container.NewTabItem(i18n.T("config.tab_plugins"), c.getPluginsTab()),
 		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	w.SetContent(tabs)
 
-	w.Resize(fyne.NewSize(650, 550)) //nolint:mnd
+	w.Resize(fyne.NewSize(700, 600)) //nolint:mnd
 	w.CenterOnScreen()
 
 	w.ShowAndRun()
@@ -58,17 +62,42 @@ func (c *Configurator) Run() error {
 }
 
 func (c *Configurator) getGeneralTab() fyne.CanvasObject {
-	return container.NewVBox(
-		c.buildMakeDefaultSection(),
-		layout.NewSpacer(),
-		c.buildScanBrowsersSection(),
-		layout.NewSpacer(),
-		c.buildLanguageSection(),
-		layout.NewSpacer(),
-		c.buildLogLevelSection(),
-		layout.NewSpacer(),
-		c.buildUiSection(),
-	)
+	sections := container.NewVBox()
+
+	// Only show "make default" section if NOT already the default browser
+	if !c.browserService.AreWeTheDefaultBrowser() {
+		sections.Add(c.buildMakeDefaultSection())
+		sections.Add(widget.NewSeparator())
+	}
+
+	// Onboarding: show a warning if no browsers are configured
+	if settings := c.settingsService.GetSettings(); len(settings.Browsers) == 0 {
+		sections.Add(c.buildNoBrowsersWarning())
+		sections.Add(widget.NewSeparator())
+	}
+
+	sections.Add(c.buildLanguageSection())
+	sections.Add(widget.NewSeparator())
+	sections.Add(c.buildLogLevelSection())
+	sections.Add(widget.NewSeparator())
+	sections.Add(c.buildUiSection())
+
+	// Platform-specific note (e.g. macOS picker limitation) anchored to bottom
+	if note := c.buildPlatformNote(); note != nil {
+		sections.Add(layout.NewSpacer())
+		sections.Add(widget.NewSeparator())
+		sections.Add(note)
+	}
+
+	return sections
+}
+
+func (c *Configurator) buildNoBrowsersWarning() fyne.CanvasObject {
+	warningLabel := widget.NewLabel(i18n.T("config.no_browsers_warning"))
+	warningLabel.Wrapping = fyne.TextWrapWord
+	warningLabel.TextStyle = fyne.TextStyle{Bold: true}
+
+	return container.NewVBox(warningLabel)
 }
 
 func (c *Configurator) buildMakeDefaultSection() fyne.CanvasObject {
@@ -101,50 +130,6 @@ func (c *Configurator) buildMakeDefaultSection() fyne.CanvasObject {
 	setupButton(makeDefaultButton, c.browserService.AreWeTheDefaultBrowser())
 
 	return container.NewVBox(makeDefaultLabel, makeDefaultButton)
-}
-
-func (c *Configurator) buildScanBrowsersSection() fyne.CanvasObject {
-	scanStatusLabel := widget.NewLabel("")
-	scanStatusLabel.TextStyle = fyne.TextStyle{Italic: true}
-	scanStatusLabel.Hide()
-
-	setupButton := func(button *widget.Button, alreadyScanned bool) {
-		if alreadyScanned {
-			button.SetText(i18n.T("config.rescan_browsers"))
-		} else {
-			button.SetText(i18n.T("config.scan_browsers"))
-		}
-		button.Enable()
-	}
-
-	scanBrowsersButton := widget.NewButton(i18n.T("config.scan_now"), func() {})
-	scanBrowsersButton.OnTapped = func() {
-		scanBrowsersButton.Disable()
-		scanStatusLabel.SetText(i18n.T("config.scan_in_progress"))
-		scanStatusLabel.Show()
-
-		go func() {
-			err := c.settingsService.ScanBrowsers()
-			if err != nil {
-				scanStatusLabel.SetText(i18n.T("config.scan_failed"))
-				scanBrowsersButton.Enable()
-				c.logger.Error("Error scanning browsers", "error", err)
-			} else {
-				scanStatusLabel.SetText(i18n.T("config.scan_success"))
-				isConfigured, _ := c.settingsService.IsConfigured()
-				setupButton(scanBrowsersButton, isConfigured)
-			}
-		}()
-	}
-
-	isConfigured, _ := c.settingsService.IsConfigured()
-	setupButton(scanBrowsersButton, isConfigured)
-
-	return container.NewVBox(
-		widget.NewLabel(i18n.T("config.scan_description")),
-		scanBrowsersButton,
-		scanStatusLabel,
-	)
 }
 
 func (c *Configurator) buildLanguageSection() fyne.CanvasObject {
@@ -232,24 +217,6 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	return container.NewVBox(hideGuideCheck)
 }
 
-func (c *Configurator) getRulesTab() fyne.CanvasObject {
-	description := widget.NewLabel(i18n.T("config.rules_description"))
-	description.Wrapping = fyne.TextWrapWord
-
-	editButton := widget.NewButton(i18n.T("config.rules_edit_button"), func() {
-		configPath := c.settingsService.GetConfigFilePath()
-		if err := openFileInEditor(configPath); err != nil {
-			c.logger.Error("Error opening config file in editor", "error", err)
-		}
-	})
-
-	return container.NewVBox(
-		description,
-		layout.NewSpacer(),
-		editButton,
-	)
-}
-
 func (c *Configurator) getAboutTab() fyne.CanvasObject {
 	openURL := func() {
 		if err := c.openExternalURL("https://github.com/Strobotti/linkquisition"); err != nil {
@@ -280,11 +247,10 @@ func (c *Configurator) getAboutTab() fyne.CanvasObject {
 
 	return container.NewVBox(
 		container.NewHBox(icon, title),
-		layout.NewSpacer(),
+		widget.NewSeparator(),
 		description,
-		layout.NewSpacer(),
+		widget.NewSeparator(),
 		details,
-		layout.NewSpacer(),
 	)
 }
 

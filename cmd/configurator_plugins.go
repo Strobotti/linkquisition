@@ -27,6 +27,9 @@ func (c *Configurator) rebuildPluginsList(content *fyne.Container) {
 
 	// Configured plugins
 	for idx := range settings.Plugins {
+		if idx > 0 {
+			content.Add(widget.NewSeparator())
+		}
 		content.Add(c.buildPluginCard(settings, idx, content))
 	}
 

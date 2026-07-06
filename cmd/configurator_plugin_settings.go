@@ -37,7 +37,7 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 	// Build the form
 	form := widget.NewForm(formItems...)
 
-	title := i18n.T("config.plugins_settings_title", map[string]interface{}{"Name": meta.Name})
+	title := i18n.T("config.plugins_settings_title", map[string]interface{}{templateKeyName: meta.Name})
 
 	// Get the parent window — use the fyne app's driver to find it
 	windows := c.fapp.Driver().AllWindows()

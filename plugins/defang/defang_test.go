@@ -39,10 +39,15 @@ func TestDefang_Setup_Defaults(t *testing.T) {
 
 	testedPlugin := newPlugin()
 	err := testedPlugin.Setup(provider, map[string]interface{}{
-		"sources":        []interface{}{},
+		"sources":        []interface{}{"https://dummy.test/hosts"},
 		"updateInterval": "87600h",
 	})
 	require.NoError(t, err)
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		testedPlugin.Shutdown(ctx)
+	}()
 
 	// With no cached lists, should not block anything
 	result := testedPlugin.ProcessURL(context.Background(), "https://example.com/page")
@@ -57,7 +62,7 @@ func TestDefang_Setup_InvalidDuration(t *testing.T) {
 
 	testedPlugin := newPlugin()
 	err := testedPlugin.Setup(provider, map[string]interface{}{
-		"sources":        []interface{}{},
+		"sources":        []interface{}{"https://dummy.test/hosts"},
 		"updateInterval": "not-a-duration",
 	})
 	assert.Error(t, err)
@@ -71,7 +76,7 @@ func TestDefang_Setup_InvalidAction(t *testing.T) {
 
 	testedPlugin := newPlugin()
 	err := testedPlugin.Setup(provider, map[string]interface{}{
-		"sources":        []interface{}{},
+		"sources":        []interface{}{"https://dummy.test/hosts"},
 		"updateInterval": "87600h",
 		"action":         "unknown_action",
 	})
@@ -191,10 +196,11 @@ func TestDefang_ProcessURL_WithCachedBlocklist(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			testedPlugin := newPlugin()
-			// Use long interval so no background fetch is triggered
+			// Use a single custom source matching our pre-created cache file
+			// and a long interval so no background fetch is triggered
 			cfg := map[string]interface{}{
 				"updateInterval": "87600h",
-				"sources":        []interface{}{},
+				"sources":        []interface{}{"https://dummy.test/hosts"},
 			}
 			for k, v := range tt.config {
 				cfg[k] = v
@@ -286,11 +292,17 @@ func TestDefang_BackgroundFetch_ServerError(t *testing.T) {
 func TestDefang_Shutdown_NoUpdate(t *testing.T) {
 	logger := newTestLogger()
 	tmpDir := t.TempDir()
+
+	// Pre-create cache so no update is triggered
+	cacheDir := filepath.Join(tmpDir, "defang")
+	require.NoError(t, os.MkdirAll(cacheDir, 0700))
+	require.NoError(t, os.WriteFile(filepath.Join(cacheDir, "source_0.txt"), []byte(""), 0600))
+
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
 	testedPlugin := newPlugin()
 	err := testedPlugin.Setup(provider, map[string]interface{}{
-		"sources":        []interface{}{},
+		"sources":        []interface{}{"https://dummy.test/hosts"},
 		"updateInterval": "87600h",
 	})
 	require.NoError(t, err)
@@ -318,9 +330,14 @@ func TestDefang_CaseInsensitive(t *testing.T) {
 	testedPlugin := newPlugin()
 	err := testedPlugin.Setup(provider, map[string]interface{}{
 		"updateInterval": "87600h",
-		"sources":        []interface{}{},
+		"sources":        []interface{}{"https://dummy.test/hosts"},
 	})
 	require.NoError(t, err)
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		testedPlugin.Shutdown(ctx)
+	}()
 
 	// Domain lookup should be case-insensitive
 	result1 := testedPlugin.ProcessURL(context.Background(), "https://MALWARE.EXAMPLE.COM/page")
@@ -345,6 +362,11 @@ func TestDefang_CustomSources(t *testing.T) {
 	result := testedPlugin.ProcessURL(context.Background(), "https://example.com/page")
 	assert.Equal(t, linkquisition.ActionContinue, result.Action)
 	assert.Equal(t, "https://example.com/page", result.URL)
+
+	// Wait for background update goroutine to finish before TempDir cleanup
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	testedPlugin.Shutdown(ctx)
 }
 
 func TestDefang_Metadata(t *testing.T) {
