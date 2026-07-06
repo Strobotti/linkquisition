@@ -49,7 +49,7 @@ you to set it as the default browser and scan for installed browsers for faster 
 #### Via Homebrew (recommended)
 
 ```bash
-brew tap strobotti/linkquisition
+brew tap strobotti/tap
 brew install --cask linkquisition
 ```
 

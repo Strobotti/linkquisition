@@ -200,7 +200,7 @@ jobs:
         run: |
           SHA256=$(sha256sum artifacts/Linkquisition_macOS_universal.zip | awk '{print $1}')
 
-          git clone https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/Strobotti/homebrew-linkquisition.git tap
+          git clone https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/Strobotti/homebrew-tap.git tap
           cd tap
 
           mkdir -p Casks
