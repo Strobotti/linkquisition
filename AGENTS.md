@@ -8,6 +8,21 @@ It documents conventions, gotchas, and the checklist to follow when making chang
 Linkquisition is a browser-picker for Linux and macOS written in Go. It supports
 a plugin system (`.so` shared objects) that can modify URLs before they're opened.
 
+## Commit conventions
+
+This project uses **Angular conventional commits**. Every commit message must have
+a type prefix:
+
+- `feat:` — new feature (minor version bump)
+- `fix:` — bug fix (patch version bump)
+- `feat!:` or `fix!:` with `BREAKING CHANGE:` in body — major version bump
+- `refactor:`, `docs:`, `style:`, `test:`, `chore:`, `ci:`, `perf:` — no release
+
+Prefer **small, self-contained commits** over large monolithic changes. Each commit
+should ideally do one thing and be independently reviewable. If a feature requires
+multiple steps (e.g. interface change + migration + tests + docs), split them into
+separate commits on the same branch rather than squashing everything together.
+
 ## Documentation surfaces to keep in sync
 
 When making changes, ensure ALL relevant documentation is updated:
