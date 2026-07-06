@@ -27,7 +27,8 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 	editors := make(map[string]func() interface{})
 	formItems := make([]*widget.FormItem, 0, len(meta.Settings))
 
-	for _, desc := range meta.Settings {
+	for i := range meta.Settings {
+		desc := &meta.Settings[i]
 		item, getValue := c.buildSettingWidget(desc, ps.Settings)
 		formItems = append(formItems, item)
 		editors[desc.Key] = getValue
@@ -89,10 +90,9 @@ func (c *Configurator) savePluginSettings(
 	c.rebuildPluginsList(listContainer)
 }
 
-//nolint:funlen
 func (c *Configurator) buildSettingWidget(
-	desc linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
-) (*widget.FormItem, func() interface{}) {
+	desc *linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
+) (item *widget.FormItem, getValue func() interface{}) {
 	switch desc.Type {
 	case linkquisition.SettingTypeBool:
 		return c.buildBoolSetting(desc, currentSettings)
@@ -110,26 +110,26 @@ func (c *Configurator) buildSettingWidget(
 }
 
 func (c *Configurator) buildBoolSetting(
-	desc linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
-) (*widget.FormItem, func() interface{}) {
+	desc *linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
+) (item *widget.FormItem, getValue func() interface{}) {
 	current := getSettingBool(currentSettings, desc.Key, desc.Default)
 	check := widget.NewCheck("", nil)
 	check.Checked = current
 
-	item := widget.NewFormItem(desc.Label, check)
+	item = widget.NewFormItem(desc.Label, check)
 	item.HintText = desc.Description
 
 	return item, func() interface{} { return check.Checked }
 }
 
 func (c *Configurator) buildChoiceSetting(
-	desc linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
-) (*widget.FormItem, func() interface{}) {
+	desc *linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
+) (item *widget.FormItem, getValue func() interface{}) {
 	current := getSettingString(currentSettings, desc.Key, desc.Default)
 	sel := widget.NewSelect(desc.Options, nil)
 	sel.Selected = current
 
-	item := widget.NewFormItem(desc.Label, sel)
+	item = widget.NewFormItem(desc.Label, sel)
 	item.HintText = desc.Description
 
 	return item, func() interface{} {
@@ -141,8 +141,8 @@ func (c *Configurator) buildChoiceSetting(
 }
 
 func (c *Configurator) buildIntSetting(
-	desc linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
-) (*widget.FormItem, func() interface{}) {
+	desc *linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
+) (item *widget.FormItem, getValue func() interface{}) {
 	current := getSettingString(currentSettings, desc.Key, desc.Default)
 	entry := widget.NewEntry()
 	entry.SetText(current)
@@ -156,7 +156,7 @@ func (c *Configurator) buildIntSetting(
 		return nil
 	}
 
-	item := widget.NewFormItem(desc.Label, entry)
+	item = widget.NewFormItem(desc.Label, entry)
 	item.HintText = desc.Description
 
 	return item, func() interface{} {
@@ -172,8 +172,8 @@ func (c *Configurator) buildIntSetting(
 }
 
 func (c *Configurator) buildStringSetting(
-	desc linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
-) (*widget.FormItem, func() interface{}) {
+	desc *linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
+) (item *widget.FormItem, getValue func() interface{}) {
 	current := getSettingString(currentSettings, desc.Key, desc.Default)
 	entry := widget.NewEntry()
 	entry.SetText(current)
@@ -182,7 +182,7 @@ func (c *Configurator) buildStringSetting(
 		entry.SetPlaceHolder("e.g. 5s, 168h")
 	}
 
-	item := widget.NewFormItem(desc.Label, entry)
+	item = widget.NewFormItem(desc.Label, entry)
 	item.HintText = desc.Description
 
 	return item, func() interface{} {
@@ -194,15 +194,15 @@ func (c *Configurator) buildStringSetting(
 }
 
 func (c *Configurator) buildStringListSetting(
-	desc linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
-) (*widget.FormItem, func() interface{}) {
+	desc *linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
+) (item *widget.FormItem, getValue func() interface{}) {
 	current := getSettingStringList(currentSettings, desc.Key)
 	entry := widget.NewMultiLineEntry()
 	entry.SetText(strings.Join(current, "\n"))
 	entry.SetMinRowsVisible(3) //nolint:mnd
 	entry.SetPlaceHolder("One entry per line")
 
-	item := widget.NewFormItem(desc.Label, entry)
+	item = widget.NewFormItem(desc.Label, entry)
 	item.HintText = desc.Description
 
 	return item, func() interface{} {

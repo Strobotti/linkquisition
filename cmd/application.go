@@ -27,6 +27,7 @@ const logFilePerms = 0644
 const pluginShutdownTimeout = 10 * time.Second
 const maxLogFileSize = 1 << 20 // 1 MB
 const pluginProcessTimeout = 30 * time.Second
+const pluginExtension = ".so"
 
 type Application struct {
 	Fapp            fyne.App
@@ -52,8 +53,8 @@ func setupPlugins(
 		}
 
 		pluginPath := pluginSettings.Path
-		if !strings.HasSuffix(pluginPath, ".so") {
-			pluginPath += ".so"
+		if !strings.HasSuffix(pluginPath, pluginExtension) {
+			pluginPath += pluginExtension
 		}
 
 		if _, err := os.Stat(pluginPath); err != nil {

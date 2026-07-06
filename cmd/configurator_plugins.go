@@ -122,7 +122,7 @@ func (c *Configurator) buildPluginCard(
 
 func (c *Configurator) buildAvailablePluginRow(name string, listContainer *fyne.Container) fyne.CanvasObject {
 	pluginName := name
-	meta := c.getPluginMetadata(pluginName + ".so")
+	meta := c.getPluginMetadata(pluginName + pluginExtension)
 
 	title := widget.NewLabel(meta.Name)
 	title.TextStyle = fyne.TextStyle{Bold: true}
@@ -162,8 +162,8 @@ func (c *Configurator) getPluginMetadata(pluginPath string) linkquisition.Plugin
 }
 
 func (c *Configurator) resolvePluginPath(pluginPath string) string {
-	if !strings.HasSuffix(pluginPath, ".so") {
-		pluginPath += ".so"
+	if !strings.HasSuffix(pluginPath, pluginExtension) {
+		pluginPath += pluginExtension
 	}
 
 	if _, err := os.Stat(pluginPath); err == nil {
@@ -200,7 +200,7 @@ func (c *Configurator) addPlugin(name string, listContainer *fyne.Container) {
 	settings := c.settingsService.GetSettings()
 
 	settings.Plugins = append(settings.Plugins, linkquisition.PluginSettings{
-		Path:       name + ".so",
+		Path:       name + pluginExtension,
 		IsDisabled: false,
 	})
 
@@ -227,10 +227,10 @@ func (c *Configurator) discoverUnconfiguredPlugins(settings *linkquisition.Setti
 
 	var available []string
 	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".so") {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), pluginExtension) {
 			continue
 		}
-		baseName := strings.TrimSuffix(entry.Name(), ".so")
+		baseName := strings.TrimSuffix(entry.Name(), pluginExtension)
 		if !configured[strings.ToLower(baseName)] {
 			available = append(available, baseName)
 		}
