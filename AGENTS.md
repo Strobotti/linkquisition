@@ -36,6 +36,7 @@ When making changes, ensure ALL relevant documentation is updated:
 
 - [ ] Add a section in `plugins/README.md` with description, config example, and settings table
 - [ ] Update `Taskfile.build.yml` — add the plugin name to the `PLUGINS` variable in `build-plugins`
+- [ ] Update `.goreleaser.yaml` — add a build entry for the plugin and a contents entry in the `nfpms` section
 - [ ] Update `README.md` if it references plugin capabilities or the TODO list
 - [ ] Ensure the plugin's behavior is accurately described (don't leave "for now" placeholders in released docs)
 
@@ -170,3 +171,29 @@ The app has two UI modes, both in `cmd/`:
 - Supported: `en`, `fi`, `es`, `sv`
 - The `locale` config key overrides system detection
 - Plugins do NOT currently have access to the i18n system
+
+## Linux packaging
+
+The project produces `.deb` and `.rpm` packages via GoReleaser's nfpm integration.
+
+### Key files
+
+- `.goreleaser.yaml` — build entries for the binary + all plugins, nfpm packaging config
+- `Taskfile.build.yml` — `PLUGINS` variable (source of truth for which plugins exist)
+- `Taskfile.package.yml` — local packaging tasks (for dev testing only)
+- `templates/DEBIAN/control.tpl` — local deb control template (used by `task package:deb`)
+- `templates/linkquisition.desktop` — `.desktop` file installed to `/usr/share/applications/`
+- `.github/workflows/publish.yml` — CI release workflow
+
+### Keeping packaging in sync
+
+The `PLUGINS` variable in `Taskfile.build.yml` is the canonical list of plugins.
+When adding or removing a plugin, ALL of the following must be updated:
+
+1. `Taskfile.build.yml` — `PLUGINS` variable
+2. `.goreleaser.yaml` — add/remove a `builds` entry AND a `contents` entry under `nfpms`
+3. `.github/workflows/publish.yml` — if the workflow references plugins explicitly
+
+The `.goreleaser.yaml` plugin build ID pattern is `"<name>-plugin"` and the contents
+path pattern is `./dist/<name>-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/<name>.so`
+→ `/usr/lib/linkquisition/plugins/<name>.so`.
