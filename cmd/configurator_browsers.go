@@ -65,7 +65,7 @@ func (c *Configurator) rebuildBrowsersList(content *fyne.Container) {
 	content.Refresh()
 }
 
-func (c *Configurator) buildBrowserIconPreview(b linkquisition.BrowserSettings) fyne.CanvasObject {
+func (c *Configurator) buildBrowserIconPreview(b *linkquisition.BrowserSettings) fyne.CanvasObject {
 	browser := linkquisition.Browser{
 		Name:     b.Name,
 		Command:  b.Command,
@@ -88,7 +88,7 @@ func (c *Configurator) buildBrowserCard(
 	b := settings.Browsers[idx]
 
 	// Icon preview
-	iconWidget := c.buildBrowserIconPreview(b)
+	iconWidget := c.buildBrowserIconPreview(&b)
 
 	// Title
 	title := widget.NewLabel(b.Name)
