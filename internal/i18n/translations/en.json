@@ -38,6 +38,12 @@
   "config.rescan_browsers": {
     "other": "Re-scan browsers"
   },
+  "config.scan_browsers_scanning": {
+    "other": "Scanning\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Done"
+  },
   "config.scan_now": {
     "other": "Scan now"
   },
@@ -181,6 +187,12 @@
   },
   "config.browsers_command_placeholder": {
     "other": "e.g. firefox --private-window %u"
+  },
+  "config.browsers_icon_path": {
+    "other": "Icon"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/path/to/icon.png (optional)"
   },
   "config.browsers_source_auto": {
     "other": "(auto)"
