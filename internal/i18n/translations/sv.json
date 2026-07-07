@@ -38,6 +38,12 @@
   "config.rescan_browsers": {
     "other": "Sök webbläsare igen"
   },
+  "config.scan_browsers_scanning": {
+    "other": "Söker\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Klart"
+  },
   "config.scan_now": {
     "other": "Sök nu"
   },
@@ -181,6 +187,12 @@
   },
   "config.browsers_command_placeholder": {
     "other": "t.ex. firefox --private-window %u"
+  },
+  "config.browsers_icon_path": {
+    "other": "Ikon"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/sökväg/till/ikon.png (valfritt)"
   },
   "config.browsers_source_auto": {
     "other": "(automatisk)"

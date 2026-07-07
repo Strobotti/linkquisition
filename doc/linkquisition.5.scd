@@ -45,6 +45,12 @@ and *rule* subcommands).
 *command* (string)
 	Command to execute. Use _%U_ or _%u_ as the URL placeholder.
 
+*iconPath* (string, optional)
+	Absolute path to the browser icon file (e.g. _.png_). Populated
+	automatically during browser scan from the _.desktop_ file's _Icon=_
+	field. Can be set manually for custom browsers that are not discovered
+	by scan.
+
 *hidden* (boolean)
 	If _true_, the browser is not shown in the picker but rules still apply.
 
@@ -92,6 +98,7 @@ and *rule* subcommands).
     {
       "name": "Firefox",
       "command": "firefox %u",
+      "iconPath": "/usr/share/icons/hicolor/128x128/apps/firefox.png",
       "hidden": false,
       "source": "auto",
       "matches": [
