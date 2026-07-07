@@ -188,6 +188,12 @@
   "config.browsers_command_placeholder": {
     "other": "esim. firefox --private-window %u"
   },
+  "config.browsers_icon_path": {
+    "other": "Kuvake"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/polku/kuvakkeeseen.png (valinnainen)"
+  },
   "config.browsers_source_auto": {
     "other": "(automaattinen)"
   },

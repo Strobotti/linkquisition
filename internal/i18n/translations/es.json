@@ -188,6 +188,12 @@
   "config.browsers_command_placeholder": {
     "other": "ej. firefox --private-window %u"
   },
+  "config.browsers_icon_path": {
+    "other": "Icono"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/ruta/al/icono.png (opcional)"
+  },
   "config.browsers_source_auto": {
     "other": "(automático)"
   },

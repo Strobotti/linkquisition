@@ -188,6 +188,12 @@
   "config.browsers_command_placeholder": {
     "other": "t.ex. firefox --private-window %u"
   },
+  "config.browsers_icon_path": {
+    "other": "Ikon"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/sökväg/till/ikon.png (valfritt)"
+  },
   "config.browsers_source_auto": {
     "other": "(automatisk)"
   },
