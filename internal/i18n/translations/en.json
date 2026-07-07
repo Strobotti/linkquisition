@@ -38,6 +38,12 @@
   "config.rescan_browsers": {
     "other": "Re-scan browsers"
   },
+  "config.scan_browsers_scanning": {
+    "other": "Scanning\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Done"
+  },
   "config.scan_now": {
     "other": "Scan now"
   },

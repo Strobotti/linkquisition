@@ -38,6 +38,12 @@
   "config.rescan_browsers": {
     "other": "Hae selaimet uudelleen"
   },
+  "config.scan_browsers_scanning": {
+    "other": "Haetaan\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Valmis"
+  },
   "config.scan_now": {
     "other": "Hae nyt"
   },

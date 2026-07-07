@@ -38,6 +38,12 @@
   "config.rescan_browsers": {
     "other": "Volver a buscar navegadores"
   },
+  "config.scan_browsers_scanning": {
+    "other": "Buscando\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Listo"
+  },
   "config.scan_now": {
     "other": "Buscar ahora"
   },

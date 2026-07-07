@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
@@ -26,9 +28,10 @@ func (c *Configurator) rebuildBrowsersList(content *fyne.Container) {
 		emptyLabel := widget.NewLabel(i18n.T("config.browsers_empty"))
 		emptyLabel.Wrapping = fyne.TextWrapWord
 
-		scanBtn := widget.NewButton(i18n.T("config.scan_browsers"), func() {
-			c.scanBrowsersAndRebuild(content)
-		})
+		scanBtn := widget.NewButton(i18n.T("config.scan_browsers"), nil)
+		scanBtn.OnTapped = func() {
+			c.scanBrowsersAndRebuild(content, scanBtn)
+		}
 		scanBtn.Importance = widget.HighImportance
 
 		content.Add(emptyLabel)
@@ -48,9 +51,10 @@ func (c *Configurator) rebuildBrowsersList(content *fyne.Container) {
 	// Action buttons at the bottom
 	content.Add(layout.NewSpacer())
 
-	scanBtn := widget.NewButton(i18n.T("config.rescan_browsers"), func() {
-		c.scanBrowsersAndRebuild(content)
-	})
+	scanBtn := widget.NewButton(i18n.T("config.rescan_browsers"), nil)
+	scanBtn.OnTapped = func() {
+		c.scanBrowsersAndRebuild(content, scanBtn)
+	}
 
 	addBtn := widget.NewButton(i18n.T("config.browsers_add"), func() {
 		c.showAddBrowserDialog(content)
@@ -298,12 +302,26 @@ func (c *Configurator) confirmDeleteBrowser(idx int, listContainer *fyne.Contain
 	)
 }
 
-func (c *Configurator) scanBrowsersAndRebuild(listContainer *fyne.Container) {
+func (c *Configurator) scanBrowsersAndRebuild(listContainer *fyne.Container, btn *widget.Button) {
+	originalText := btn.Text
+	btn.SetText(i18n.T("config.scan_browsers_scanning"))
+	btn.Disable()
+
 	go func() {
 		if err := c.settingsService.ScanBrowsers(); err != nil {
 			c.logger.Error("Error scanning browsers", "error", err)
+			btn.SetText(originalText)
+			btn.Enable()
+
+			windows := c.fapp.Driver().AllWindows()
+			if len(windows) > 0 {
+				dialog.ShowError(err, windows[0])
+			}
 			return
 		}
-		c.rebuildBrowsersList(listContainer)
+		btn.SetText(i18n.T("config.scan_browsers_done"))
+		time.AfterFunc(time.Second, func() {
+			c.rebuildBrowsersList(listContainer)
+		})
 	}()
 }
