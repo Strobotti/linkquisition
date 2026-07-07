@@ -65,26 +65,30 @@ func (c *Configurator) rebuildBrowsersList(content *fyne.Container) {
 	content.Refresh()
 }
 
-func (c *Configurator) buildBrowserCard(
-	settings *linkquisition.Settings, idx int, listContainer *fyne.Container,
-) fyne.CanvasObject {
-	b := settings.Browsers[idx]
-
-	// Icon preview
-	var iconWidget fyne.CanvasObject
+func (c *Configurator) buildBrowserIconPreview(b linkquisition.BrowserSettings) fyne.CanvasObject {
 	browser := linkquisition.Browser{
 		Name:     b.Name,
 		Command:  b.Command,
 		IconPath: b.IconPath,
 	}
 	iconBytes, err := c.browserService.GetIconForBrowser(browser)
-	if err == nil && len(iconBytes) > 0 {
-		iconRes := fyne.NewStaticResource("browser-icon.png", iconBytes)
-		img := canvas.NewImageFromResource(iconRes)
-		img.SetMinSize(fyne.NewSize(32, 32)) //nolint:mnd
-		img.FillMode = canvas.ImageFillContain
-		iconWidget = img
+	if err != nil || len(iconBytes) == 0 {
+		return nil
 	}
+	iconRes := fyne.NewStaticResource("browser-icon.png", iconBytes)
+	img := canvas.NewImageFromResource(iconRes)
+	img.SetMinSize(fyne.NewSize(32, 32)) //nolint:mnd
+	img.FillMode = canvas.ImageFillContain
+	return img
+}
+
+func (c *Configurator) buildBrowserCard(
+	settings *linkquisition.Settings, idx int, listContainer *fyne.Container,
+) fyne.CanvasObject {
+	b := settings.Browsers[idx]
+
+	// Icon preview
+	iconWidget := c.buildBrowserIconPreview(b)
 
 	// Title
 	title := widget.NewLabel(b.Name)
