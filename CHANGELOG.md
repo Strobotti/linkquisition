@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.4](https://github.com/Strobotti/linkquisition/compare/v2.5.3...v2.5.4) (2026-07-07)
+
+
+### Bug Fixes
+
+* **ci:** remove explicit binary from nfpms contents (content collision) ([#106](https://github.com/Strobotti/linkquisition/issues/106)) ([ebcc468](https://github.com/Strobotti/linkquisition/commit/ebcc468e777931d6a5b735b9296e5dcde02623d7))
+* **ci:** use gh CLI for asset uploads instead of GoReleaser publish ([#108](https://github.com/Strobotti/linkquisition/issues/108)) ([60da845](https://github.com/Strobotti/linkquisition/commit/60da845462086152fab3f0c7dd710e5cb5a7c9da))
+
 ## [2.5.3](https://github.com/Strobotti/linkquisition/compare/v2.5.2...v2.5.3) (2026-07-07)
 
 
