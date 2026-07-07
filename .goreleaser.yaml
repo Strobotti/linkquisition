@@ -1,8 +1,5 @@
 version: 2
 
-release:
-  mode: append
-
 builds:
   - id: "application"
     binary: "linkquisition"
