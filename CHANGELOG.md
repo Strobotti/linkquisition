@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.3](https://github.com/Strobotti/linkquisition/compare/v2.5.2...v2.5.3) (2026-07-07)
+
+
+### Bug Fixes
+
+* **ci:** remove nfpms meta flag so arch resolves to amd64 ([#104](https://github.com/Strobotti/linkquisition/issues/104)) ([18c4e2e](https://github.com/Strobotti/linkquisition/commit/18c4e2e233c859012049097dbdc386667f7518b9))
+
 ## [2.5.2](https://github.com/Strobotti/linkquisition/compare/v2.5.1...v2.5.2) (2026-07-07)
 
 
