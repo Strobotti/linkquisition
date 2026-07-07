@@ -267,22 +267,6 @@ func TestFileSettingsService_ScanBrowsers_MergesWithExistingConfigOnRescan(t *te
 	assert.Equal(t, "Firefox", settings.Browsers[0].Name)
 }
 
-func TestFileSettingsService_ScanBrowsers_PersistsIconPath(t *testing.T) {
-	browsers := []Browser{
-		{Name: "Firefox", Command: "firefox", IconPath: "/usr/share/icons/firefox.png"},
-		{Name: "Chrome", Command: "chrome", IconPath: "/usr/share/icons/chrome.png"},
-	}
-	svc := newTestService(t, browsers)
-
-	require.NoError(t, svc.ScanBrowsers())
-
-	settings, err := svc.ReadSettings()
-	require.NoError(t, err)
-	assert.Len(t, settings.Browsers, 2)
-	assert.Equal(t, "/usr/share/icons/firefox.png", settings.Browsers[0].IconPath)
-	assert.Equal(t, "/usr/share/icons/chrome.png", settings.Browsers[1].IconPath)
-}
-
 func TestFileSettingsService_WriteSettings_ReturnsErrorForUnwritablePath(t *testing.T) {
 	tmpDir := t.TempDir()
 	readOnlyDir := filepath.Join(tmpDir, "readonly")

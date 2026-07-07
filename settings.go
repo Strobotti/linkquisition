@@ -33,11 +33,10 @@ type BrowserMatch struct {
 }
 
 type BrowserSettings struct {
-	Name     string `json:"name"`
-	Command  string `json:"command"`
-	IconPath string `json:"iconPath,omitempty"`
-	Hidden   bool   `json:"hidden"`
-	Source   string `json:"source"`
+	Name    string `json:"name"`
+	Command string `json:"command"`
+	Hidden  bool   `json:"hidden"`
+	Source  string `json:"source"`
 
 	Matches []BrowserMatch `json:"matches"`
 }
@@ -145,10 +144,7 @@ func (s *Settings) CompileAllRegexMatches() *Settings {
 }
 
 func (s *Settings) UpdateWithBrowsers(browsers []Browser) *Settings {
-	return s.dropAutoAddedBrowsersNoLongerPresent(browsers).
-		addMissingBrowsers(browsers).
-		refreshIconPaths(browsers).
-		NormalizeBrowsers()
+	return s.dropAutoAddedBrowsersNoLongerPresent(browsers).addMissingBrowsers(browsers).NormalizeBrowsers()
 }
 
 func (s *Settings) dropAutoAddedBrowsersNoLongerPresent(browsers []Browser) *Settings {
@@ -186,35 +182,12 @@ func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
 		if !found {
 			s.Browsers = append(
 				s.Browsers, BrowserSettings{
-					Name:     browsers[i].Name,
-					Command:  browsers[i].Command,
-					IconPath: browsers[i].IconPath,
-					Hidden:   false,
-					Source:   SourceAuto,
+					Name:    browsers[i].Name,
+					Command: browsers[i].Command,
+					Hidden:  false,
+					Source:  SourceAuto,
 				},
 			)
-		}
-	}
-
-	return s
-}
-
-// refreshIconPaths updates the icon path for auto-discovered browsers that have
-// a newer icon path available. Manual browsers keep their existing icon path unless
-// it is empty and a new one was discovered.
-func (s *Settings) refreshIconPaths(browsers []Browser) *Settings {
-	for i := range s.Browsers {
-		for j := range browsers {
-			if s.Browsers[i].Command == browsers[j].Command {
-				// Update icon path for auto browsers unconditionally,
-				// for manual browsers only if currently empty
-				if s.Browsers[i].Source == SourceAuto || s.Browsers[i].IconPath == "" {
-					if browsers[j].IconPath != "" {
-						s.Browsers[i].IconPath = browsers[j].IconPath
-					}
-				}
-				break
-			}
 		}
 	}
 
@@ -230,9 +203,8 @@ func (s *Settings) GetSelectableBrowsers() []Browser {
 		}
 
 		browser := Browser{
-			Name:     s.Browsers[i].Name,
-			Command:  s.Browsers[i].Command,
-			IconPath: s.Browsers[i].IconPath,
+			Name:    s.Browsers[i].Name,
+			Command: s.Browsers[i].Command,
 		}
 		browsers = append(browsers, browser)
 	}
@@ -244,9 +216,8 @@ func (s *Settings) GetMatchingBrowser(u string) (*Browser, error) {
 	for i := range s.Browsers {
 		if s.Browsers[i].MatchesUrl(u) {
 			return &Browser{
-				Name:     s.Browsers[i].Name,
-				Command:  s.Browsers[i].Command,
-				IconPath: s.Browsers[i].IconPath,
+				Name:    s.Browsers[i].Name,
+				Command: s.Browsers[i].Command,
 			}, nil
 		}
 	}

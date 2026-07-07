@@ -41,8 +41,7 @@ the [releases page](https://github.com/Strobotti/linkquisition/releases).
 
 #### .deb package (Ubuntu/Debian)
 
-The `.deb` package contains everything needed to launch the application using the desktop-environment, e.g. you should
-be
+The `.deb` package contains everything needed to launch the application using the desktop-environment, e.g. you should be
 able to press `Super`-key in Ubuntu and type "Linkquisition" to see the launcher. To do the same in terminal just run
 `linkquisition` command. Launching the application without any arguments will show the configuration screen which allows
 you to set it as the default browser and scan for installed browsers for faster startup and easier configuration.
@@ -115,7 +114,6 @@ it will be treated as a different browser and might be removed if not safe-guard
     {
       "name": "Microsoft Edge",
       "command": "/usr/bin/microsoft-edge-stable %U",
-      "iconPath": "/usr/share/icons/hicolor/128x128/apps/microsoft-edge.png",
       "hidden": false,
       "source": "auto",
       "matches": [
@@ -128,7 +126,6 @@ it will be treated as a different browser and might be removed if not safe-guard
     {
       "name": "Firefox",
       "command": "firefox %u",
-      "iconPath": "/usr/share/icons/hicolor/128x128/apps/firefox.png",
       "hidden": false,
       "source": "auto",
       "matches": [
