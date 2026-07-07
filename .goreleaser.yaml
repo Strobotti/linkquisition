@@ -95,8 +95,7 @@ builds:
       - -X main.buildDate={{.Date}}
 
 nfpms:
-  - meta: true
-    package_name: linkquisition
+  - package_name: linkquisition
     homepage: https://github.com/Strobotti/linkquisition
     maintainer: Juha Jantunen <juha@strobotti.com>
     description: |-
