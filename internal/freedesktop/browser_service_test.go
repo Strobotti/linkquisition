@@ -379,14 +379,14 @@ func TestExtractExecutable_EmptyString(t *testing.T) {
 
 func TestExtractExecutable_ExpandsTilde(t *testing.T) {
 	home, _ := os.UserHomeDir()
-	expected := filepath.Join(home, ".local/share/firefox-dev/firefox")
+	expected := filepath.Join(home, ".local", "share", "firefox-dev", "firefox")
 	assert.Equal(t, expected, extractExecutable("~/.local/share/firefox-dev/firefox --name firefox-dev %u"))
 }
 
 func TestExtractExecutable_ExpandsEnvVar(t *testing.T) {
 	home, _ := os.UserHomeDir()
 	t.Setenv("HOME", home)
-	expected := filepath.Join(home, ".local/share/firefox-nightly/firefox")
+	expected := filepath.Join(home, ".local", "share", "firefox-nightly", "firefox")
 	assert.Equal(t, expected, extractExecutable("$HOME/.local/share/firefox-nightly/firefox --name firefox-nightly %u"))
 }
 
