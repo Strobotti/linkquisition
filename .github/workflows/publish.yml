@@ -149,6 +149,15 @@ jobs:
       - name: Package files for Linux
         run: task package:linux
 
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
+
       - name: Download macOS artifact
         uses: actions/download-artifact@v8
         with:
@@ -160,15 +169,6 @@ jobs:
         with:
           name: linux-amd64
           path: artifacts/
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          version: '~> v2'
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
-          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
 
       - name: Upload macOS asset to release
         run: gh release upload "${{ github.ref_name }}" artifacts/Linkquisition_macOS_universal.zip --clobber
