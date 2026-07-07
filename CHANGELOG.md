@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.5](https://github.com/Strobotti/linkquisition/compare/v2.5.4...v2.5.5) (2026-07-07)
+
+
+### Bug Fixes
+
+* **ci:** split asset uploads to prevent silent glob failures ([#109](https://github.com/Strobotti/linkquisition/issues/109)) ([cdece05](https://github.com/Strobotti/linkquisition/commit/cdece05ee08e7906692a44b4e261f9dd068807b2))
+
 ## [2.5.4](https://github.com/Strobotti/linkquisition/compare/v2.5.3...v2.5.4) (2026-07-07)
 
 
