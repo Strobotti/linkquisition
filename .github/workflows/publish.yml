@@ -215,48 +215,6 @@ jobs:
           git commit -m "Update linkquisition to v${VERSION}" || echo "No changes to commit"
           git push
 
-  update-metainfo:
-    name: Update Flatpak Metainfo
-    needs: [ upload-assets ]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-
-      - name: Update metainfo and create PR
-        env:
-          GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
-        run: |
-          VERSION="${{ github.ref_name }}"
-          VERSION="${VERSION#v}"
-          DATE=$(date +%Y-%m-%d)
-          BRANCH="chore/release-metadata-v${VERSION}"
-          METAINFO="flatpak/io.github.strobotti.linkquisition.metainfo.xml"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git checkout -b "$BRANCH"
-
-          # Insert a new <release> entry after the <releases> tag
-          sed -i "s|<releases>|<releases>\n    <release version=\"${VERSION}\" date=\"${DATE}\">\n      <description>\n        <p>See https://github.com/Strobotti/linkquisition/releases/tag/v${VERSION} for details.</p>\n      </description>\n    </release>|" "$METAINFO"
-
-          git add "$METAINFO"
-          git commit -m "chore: update Flatpak metainfo for v${VERSION}"
-          git push -u origin "$BRANCH"
-
-          gh pr create \
-            --title "chore: update Flatpak metainfo for v${VERSION}" \
-            --body "Automated update of the Flatpak metainfo release entry for v${VERSION}." \
-            --base main \
-            --head "$BRANCH"
-
-          gh pr merge "$BRANCH" --auto --squash
-
   coverage:
     name: Coverage Badge
     needs: [ test ]

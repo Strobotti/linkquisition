@@ -15,8 +15,41 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
       version: ${{ steps.release.outputs.version }}
+      pr: ${{ steps.release.outputs.pr }}
     steps:
       - uses: googleapis/release-please-action@v5
         id: release
         with:
           token: ${{ secrets.DEPENDABOT_TOKEN }}
+
+  update-metainfo:
+    name: Update Flatpak Metainfo in Release PR
+    needs: [ release-please ]
+    if: needs.release-please.outputs.pr && !needs.release-please.outputs.release_created
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.DEPENDABOT_TOKEN }}
+          ref: release-please--branches--main
+
+      - name: Update metainfo XML
+        run: |
+          VERSION="${{ needs.release-please.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          METAINFO="flatpak/io.github.strobotti.linkquisition.metainfo.xml"
+
+          # Check if this version is already in the metainfo
+          if grep -q "version=\"${VERSION}\"" "$METAINFO"; then
+            echo "Version ${VERSION} already in metainfo, skipping"
+            exit 0
+          fi
+
+          # Insert a new <release> entry after the <releases> tag
+          sed -i "s|<releases>|<releases>\n    <release version=\"${VERSION}\" date=\"${DATE}\">\n      <description>\n        <p>See https://github.com/Strobotti/linkquisition/releases/tag/v${VERSION} for details.</p>\n      </description>\n    </release>|" "$METAINFO"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$METAINFO"
+          git commit -m "chore: update Flatpak metainfo for v${VERSION}" || echo "No changes to commit"
+          git push
