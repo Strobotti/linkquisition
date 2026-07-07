@@ -175,11 +175,37 @@ jobs:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
         run: |
           TAG="${{ github.ref_name }}"
-          # GoReleaser outputs (deb, rpm, tar.gz, checksums, sbom)
-          gh release upload "$TAG" dist/*.deb dist/*.rpm dist/*.tar.gz dist/checksums.txt dist/*.sbom.json --clobber 2>/dev/null || true
+
+          echo "=== Contents of dist/ ==="
+          ls -la dist/
+
+          # Upload GoReleaser outputs individually so one missing glob doesn't block others
+          for pattern in "dist/*.deb" "dist/*.rpm" "dist/*.tar.gz"; do
+            files=$(ls $pattern 2>/dev/null)
+            if [ -n "$files" ]; then
+              echo "Uploading: $files"
+              gh release upload "$TAG" $files --clobber
+            else
+              echo "Warning: no files matching $pattern"
+            fi
+          done
+
+          # Checksums (filename may vary)
+          if ls dist/checksums* 1>/dev/null 2>&1; then
+            gh release upload "$TAG" dist/checksums* --clobber
+          fi
+
+          # SBOMs (may or may not exist)
+          if ls dist/*.sbom* 1>/dev/null 2>&1; then
+            gh release upload "$TAG" dist/*.sbom* --clobber
+          fi
+
           # macOS universal binary
+          echo "Uploading macOS artifact"
           gh release upload "$TAG" artifacts/Linkquisition_macOS_universal.zip --clobber
+
           # AppImage
+          echo "Uploading AppImage"
           gh release upload "$TAG" artifacts/Linkquisition-*.AppImage --clobber
 
   update-homebrew:
