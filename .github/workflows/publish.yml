@@ -1,29 +1,10 @@
-name: Release
+name: Publish
 
 on:
-  push:
-    branches: [ main ]
+  release:
+    types: [ created ]
 
 jobs:
-  version:
-    name: Determine version
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    outputs:
-      new_release: ${{ steps.semrel.outputs.version != '' }}
-      version: ${{ steps.semrel.outputs.version }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - uses: go-semantic-release/action@v1
-        id: semrel
-        with:
-          github-token: ${{ secrets.DEPENDABOT_TOKEN }}
-          dry: true
-
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -56,8 +37,7 @@ jobs:
 
   build:
     name: Build (${{ matrix.target }})
-    needs: [ version, test ]
-    if: needs.version.outputs.new_release == 'true'
+    needs: [ test ]
     permissions:
       contents: write
     strategy:
@@ -93,7 +73,7 @@ jobs:
       - name: Build
         run: task build:${{ matrix.target }}
         env:
-          VERSION: v${{ needs.version.outputs.version }}
+          VERSION: ${{ github.event.release.tag_name }}
 
       - name: Package Linux .deb
         if: matrix.target == 'linux-amd64'
@@ -105,11 +85,13 @@ jobs:
           cp bin/linkquisition-linux-amd64 package/linux/usr/bin/linkquisition
           cp package/linux/usr/lib/linkquisition/plugins/*.so package/linux/usr/lib/linkquisition/plugins/ 2>/dev/null || true
           cp templates/DEBIAN/control.tpl package/linux/DEBIAN/control
-          sed -i "s/{{VERSION}}/${{ needs.version.outputs.version }}/g" package/linux/DEBIAN/control
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          sed -i "s/{{VERSION}}/${VERSION}/g" package/linux/DEBIAN/control
           sed -i "s/{{ARCH}}/amd64/g" package/linux/DEBIAN/control
-          dpkg-deb --build package/linux dist/linkquisition_${{ needs.version.outputs.version }}_amd64.deb
+          dpkg-deb --build package/linux dist/linkquisition_${VERSION}_amd64.deb
         env:
-          VERSION: v${{ needs.version.outputs.version }}
+          VERSION: ${{ github.event.release.tag_name }}
 
       - name: Build AppImage
         if: matrix.target == 'linux-amd64'
@@ -117,7 +99,7 @@ jobs:
           task package:manpages
           ./scripts/build-appimage.sh
         env:
-          VERSION: ${{ needs.version.outputs.version }}
+          VERSION: ${{ github.event.release.tag_name }}
 
       - name: Package macOS .app
         if: matrix.target == 'darwin-universal'
@@ -126,7 +108,7 @@ jobs:
           codesign --force --deep --sign - dist/Linkquisition.app
           cd dist && ditto -c -k --keepParent Linkquisition.app Linkquisition_macOS_universal.zip
         env:
-          VERSION: ${{ needs.version.outputs.version }}
+          VERSION: ${{ github.event.release.tag_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
@@ -134,9 +116,9 @@ jobs:
           name: ${{ matrix.target }}
           path: dist/
 
-  release:
-    name: Create Release
-    needs: [ version, build ]
+  upload-assets:
+    name: Upload Release Assets
+    needs: [ build ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -178,31 +160,28 @@ jobs:
           name: linux-amd64
           path: artifacts/
 
-      - uses: go-semantic-release/action@v1
-        id: semrel
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          github-token: ${{ secrets.DEPENDABOT_TOKEN }}
-          hooks: goreleaser
-          allow-initial-development-versions: true
+          version: '~> v2'
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ github.event.release.tag_name }}
 
       - name: Upload macOS asset to release
-        if: steps.semrel.outputs.version != ''
-        run: gh release upload "v${{ steps.semrel.outputs.version }}" artifacts/Linkquisition_macOS_universal.zip --clobber
+        run: gh release upload "${{ github.event.release.tag_name }}" artifacts/Linkquisition_macOS_universal.zip --clobber
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
       - name: Upload AppImage to release
-        if: steps.semrel.outputs.version != ''
-        run: gh release upload "v${{ steps.semrel.outputs.version }}" artifacts/Linkquisition-*.AppImage --clobber
+        run: gh release upload "${{ github.event.release.tag_name }}" artifacts/Linkquisition-*.AppImage --clobber
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
   update-homebrew:
     name: Update Homebrew Tap
-    needs: [ version, release ]
-    if: needs.version.outputs.new_release == 'true'
+    needs: [ upload-assets ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -216,8 +195,9 @@ jobs:
       - name: Update Homebrew Cask
         env:
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
-          VERSION: ${{ needs.version.outputs.version }}
         run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
           SHA256=$(sha256sum artifacts/Linkquisition_macOS_universal.zip | awk '{print $1}')
 
           git clone https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/Strobotti/homebrew-tap.git tap
@@ -236,8 +216,7 @@ jobs:
 
   update-metainfo:
     name: Update Flatpak Metainfo
-    needs: [ version, release ]
-    if: needs.version.outputs.new_release == 'true'
+    needs: [ upload-assets ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -248,8 +227,9 @@ jobs:
       - name: Update metainfo and create PR
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
-          VERSION: ${{ needs.version.outputs.version }}
         run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
           DATE=$(date +%Y-%m-%d)
           BRANCH="chore/release-metadata-v${VERSION}"
           METAINFO="flatpak/io.github.strobotti.linkquisition.metainfo.xml"
