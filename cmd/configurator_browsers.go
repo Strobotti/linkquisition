@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
@@ -68,6 +69,22 @@ func (c *Configurator) buildBrowserCard(
 	settings *linkquisition.Settings, idx int, listContainer *fyne.Container,
 ) fyne.CanvasObject {
 	b := settings.Browsers[idx]
+
+	// Icon preview
+	var iconWidget fyne.CanvasObject
+	browser := linkquisition.Browser{
+		Name:     b.Name,
+		Command:  b.Command,
+		IconPath: b.IconPath,
+	}
+	iconBytes, err := c.browserService.GetIconForBrowser(browser)
+	if err == nil && len(iconBytes) > 0 {
+		iconRes := fyne.NewStaticResource("browser-icon.png", iconBytes)
+		img := canvas.NewImageFromResource(iconRes)
+		img.SetMinSize(fyne.NewSize(32, 32)) //nolint:mnd
+		img.FillMode = canvas.ImageFillContain
+		iconWidget = img
+	}
 
 	// Title
 	title := widget.NewLabel(b.Name)
@@ -135,14 +152,32 @@ func (c *Configurator) buildBrowserCard(
 		rulesLabel.TextStyle = fyne.TextStyle{Italic: true}
 	}
 
+	// Icon path (read-only display)
+	var iconPathLabel *widget.Label
+	if b.IconPath != "" {
+		iconPathLabel = widget.NewLabel(b.IconPath)
+		iconPathLabel.TextStyle = fyne.TextStyle{Italic: true}
+		iconPathLabel.Truncation = fyne.TextTruncateEllipsis
+	}
+
 	// Layout
+	var titleRow fyne.CanvasObject
+	if iconWidget != nil {
+		titleRow = container.NewHBox(iconWidget, title, sourceLabel)
+	} else {
+		titleRow = container.NewHBox(title, sourceLabel)
+	}
+
 	headerRow := container.NewBorder(
 		nil, nil,
-		container.NewHBox(title, sourceLabel),
+		titleRow,
 		container.NewHBox(upBtn, downBtn),
 	)
 
 	cardContent := container.NewVBox(headerRow, command)
+	if iconPathLabel != nil {
+		cardContent.Add(iconPathLabel)
+	}
 	if rulesLabel != nil {
 		cardContent.Add(rulesLabel)
 	}
@@ -176,9 +211,13 @@ func (c *Configurator) showAddBrowserDialog(listContainer *fyne.Container) {
 	commandEntry := widget.NewEntry()
 	commandEntry.SetPlaceHolder(i18n.T("config.browsers_command_placeholder"))
 
+	iconPathEntry := widget.NewEntry()
+	iconPathEntry.SetPlaceHolder(i18n.T("config.browsers_icon_path_placeholder"))
+
 	form := widget.NewForm(
 		widget.NewFormItem(i18n.T("config.browsers_name"), nameEntry),
 		widget.NewFormItem(i18n.T("config.browsers_command"), commandEntry),
+		widget.NewFormItem(i18n.T("config.browsers_icon_path"), iconPathEntry),
 	)
 
 	windows := c.fapp.Driver().AllWindows()
@@ -199,22 +238,23 @@ func (c *Configurator) showAddBrowserDialog(listContainer *fyne.Container) {
 			if nameEntry.Text == "" || commandEntry.Text == "" {
 				return
 			}
-			c.addManualBrowser(nameEntry.Text, commandEntry.Text, listContainer)
+			c.addManualBrowser(nameEntry.Text, commandEntry.Text, iconPathEntry.Text, listContainer)
 		},
 		parentWindow,
 	)
-	d.Resize(fyne.NewSize(500, 200)) //nolint:mnd
+	d.Resize(fyne.NewSize(500, 250)) //nolint:mnd
 	d.Show()
 }
 
-func (c *Configurator) addManualBrowser(name, command string, listContainer *fyne.Container) {
+func (c *Configurator) addManualBrowser(name, command, iconPath string, listContainer *fyne.Container) {
 	settings := c.settingsService.GetSettings()
 
 	settings.Browsers = append(settings.Browsers, linkquisition.BrowserSettings{
-		Name:    name,
-		Command: command,
-		Hidden:  false,
-		Source:  linkquisition.SourceManual,
+		Name:     name,
+		Command:  command,
+		IconPath: iconPath,
+		Hidden:   false,
+		Source:   linkquisition.SourceManual,
 	})
 
 	if err := c.settingsService.WriteSettings(settings); err != nil {
@@ -235,9 +275,14 @@ func (c *Configurator) showEditBrowserDialog(idx int, listContainer *fyne.Contai
 	commandEntry := widget.NewEntry()
 	commandEntry.SetText(b.Command)
 
+	iconPathEntry := widget.NewEntry()
+	iconPathEntry.SetPlaceHolder(i18n.T("config.browsers_icon_path_placeholder"))
+	iconPathEntry.SetText(b.IconPath)
+
 	form := widget.NewForm(
 		widget.NewFormItem(i18n.T("config.browsers_name"), nameEntry),
 		widget.NewFormItem(i18n.T("config.browsers_command"), commandEntry),
+		widget.NewFormItem(i18n.T("config.browsers_icon_path"), iconPathEntry),
 	)
 
 	windows := c.fapp.Driver().AllWindows()
@@ -261,6 +306,7 @@ func (c *Configurator) showEditBrowserDialog(idx int, listContainer *fyne.Contai
 			s := c.settingsService.GetSettings()
 			s.Browsers[idx].Name = nameEntry.Text
 			s.Browsers[idx].Command = commandEntry.Text
+			s.Browsers[idx].IconPath = iconPathEntry.Text
 			if err := c.settingsService.WriteSettings(s); err != nil {
 				c.logger.Error("Error saving browser edit", "error", err)
 				return
@@ -269,7 +315,7 @@ func (c *Configurator) showEditBrowserDialog(idx int, listContainer *fyne.Contai
 		},
 		parentWindow,
 	)
-	d.Resize(fyne.NewSize(500, 200)) //nolint:mnd
+	d.Resize(fyne.NewSize(500, 250)) //nolint:mnd
 	d.Show()
 }
 
