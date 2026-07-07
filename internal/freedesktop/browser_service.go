@@ -60,9 +60,8 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 			}
 
 			browser := linkquisition.Browser{
-				Name:     desktopEntry.Name,
-				Command:  desktopEntry.Exec,
-				IconPath: b.BrowserIconLoader.ResolveIconName(desktopEntry.Icon),
+				Name:    desktopEntry.Name,
+				Command: desktopEntry.Exec,
 			}
 			browsers = append(browsers, browser)
 		}

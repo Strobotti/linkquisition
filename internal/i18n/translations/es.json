@@ -38,12 +38,6 @@
   "config.rescan_browsers": {
     "other": "Volver a buscar navegadores"
   },
-  "config.scan_browsers_scanning": {
-    "other": "Buscando\u2026"
-  },
-  "config.scan_browsers_done": {
-    "other": "\u2713 Listo"
-  },
   "config.scan_now": {
     "other": "Buscar ahora"
   },
@@ -187,12 +181,6 @@
   },
   "config.browsers_command_placeholder": {
     "other": "ej. firefox --private-window %u"
-  },
-  "config.browsers_icon_path": {
-    "other": "Icono"
-  },
-  "config.browsers_icon_path_placeholder": {
-    "other": "/ruta/al/icono.png (opcional)"
   },
   "config.browsers_source_auto": {
     "other": "(automático)"

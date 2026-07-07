@@ -1,9 +1,8 @@
 package linkquisition
 
 type Browser struct {
-	Name     string
-	Command  string
-	IconPath string
+	Name    string
+	Command string
 }
 
 type BrowserService interface {

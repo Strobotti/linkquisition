@@ -14,7 +14,6 @@ import (
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
-	"github.com/strobotti/linkquisition/resources"
 )
 
 type BrowserPicker struct {
@@ -153,7 +152,10 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	w.SetFixedSize(true)
 	w.Resize(fyne.NewSize(600, 50)) //nolint:mnd
 	w.CenterOnScreen()
-	w.SetIcon(resources.LinkquisitionIcon)
+
+	if icon, err := fyne.LoadResourceFromPath("Icon.png"); err == nil {
+		w.SetIcon(icon)
+	}
 
 	w.SetContent(container.NewVBox(widgets...))
 

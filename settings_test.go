@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	. "github.com/strobotti/linkquisition"
 )
@@ -607,55 +606,6 @@ func TestSettings_UpdateWithBrowsers_PreservesNonBrowserFields(t *testing.T) {
 	assert.True(t, result.Ui.HideKeyboardGuideLabel)
 }
 
-func TestSettings_UpdateWithBrowsers_RefreshesIconPaths(t *testing.T) {
-	settings := &Settings{
-		Browsers: []BrowserSettings{
-			{Name: "Firefox", Command: "firefox", Source: SourceAuto, IconPath: ""},
-			{Name: "Custom", Command: "custom", Source: SourceManual, IconPath: ""},
-		},
-	}
-
-	result := settings.UpdateWithBrowsers([]Browser{
-		{Name: "Firefox", Command: "firefox", IconPath: "/usr/share/icons/firefox.png"},
-		{Name: "Custom", Command: "custom", IconPath: "/usr/share/icons/custom.png"},
-	})
-
-	// Auto browser should get its icon path updated
-	assert.Equal(t, "/usr/share/icons/firefox.png", result.Browsers[0].IconPath)
-	// Manual browser with empty icon path should also get populated
-	assert.Equal(t, "/usr/share/icons/custom.png", result.Browsers[1].IconPath)
-}
-
-func TestSettings_UpdateWithBrowsers_PreservesManualIconPath(t *testing.T) {
-	settings := &Settings{
-		Browsers: []BrowserSettings{
-			{Name: "Custom", Command: "custom", Source: SourceManual, IconPath: "/my/custom/icon.png"},
-		},
-	}
-
-	result := settings.UpdateWithBrowsers([]Browser{
-		{Name: "Custom", Command: "custom", IconPath: "/usr/share/icons/auto.png"},
-	})
-
-	// Manual browser with existing icon path should keep it
-	assert.Equal(t, "/my/custom/icon.png", result.Browsers[0].IconPath)
-}
-
-func TestSettings_UpdateWithBrowsers_NewBrowserGetsIconPath(t *testing.T) {
-	settings := &Settings{
-		Browsers: []BrowserSettings{},
-	}
-
-	result := settings.UpdateWithBrowsers([]Browser{
-		{Name: "Firefox", Command: "firefox", IconPath: "/usr/share/icons/firefox.png"},
-	})
-
-	require.Len(t, result.Browsers, 1)
-	assert.Equal(t, "Firefox", result.Browsers[0].Name)
-	assert.Equal(t, "/usr/share/icons/firefox.png", result.Browsers[0].IconPath)
-	assert.Equal(t, SourceAuto, result.Browsers[0].Source)
-}
-
 func TestSettings_GetSelectableBrowsers(t *testing.T) {
 	for _, tt := range [...]struct {
 		name     string
@@ -666,14 +616,14 @@ func TestSettings_GetSelectableBrowsers(t *testing.T) {
 			name: "returns only visible browsers",
 			settings: Settings{
 				Browsers: []BrowserSettings{
-					{Name: "Firefox", Command: "firefox", IconPath: "/usr/share/icons/firefox.png", Hidden: false},
+					{Name: "Firefox", Command: "firefox", Hidden: false},
 					{Name: "Chromium", Command: "chromium", Hidden: true},
-					{Name: "Brave", Command: "brave", IconPath: "/usr/share/icons/brave.png", Hidden: false},
+					{Name: "Brave", Command: "brave", Hidden: false},
 				},
 			},
 			expected: []Browser{
-				{Name: "Firefox", Command: "firefox", IconPath: "/usr/share/icons/firefox.png"},
-				{Name: "Brave", Command: "brave", IconPath: "/usr/share/icons/brave.png"},
+				{Name: "Firefox", Command: "firefox"},
+				{Name: "Brave", Command: "brave"},
 			},
 		},
 		{
@@ -716,9 +666,8 @@ func TestSettings_GetMatchingBrowser(t *testing.T) {
 	settings := &Settings{
 		Browsers: []BrowserSettings{
 			{
-				Name:     "Firefox",
-				Command:  "firefox",
-				IconPath: "/usr/share/icons/firefox.png",
+				Name:    "Firefox",
+				Command: "firefox",
 				Matches: []BrowserMatch{
 					{Type: BrowserMatchTypeSite, Value: "www.facebook.com"},
 				},
@@ -738,7 +687,6 @@ func TestSettings_GetMatchingBrowser(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "Firefox", browser.Name)
 		assert.Equal(t, "firefox", browser.Command)
-		assert.Equal(t, "/usr/share/icons/firefox.png", browser.IconPath)
 	})
 
 	t.Run("returns matching browser for domain rule", func(t *testing.T) {
