@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/resources"
 )
 
 // BrowserIconLoader loads browser icons and resolves icon names to file paths.
@@ -44,13 +45,8 @@ func (l *DefaultBrowserIconLoader) LoadIcon(browser linkquisition.Browser) ([]by
 		}
 	}
 
-	// As a fallback we'll use the application icon
-	icon, err := fyne.LoadResourceFromPath("Icon.png")
-	if err != nil {
-		return nil, err
-	}
-
-	return icon.Content(), nil
+	// As a fallback we'll use the bundled application icon
+	return resources.LinkquisitionIcon.Content(), nil
 }
 
 // resolveIconPathForCommand finds the icon path for a browser command by looking up

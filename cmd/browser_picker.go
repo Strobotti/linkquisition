@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/strobotti/linkquisition/resources"
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
@@ -152,10 +153,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	w.SetFixedSize(true)
 	w.Resize(fyne.NewSize(600, 50)) //nolint:mnd
 	w.CenterOnScreen()
-
-	if icon, err := fyne.LoadResourceFromPath("Icon.png"); err == nil {
-		w.SetIcon(icon)
-	}
+	w.SetIcon(resources.LinkquisitionIcon)
 
 	w.SetContent(container.NewVBox(widgets...))
 
