@@ -666,14 +666,14 @@ func TestSettings_GetSelectableBrowsers(t *testing.T) {
 			name: "returns only visible browsers",
 			settings: Settings{
 				Browsers: []BrowserSettings{
-					{Name: "Firefox", Command: "firefox", Hidden: false},
+					{Name: "Firefox", Command: "firefox", IconPath: "/usr/share/icons/firefox.png", Hidden: false},
 					{Name: "Chromium", Command: "chromium", Hidden: true},
-					{Name: "Brave", Command: "brave", Hidden: false},
+					{Name: "Brave", Command: "brave", IconPath: "/usr/share/icons/brave.png", Hidden: false},
 				},
 			},
 			expected: []Browser{
-				{Name: "Firefox", Command: "firefox"},
-				{Name: "Brave", Command: "brave"},
+				{Name: "Firefox", Command: "firefox", IconPath: "/usr/share/icons/firefox.png"},
+				{Name: "Brave", Command: "brave", IconPath: "/usr/share/icons/brave.png"},
 			},
 		},
 		{
@@ -716,8 +716,9 @@ func TestSettings_GetMatchingBrowser(t *testing.T) {
 	settings := &Settings{
 		Browsers: []BrowserSettings{
 			{
-				Name:    "Firefox",
-				Command: "firefox",
+				Name:     "Firefox",
+				Command:  "firefox",
+				IconPath: "/usr/share/icons/firefox.png",
 				Matches: []BrowserMatch{
 					{Type: BrowserMatchTypeSite, Value: "www.facebook.com"},
 				},
@@ -737,6 +738,7 @@ func TestSettings_GetMatchingBrowser(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "Firefox", browser.Name)
 		assert.Equal(t, "firefox", browser.Command)
+		assert.Equal(t, "/usr/share/icons/firefox.png", browser.IconPath)
 	})
 
 	t.Run("returns matching browser for domain rule", func(t *testing.T) {
