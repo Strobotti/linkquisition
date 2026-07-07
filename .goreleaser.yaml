@@ -108,8 +108,6 @@ nfpms:
     dependencies:
       - libgl1
     contents:
-      - src: ./dist/application_{{ .Os }}_{{ .Arch }}_v1/linkquisition
-        dst: /usr/bin/linkquisition
       - src: ./dist/unwrap-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/unwrap.so
         dst: /usr/lib/linkquisition/plugins/unwrap.so
       - src: ./dist/terminus-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/terminus.so
