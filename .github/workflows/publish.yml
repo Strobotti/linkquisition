@@ -1,8 +1,9 @@
 name: Publish
 
 on:
-  release:
-    types: [ created ]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   test:
@@ -73,7 +74,7 @@ jobs:
       - name: Build
         run: task build:${{ matrix.target }}
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.ref_name }}
 
       - name: Package Linux .deb
         if: matrix.target == 'linux-amd64'
@@ -85,13 +86,13 @@ jobs:
           cp bin/linkquisition-linux-amd64 package/linux/usr/bin/linkquisition
           cp package/linux/usr/lib/linkquisition/plugins/*.so package/linux/usr/lib/linkquisition/plugins/ 2>/dev/null || true
           cp templates/DEBIAN/control.tpl package/linux/DEBIAN/control
-          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
           sed -i "s/{{VERSION}}/${VERSION}/g" package/linux/DEBIAN/control
           sed -i "s/{{ARCH}}/amd64/g" package/linux/DEBIAN/control
           dpkg-deb --build package/linux dist/linkquisition_${VERSION}_amd64.deb
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.ref_name }}
 
       - name: Build AppImage
         if: matrix.target == 'linux-amd64'
@@ -99,7 +100,7 @@ jobs:
           task package:manpages
           ./scripts/build-appimage.sh
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.ref_name }}
 
       - name: Package macOS .app
         if: matrix.target == 'darwin-universal'
@@ -108,7 +109,7 @@ jobs:
           codesign --force --deep --sign - dist/Linkquisition.app
           cd dist && ditto -c -k --keepParent Linkquisition.app Linkquisition_macOS_universal.zip
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.ref_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
@@ -167,15 +168,15 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
-          GORELEASER_CURRENT_TAG: ${{ github.event.release.tag_name }}
+          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
 
       - name: Upload macOS asset to release
-        run: gh release upload "${{ github.event.release.tag_name }}" artifacts/Linkquisition_macOS_universal.zip --clobber
+        run: gh release upload "${{ github.ref_name }}" artifacts/Linkquisition_macOS_universal.zip --clobber
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
       - name: Upload AppImage to release
-        run: gh release upload "${{ github.event.release.tag_name }}" artifacts/Linkquisition-*.AppImage --clobber
+        run: gh release upload "${{ github.ref_name }}" artifacts/Linkquisition-*.AppImage --clobber
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
 
@@ -196,7 +197,7 @@ jobs:
         env:
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
           SHA256=$(sha256sum artifacts/Linkquisition_macOS_universal.zip | awk '{print $1}')
 
@@ -213,46 +214,6 @@ jobs:
           git add Casks/linkquisition.rb
           git commit -m "Update linkquisition to v${VERSION}" || echo "No changes to commit"
           git push
-
-  update-metainfo:
-    name: Update Flatpak Metainfo
-    needs: [ upload-assets ]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Update metainfo and create PR
-        env:
-          GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
-        run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
-          DATE=$(date +%Y-%m-%d)
-          BRANCH="chore/release-metadata-v${VERSION}"
-          METAINFO="flatpak/io.github.strobotti.linkquisition.metainfo.xml"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git checkout -b "$BRANCH"
-
-          # Insert a new <release> entry after the <releases> tag
-          sed -i "s|<releases>|<releases>\n    <release version=\"${VERSION}\" date=\"${DATE}\">\n      <description>\n        <p>See https://github.com/Strobotti/linkquisition/releases/tag/v${VERSION} for details.</p>\n      </description>\n    </release>|" "$METAINFO"
-
-          git add "$METAINFO"
-          git commit -m "chore: update Flatpak metainfo for v${VERSION}"
-          git push -u origin "$BRANCH"
-
-          gh pr create \
-            --title "chore: update Flatpak metainfo for v${VERSION}" \
-            --body "Automated update of the Flatpak metainfo release entry for v${VERSION}." \
-            --base main \
-            --head "$BRANCH"
-
-          gh pr merge "$BRANCH" --auto --squash
 
   coverage:
     name: Coverage Badge

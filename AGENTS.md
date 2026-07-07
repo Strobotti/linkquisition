@@ -23,6 +23,37 @@ should ideally do one thing and be independently reviewable. If a feature requir
 multiple steps (e.g. interface change + migration + tests + docs), split them into
 separate commits on the same branch rather than squashing everything together.
 
+## Branching and pull requests
+
+Always work on a **feature branch** — never commit directly to `main`. Branch naming:
+
+- `feat/<short-description>` — new features
+- `fix/<short-description>` — bug fixes
+- `chore/<short-description>` — maintenance, CI, docs-only
+- `refactor/<short-description>` — code restructuring
+
+Push the branch and open a **pull request** for review. PRs are merged via GitHub
+(squash or merge commit, depending on the number of meaningful commits). The `main`
+branch is protected and triggers the release-please flow on every push.
+
+## Release flow (CI)
+
+The project uses [release-please](https://github.com/googleapis/release-please-action)
+for automated releases:
+
+1. Push to `main` → `release-please.yml` creates/updates a **Release PR** with a
+   changelog and version bump based on conventional commit types
+2. The same workflow updates the Flatpak metainfo XML on the Release PR branch
+3. Merge the Release PR → release-please creates a GitHub release + pushes a tag
+4. Tag push (`v*`) triggers `publish.yml` → test → build → upload assets (`.deb`,
+   `.rpm`, AppImage, macOS `.zip`) → update Homebrew tap → update coverage badge
+
+Key files:
+
+- `.github/workflows/release-please.yml` — Release PR + metainfo update
+- `.github/workflows/publish.yml` — build/package/upload on tag push
+- `release-please-config.json` + `.release-please-manifest.json` — release-please config
+
 ## Documentation surfaces to keep in sync
 
 When making changes, ensure ALL relevant documentation is updated:
