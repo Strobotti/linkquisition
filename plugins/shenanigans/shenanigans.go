@@ -1321,6 +1321,12 @@ func (s *footballState) render() []uint8 {
 
 // isPitchLine determines if a normalized coordinate is on a white pitch marking.
 func isPitchLine(fx, fy float64) bool {
+	return isPitchCenterMarkings(fx, fy) ||
+		isPitchBoundary(fx, fy) ||
+		isPitchPenaltyArea(fx, fy)
+}
+
+func isPitchCenterMarkings(fx, fy float64) bool {
 	// Center line (vertical)
 	if absF(fx-0.5) < 0.004 {
 		return true
@@ -1334,18 +1340,19 @@ func isPitchLine(fx, fy float64) bool {
 	}
 
 	// Center dot
-	if dist < 0.002 {
-		return true
-	}
+	return dist < 0.002
+}
 
-	// Outer boundary
+func isPitchBoundary(fx, fy float64) bool {
 	if fx < 0.02 || fx > 0.98 || fy < 0.03 || fy > 0.97 {
 		if fx > 0.015 && fx < 0.985 && fy > 0.025 && fy < 0.975 {
 			return true
 		}
 	}
+	return false
+}
 
-	// Penalty areas (left and right)
+func isPitchPenaltyArea(fx, fy float64) bool {
 	penaltyW := 0.15
 	penaltyH := 0.35
 	penaltyTop := 0.5 - penaltyH

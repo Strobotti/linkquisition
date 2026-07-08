@@ -1,4 +1,3 @@
-//nolint:mnd,gosec // Test file for visual effects plugin — magic numbers expected.
 package main
 
 import (
@@ -383,6 +382,9 @@ func TestFireColor(t *testing.T) {
 	assert.Equal(t, uint8(0), b)
 
 	// High values should have full red
-	r, _, _, _ = fireColor(200)
+	r, g, b, a = fireColor(200)
 	assert.Equal(t, uint8(255), r)
+	assert.Greater(t, g, uint8(0))
+	assert.Greater(t, a, uint8(0))
+	_ = b // blue varies by palette position
 }

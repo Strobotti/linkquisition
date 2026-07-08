@@ -35,7 +35,7 @@ func (c *fynePickerCanvas) AddRasterOverlay(translucency float64, draw func(w, h
 		pixels := draw(w, h)
 		img := image.NewRGBA(image.Rect(0, 0, w, h))
 
-		expectedLen := w * h * 4 //nolint:mnd
+		expectedLen := w * h * 4
 		if len(pixels) >= expectedLen {
 			copy(img.Pix, pixels[:expectedLen])
 		} else {
