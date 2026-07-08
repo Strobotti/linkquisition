@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.0](https://github.com/Strobotti/linkquisition/compare/v2.6.0...v2.7.0) (2026-07-08)
+
+
+### Features
+
+* add shenanigans plugin with visual effects for the browser picker ([#113](https://github.com/Strobotti/linkquisition/issues/113)) ([0379a13](https://github.com/Strobotti/linkquisition/commit/0379a1371dadc1e21e0fce8ee173c2e3012ac2ab))
+
 ## [2.6.0](https://github.com/Strobotti/linkquisition/compare/v2.5.5...v2.6.0) (2026-07-08)
 
 
