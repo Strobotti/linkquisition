@@ -48,7 +48,7 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Equal(t, "effect", meta.Settings[0].Key)
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[0].Type)
 	assert.Equal(t, []string{
-		"matrix", "fire", "snow", "plasma", "starfield", "aurora", "glitch", "pride", "random",
+		"matrix", "fire", "snow", "plasma", "starfield", "aurora", "glitch", "pride", "football", "random",
 	}, meta.Settings[0].Options)
 }
 
@@ -279,6 +279,30 @@ func TestShenanigans_OnPickerShown_Pride(t *testing.T) {
 		}
 	}
 	assert.True(t, hasColor)
+}
+
+func TestShenanigans_OnPickerShown_Football(t *testing.T) {
+	p := NewForTesting()
+	_ = p.Setup(newTestServiceProvider(), map[string]interface{}{"effect": "football"})
+
+	mc := &mockPickerCanvas{}
+	p.OnPickerShown(mc)
+
+	assert.True(t, mc.overlayAdded)
+	assert.NotNil(t, mc.drawFn)
+
+	pixels := mc.drawFn(400, 300)
+	assert.Len(t, pixels, 400*300*4)
+
+	// Should have green pixels (pitch)
+	hasGreen := false
+	for i := 0; i < len(pixels); i += 4 {
+		if pixels[i+1] > pixels[i] && pixels[i+1] > pixels[i+2] {
+			hasGreen = true
+			break
+		}
+	}
+	assert.True(t, hasGreen)
 }
 
 func TestShenanigans_Shutdown(t *testing.T) {
