@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/Strobotti/linkquisition/compare/v2.5.5...v2.6.0) (2026-07-08)
+
+
+### Features
+
+* add configurable horizontal button layout for browser picker ([#111](https://github.com/Strobotti/linkquisition/issues/111)) ([8491760](https://github.com/Strobotti/linkquisition/commit/849176032640b32c02e0b5d8c8fc1cf6e26689ee))
+
 ## [2.5.5](https://github.com/Strobotti/linkquisition/compare/v2.5.4...v2.5.5) (2026-07-07)
 
 
