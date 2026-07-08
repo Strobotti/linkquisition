@@ -47,7 +47,7 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Len(t, meta.Settings, 1)
 	assert.Equal(t, "effect", meta.Settings[0].Key)
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[0].Type)
-	assert.Equal(t, []string{"matrix", "fire", "snow", "plasma", "starfield", "aurora", "random"}, meta.Settings[0].Options)
+	assert.Equal(t, []string{"matrix", "fire", "snow", "plasma", "starfield", "aurora", "glitch", "random"}, meta.Settings[0].Options)
 }
 
 func TestShenanigans_Setup_DefaultEffect(t *testing.T) {
@@ -223,6 +223,36 @@ func TestShenanigans_OnPickerShown_Aurora(t *testing.T) {
 
 	pixels := mc.drawFn(400, 300)
 	assert.Len(t, pixels, 400*300*4)
+}
+
+func TestShenanigans_OnPickerShown_Glitch(t *testing.T) {
+	p := NewForTesting()
+	_ = p.Setup(newTestServiceProvider(), map[string]interface{}{"effect": "glitch"})
+
+	mc := &mockPickerCanvas{}
+	p.OnPickerShown(mc)
+
+	assert.True(t, mc.overlayAdded)
+	assert.NotNil(t, mc.drawFn)
+
+	// Glitch starts in non-burst state, should return empty pixels
+	pixels := mc.drawFn(400, 300)
+	assert.Len(t, pixels, 400*300*4)
+}
+
+func TestGlitchState_BurstCycle(t *testing.T) {
+	state := &glitchState{}
+
+	// Run enough updates to trigger a burst
+	for range 100 {
+		state.update()
+	}
+
+	// At some point during 100 frames, a burst should have occurred
+	// (timer starts at 0, so first update triggers a burst)
+	// Just verify it doesn't panic
+	pixels := state.render(200, 100)
+	assert.Len(t, pixels, 200*100*4)
 }
 
 func TestShenanigans_Shutdown(t *testing.T) {

@@ -16,6 +16,7 @@ const (
 	effectPlasma      = "plasma"
 	effectStarfield   = "starfield"
 	effectAurora      = "aurora"
+	effectGlitch      = "glitch"
 	effectRandom      = "random"
 	frameInterval     = 30 * time.Millisecond
 	fireFrameInterval = 25 * time.Millisecond
@@ -46,12 +47,12 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 			{
 				Key:         "effect",
 				Label:       "Effect",
-				Description: "Which visual effect to show: matrix, fire, snow, plasma, starfield, aurora, or random",
+				Description: "Which visual effect to show: matrix, fire, snow, plasma, starfield, aurora, glitch, or random",
 				Type:        linkquisition.SettingTypeChoice,
 				Default:     effectRandom,
 				Options: []string{
 					effectMatrix, effectFire, effectSnow, effectPlasma,
-					effectStarfield, effectAurora, effectRandom,
+					effectStarfield, effectAurora, effectGlitch, effectRandom,
 				},
 			},
 		},
@@ -87,7 +88,10 @@ func (p *shenanigans) Shutdown(_ context.Context) {
 func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 	effect := p.effect
 	if effect == effectRandom {
-		effects := []string{effectMatrix, effectFire, effectSnow, effectPlasma, effectStarfield, effectAurora}
+		effects := []string{
+			effectMatrix, effectFire, effectSnow, effectPlasma,
+			effectStarfield, effectAurora, effectGlitch,
+		}
 		effect = effects[rand.IntN(len(effects))]
 	}
 
@@ -106,6 +110,8 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 		p.startStarfield(canvas)
 	case effectAurora:
 		p.startAurora(canvas)
+	case effectGlitch:
+		p.startGlitch(canvas)
 	}
 }
 
@@ -962,6 +968,145 @@ func fastExp(x float64) float64 {
 		return 0
 	}
 	return t
+}
+
+// --- Glitch Effect ---
+
+type glitchState struct {
+	frame      int
+	slices     []glitchSlice
+	burstTimer int
+	isBursting bool
+}
+
+type glitchSlice struct {
+	y, height int
+	offsetX   int
+	channel   int // 0=R shift, 1=G shift, 2=B shift
+	alpha     uint8
+}
+
+func (p *shenanigans) startGlitch(pc linkquisition.PickerCanvas) {
+	state := &glitchState{}
+
+	pc.AddRasterOverlay(0.0, func(w, h int) []uint8 {
+		return state.render(w, h)
+	})
+
+	go func() {
+		ticker := time.NewTicker(frameInterval)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			if p.stopped.Load() {
+				return
+			}
+			state.update()
+			pc.ScheduleRefresh()
+		}
+	}()
+}
+
+func (s *glitchState) update() {
+	s.frame++
+	s.burstTimer--
+
+	// Trigger glitch bursts periodically
+	if s.burstTimer <= 0 {
+		if s.isBursting {
+			// End burst
+			s.isBursting = false
+			s.slices = nil
+			s.burstTimer = 20 + rand.IntN(40) //nolint:mnd
+		} else {
+			// Start burst
+			s.isBursting = true
+			s.burstTimer = 3 + rand.IntN(8) //nolint:mnd
+			s.generateSlices()
+		}
+	} else if s.isBursting && s.frame%2 == 0 {
+		// Regenerate slices during burst for flicker
+		s.generateSlices()
+	}
+}
+
+func (s *glitchState) generateSlices() {
+	count := 3 + rand.IntN(8) //nolint:mnd
+	s.slices = make([]glitchSlice, count)
+
+	for i := range s.slices {
+		s.slices[i] = glitchSlice{
+			y:       rand.IntN(400),             //nolint:mnd
+			height:  2 + rand.IntN(20),          //nolint:mnd
+			offsetX: -30 + rand.IntN(60),        //nolint:mnd
+			channel: rand.IntN(3),               //nolint:mnd
+			alpha:   uint8(80 + rand.IntN(176)), //nolint:mnd,gosec
+		}
+	}
+}
+
+func (s *glitchState) render(w, h int) []uint8 {
+	if w == 0 || h == 0 {
+		return make([]uint8, rgbaChannels)
+	}
+
+	pixels := make([]uint8, w*h*rgbaChannels)
+
+	if !s.isBursting {
+		return pixels
+	}
+
+	// Draw glitch slices
+	for _, slice := range s.slices {
+		sy := slice.y * h / 400      //nolint:mnd
+		sh := slice.height * h / 400 //nolint:mnd
+
+		for py := sy; py < sy+sh && py < h; py++ {
+			if py < 0 {
+				continue
+			}
+			for px := 0; px < w; px++ {
+				offset := (py*w + px) * rgbaChannels
+
+				// RGB channel separation effect
+				switch slice.channel {
+				case 0: // Red shift
+					srcX := px - slice.offsetX
+					if srcX >= 0 && srcX < w {
+						pixels[offset] = slice.alpha
+						pixels[offset+3] = slice.alpha / 2
+					}
+				case 1: // Green shift
+					srcX := px + slice.offsetX
+					if srcX >= 0 && srcX < w {
+						pixels[offset+1] = slice.alpha
+						pixels[offset+3] = slice.alpha / 2
+					}
+				case 2: // Blue/cyan shift
+					pixels[offset+2] = slice.alpha
+					pixels[offset+1] = slice.alpha / 3
+					pixels[offset+3] = slice.alpha / 2
+				}
+			}
+		}
+	}
+
+	// Add random static noise during bursts
+	if s.isBursting {
+		noiseCount := w * h / 40 //nolint:mnd
+		for range noiseCount {
+			px := rand.IntN(w)
+			py := rand.IntN(h)
+			offset := (py*w + px) * rgbaChannels
+			v := uint8(rand.IntN(256)) //nolint:mnd,gosec
+			pixels[offset] = v
+			pixels[offset+1] = v
+			pixels[offset+2] = v
+			pixels[offset+3] = uint8(rand.IntN(100)) //nolint:mnd,gosec
+		}
+	}
+
+	return pixels
 }
 
 // sinNorm returns sinApprox mapped to 0.0-1.0 range.
