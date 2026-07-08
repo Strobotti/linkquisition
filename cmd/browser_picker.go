@@ -110,19 +110,20 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		widgets = append(widgets, picker.buildKeyboardGuide()...)
 	}
 
-	w.SetFixedSize(true)
 	w.SetIcon(resources.LinkquisitionIcon)
-	w.SetContent(container.NewVBox(widgets...))
 
 	if pickerLayout == linkquisition.PickerLayoutHorizontal {
 		cols := min(len(buttons), settings.Ui.GetMaxItemsPerRow())
 		rows := (len(buttons) + cols - 1) / cols
-		width := float32(cols*horizontalButtonWidth) + 32    //nolint:mnd
-		height := float32(rows*horizontalButtonHeight) + 140 //nolint:mnd
+		width := float32(cols+1) * horizontalButtonWidth     //nolint:mnd
+		height := float32(rows*horizontalButtonHeight) + 180 //nolint:mnd
 		w.Resize(fyne.NewSize(width, height))
 	} else {
 		w.Resize(fyne.NewSize(verticalWindowWidth, verticalWindowMinHeight))
 	}
+
+	w.SetFixedSize(true)
+	w.SetContent(container.NewVBox(widgets...))
 	w.CenterOnScreen()
 
 	w.ShowAndRun()
@@ -180,10 +181,8 @@ func (picker *BrowserPicker) tapButton(obj fyne.CanvasObject) {
 }
 
 func (picker *BrowserPicker) buildHorizontalGrid(buttons []fyne.CanvasObject, maxPerRow int) fyne.CanvasObject {
-	_ = maxPerRow // column count is controlled by window width + cell size
-	cellSize := fyne.NewSize(horizontalButtonWidth, horizontalButtonHeight)
-	grid := container.New(layout.NewGridWrapLayout(cellSize), buttons...)
-	return container.NewPadded(grid)
+	cols := min(len(buttons), maxPerRow)
+	return container.NewGridWithColumns(cols, buttons...)
 }
 
 func (picker *BrowserPicker) buildURLDisplay(urlToOpen string) []fyne.CanvasObject {

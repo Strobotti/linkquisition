@@ -227,36 +227,18 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	}
 
 	// Max items per row entry (only relevant for horizontal layout)
-	maxItemsEntry := widget.NewEntry()
-	maxItemsEntry.SetText(fmt.Sprintf("%d", settings.Ui.GetMaxItemsPerRow()))
-
-	updateMaxItemsEnabled := func(isHorizontal bool) {
-		if isHorizontal {
-			maxItemsEntry.Enable()
-		} else {
-			maxItemsEntry.Disable()
-		}
+	maxItemsOptions := []string{"3", "4", "5", "6"}
+	currentMaxItems := fmt.Sprintf("%d", settings.Ui.GetMaxItemsPerRow())
+	// Clamp to valid range for display
+	if settings.Ui.GetMaxItemsPerRow() < 3 { //nolint:mnd
+		currentMaxItems = "3"
+	} else if settings.Ui.GetMaxItemsPerRow() > 6 { //nolint:mnd
+		currentMaxItems = "6"
 	}
-	updateMaxItemsEnabled(currentLayout == linkquisition.PickerLayoutHorizontal)
 
-	layoutSelect := widget.NewSelect(layoutOptions, func(selected string) {
-		s := c.settingsService.GetSettings()
-		if selected == layoutOptions[1] {
-			s.Ui.PickerLayout = linkquisition.PickerLayoutHorizontal
-			updateMaxItemsEnabled(true)
-		} else {
-			s.Ui.PickerLayout = linkquisition.PickerLayoutVertical
-			updateMaxItemsEnabled(false)
-		}
-		if err := c.settingsService.WriteSettings(s); err != nil {
-			c.logger.Error("Error saving picker layout setting", "error", err)
-		}
-	})
-	layoutSelect.Selected = selectedLayout
-
-	maxItemsEntry.OnChanged = func(value string) {
+	maxItemsSelect := widget.NewSelect(maxItemsOptions, func(value string) {
 		var n int
-		if _, err := fmt.Sscanf(value, "%d", &n); err != nil || n < 1 {
+		if _, err := fmt.Sscanf(value, "%d", &n); err != nil {
 			return
 		}
 		s := c.settingsService.GetSettings()
@@ -264,7 +246,38 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 		if err := c.settingsService.WriteSettings(s); err != nil {
 			c.logger.Error("Error saving max items per row setting", "error", err)
 		}
+	})
+	maxItemsSelect.Selected = currentMaxItems
+
+	maxItemsRow := container.NewBorder(
+		nil, nil,
+		widget.NewLabel(i18n.T("config.picker_max_per_row_label")), nil,
+		maxItemsSelect,
+	)
+
+	updateMaxItemsVisible := func(isHorizontal bool) {
+		if isHorizontal {
+			maxItemsRow.Show()
+		} else {
+			maxItemsRow.Hide()
+		}
 	}
+	updateMaxItemsVisible(currentLayout == linkquisition.PickerLayoutHorizontal)
+
+	layoutSelect := widget.NewSelect(layoutOptions, func(selected string) {
+		s := c.settingsService.GetSettings()
+		if selected == layoutOptions[1] {
+			s.Ui.PickerLayout = linkquisition.PickerLayoutHorizontal
+			updateMaxItemsVisible(true)
+		} else {
+			s.Ui.PickerLayout = linkquisition.PickerLayoutVertical
+			updateMaxItemsVisible(false)
+		}
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving picker layout setting", "error", err)
+		}
+	})
+	layoutSelect.Selected = selectedLayout
 
 	return container.NewVBox(
 		hideGuideCheck,
@@ -274,11 +287,7 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 			widget.NewLabel(i18n.T("config.picker_layout_label")), nil,
 			layoutSelect,
 		),
-		container.NewBorder(
-			nil, nil,
-			widget.NewLabel(i18n.T("config.picker_max_per_row_label")), nil,
-			maxItemsEntry,
-		),
+		maxItemsRow,
 	)
 }
 
