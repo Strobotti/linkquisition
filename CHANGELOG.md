@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/Strobotti/linkquisition/compare/v2.7.0...v2.8.0) (2026-07-08)
+
+
+### Features
+
+* Add copy button and improve URL readability in browser picker ([#115](https://github.com/Strobotti/linkquisition/issues/115)) ([1bc58d2](https://github.com/Strobotti/linkquisition/commit/1bc58d221cd246b7b25bbb6e2afa98c714254ece))
+
 ## [2.7.0](https://github.com/Strobotti/linkquisition/compare/v2.6.0...v2.7.0) (2026-07-08)
 
 
