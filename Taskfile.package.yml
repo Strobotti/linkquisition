@@ -75,6 +75,8 @@ tasks:
     cmds:
       - task package:app:dev
       - cp -r dist/Linkquisition.app /Applications/
+      - codesign --force --deep --sign - /Applications/Linkquisition.app
+      - xattr -cr /Applications/Linkquisition.app
       - /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -R -f /Applications/Linkquisition.app
       - echo "Installed to /Applications/Linkquisition.app and registered with Launch Services"
 
