@@ -12,6 +12,7 @@ import (
 const (
 	effectMatrix      = "matrix"
 	effectFire        = "fire"
+	effectSnow        = "snow"
 	effectRandom      = "random"
 	frameInterval     = 30 * time.Millisecond
 	fireFrameInterval = 25 * time.Millisecond
@@ -42,10 +43,10 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 			{
 				Key:         "effect",
 				Label:       "Effect",
-				Description: "Which visual effect to show: matrix, fire, or random",
+				Description: "Which visual effect to show: matrix, fire, snow, or random",
 				Type:        linkquisition.SettingTypeChoice,
 				Default:     effectRandom,
-				Options:     []string{effectMatrix, effectFire, effectRandom},
+				Options:     []string{effectMatrix, effectFire, effectSnow, effectRandom},
 			},
 		},
 	}
@@ -80,7 +81,7 @@ func (p *shenanigans) Shutdown(_ context.Context) {
 func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 	effect := p.effect
 	if effect == effectRandom {
-		effects := []string{effectMatrix, effectFire}
+		effects := []string{effectMatrix, effectFire, effectSnow}
 		effect = effects[rand.IntN(len(effects))]
 	}
 
@@ -91,6 +92,8 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 		p.startMatrixRain(canvas)
 	case effectFire:
 		p.startFire(canvas)
+	case effectSnow:
+		p.startSnow(canvas)
 	}
 }
 
@@ -416,6 +419,194 @@ func fireColor(val uint8) (r, g, b, a uint8) {
 		a = uint8(255 - p*80) //nolint:mnd,gosec
 		return r, g, b, a
 	}
+}
+
+// --- Snow Effect ---
+
+const (
+	snowFlakeCount = 150
+	snowMaxSize    = 4
+)
+
+type snowflake struct {
+	x, y   float64
+	size   float64
+	speed  float64
+	drift  float64
+	wobble float64
+	phase  float64
+}
+
+type snowState struct {
+	flakes      []snowflake
+	width       int
+	height      int
+	initialized bool
+}
+
+func (p *shenanigans) startSnow(pc linkquisition.PickerCanvas) {
+	state := &snowState{
+		width:  pc.Width(),
+		height: pc.Height(),
+	}
+	if state.width == 0 {
+		state.width = 600
+	}
+	if state.height == 0 {
+		state.height = 400
+	}
+
+	pc.AddRasterOverlay(0.3, func(w, h int) []uint8 {
+		if !state.initialized || w != state.width || h != state.height {
+			state.width = w
+			state.height = h
+			state.init()
+			state.initialized = true
+		}
+		return state.render()
+	})
+
+	go func() {
+		ticker := time.NewTicker(frameInterval)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			if p.stopped.Load() {
+				return
+			}
+			state.update()
+			pc.ScheduleRefresh()
+		}
+	}()
+}
+
+func (s *snowState) init() {
+	s.flakes = make([]snowflake, snowFlakeCount)
+	for i := range s.flakes {
+		// Start most flakes above the window so they drift in gradually.
+		// A few start on-screen so it's not completely empty at first.
+		onScreen := i < snowFlakeCount/5 //nolint:mnd
+		s.flakes[i] = s.newFlake(onScreen)
+	}
+}
+
+func (s *snowState) newFlake(onScreen bool) snowflake {
+	// Default: spawn above the viewport at varying distances
+	y := -(rand.Float64() * float64(s.height))
+	if onScreen {
+		y = rand.Float64() * float64(s.height)
+	}
+
+	return snowflake{
+		x:      rand.Float64() * float64(s.width),
+		y:      y,
+		size:   1 + rand.Float64()*float64(snowMaxSize-1),
+		speed:  0.5 + rand.Float64()*2.0,
+		drift:  (rand.Float64() - 0.5) * 0.3, //nolint:mnd
+		wobble: 0.3 + rand.Float64()*0.7,     //nolint:mnd
+		phase:  rand.Float64() * 6.28,        //nolint:mnd
+	}
+}
+
+func (s *snowState) update() {
+	for i := range s.flakes {
+		f := &s.flakes[i]
+		f.y += f.speed
+		f.phase += 0.05 //nolint:mnd
+
+		// Gentle sine-wave wobble for horizontal drift
+		f.x += f.drift + f.wobble*sinApprox(f.phase)*0.3 //nolint:mnd
+
+		// Respawn at top if fallen below window
+		if f.y > float64(s.height)+10 { //nolint:mnd
+			*f = s.newFlake(false)
+		}
+
+		// Wrap horizontally
+		if f.x < 0 {
+			f.x += float64(s.width)
+		} else if f.x >= float64(s.width) {
+			f.x -= float64(s.width)
+		}
+	}
+}
+
+func (s *snowState) render() []uint8 {
+	w, h := s.width, s.height
+	if w == 0 || h == 0 {
+		return make([]uint8, rgbaChannels)
+	}
+
+	pixels := make([]uint8, w*h*rgbaChannels)
+
+	for _, f := range s.flakes {
+		s.drawFlake(pixels, f)
+	}
+
+	return pixels
+}
+
+func (s *snowState) drawFlake(pixels []uint8, f snowflake) {
+	w, h := s.width, s.height
+	cx, cy := int(f.x), int(f.y)
+	radius := int(f.size)
+
+	// Draw a soft circle with alpha falloff
+	for dy := -radius; dy <= radius; dy++ {
+		for dx := -radius; dx <= radius; dx++ {
+			px := cx + dx
+			py := cy + dy
+
+			if px < 0 || px >= w || py < 0 || py >= h {
+				continue
+			}
+
+			// Distance from center (0.0 to 1.0+)
+			dist := float64(dx*dx+dy*dy) / float64(radius*radius+1)
+			if dist > 1.0 {
+				continue
+			}
+
+			// Soft edge: alpha falls off near the border
+			alpha := uint8((1.0 - dist*dist) * 220) //nolint:mnd,gosec
+
+			offset := (py*w + px) * rgbaChannels
+			// Blend: white snowflake with alpha
+			existing := pixels[offset+3]
+			if alpha > existing {
+				pixels[offset] = 255   // R
+				pixels[offset+1] = 255 // G
+				pixels[offset+2] = 255 // B
+				pixels[offset+3] = alpha
+			}
+		}
+	}
+}
+
+// sinApprox is a fast sine approximation (Bhaskara I's formula) avoiding math import.
+func sinApprox(x float64) float64 {
+	// Normalize to [0, 2π)
+	const twoPi = 6.283185307
+	const pi = 3.141592654
+
+	for x < 0 {
+		x += twoPi
+	}
+	for x >= twoPi {
+		x -= twoPi
+	}
+
+	// Map to [0, π] with sign
+	sign := 1.0
+	if x > pi {
+		x -= pi
+		sign = -1.0
+	}
+
+	// Bhaskara I's approximation: sin(x) ≈ 16x(π-x) / (5π²-4x(π-x))
+	num := 16 * x * (pi - x)    //nolint:mnd
+	den := 5*pi*pi - 4*x*(pi-x) //nolint:mnd
+	return sign * num / den
 }
 
 // NewForTesting creates a fresh shenanigans instance for use in tests,

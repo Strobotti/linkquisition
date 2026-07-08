@@ -47,7 +47,7 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Len(t, meta.Settings, 1)
 	assert.Equal(t, "effect", meta.Settings[0].Key)
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[0].Type)
-	assert.Equal(t, []string{"matrix", "fire", "random"}, meta.Settings[0].Options)
+	assert.Equal(t, []string{"matrix", "fire", "snow", "random"}, meta.Settings[0].Options)
 }
 
 func TestShenanigans_Setup_DefaultEffect(t *testing.T) {
@@ -115,6 +115,37 @@ func TestShenanigans_OnPickerShown_Fire(t *testing.T) {
 	// Call the draw function to ensure it doesn't panic
 	pixels := mc.drawFn(200, 100)
 	assert.Len(t, pixels, 200*100*4)
+}
+
+func TestShenanigans_OnPickerShown_Snow(t *testing.T) {
+	p := NewForTesting()
+	_ = p.Setup(newTestServiceProvider(), map[string]interface{}{"effect": "snow"})
+
+	mc := &mockPickerCanvas{}
+	p.OnPickerShown(mc)
+
+	assert.True(t, mc.overlayAdded)
+	assert.NotNil(t, mc.drawFn)
+
+	// Call the draw function to ensure it doesn't panic
+	pixels := mc.drawFn(600, 400)
+	assert.Len(t, pixels, 600*400*4)
+}
+
+func TestSnowState_Update(t *testing.T) {
+	state := &snowState{width: 600, height: 400}
+	state.init()
+
+	assert.Len(t, state.flakes, snowFlakeCount)
+
+	// Should not panic
+	state.update()
+
+	// All flakes should still be within bounds (with wrapping)
+	for _, f := range state.flakes {
+		assert.GreaterOrEqual(t, f.x, 0.0)
+		assert.Less(t, f.x, float64(state.width))
+	}
 }
 
 func TestShenanigans_Shutdown(t *testing.T) {
