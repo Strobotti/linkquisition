@@ -91,6 +91,24 @@ builds:
       - -X main.commitSHA={{.FullCommit}}
       - -X main.buildDate={{.Date}}
 
+  - id: "shenanigans-plugin"
+    binary: "plugins/shenanigans.so"
+    buildmode: plugin
+    no_main_check: true
+    goos:
+      - linux
+    goarch:
+      - amd64
+    main: ./plugins/shenanigans/
+    flags:
+      - -trimpath
+      - -buildvcs=false
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commitSHA={{.FullCommit}}
+      - -X main.buildDate={{.Date}}
+
 nfpms:
   - package_name: linkquisition
     homepage: https://github.com/Strobotti/linkquisition
@@ -113,6 +131,8 @@ nfpms:
         dst: /usr/lib/linkquisition/plugins/sanitize.so
       - src: ./dist/defang-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/defang.so
         dst: /usr/lib/linkquisition/plugins/defang.so
+      - src: ./dist/shenanigans-plugin_{{ .Os }}_{{ .Arch }}_v1/plugins/shenanigans.so
+        dst: /usr/lib/linkquisition/plugins/shenanigans.so
       - src: package/linux
         dst: /
         type: tree

@@ -35,6 +35,7 @@ type BrowserPicker struct {
 	browsers        []linkquisition.Browser
 	settingsService linkquisition.SettingsService
 	logger          *slog.Logger
+	uiHooks         []linkquisition.PluginUIHook
 }
 
 func NewBrowserPicker(
@@ -43,6 +44,7 @@ func NewBrowserPicker(
 	browsers []linkquisition.Browser,
 	settingsService linkquisition.SettingsService,
 	logger *slog.Logger,
+	uiHooks []linkquisition.PluginUIHook,
 ) *BrowserPicker {
 	return &BrowserPicker{
 		fapp:            fapp,
@@ -50,6 +52,7 @@ func NewBrowserPicker(
 		browsers:        browsers,
 		settingsService: settingsService,
 		logger:          logger,
+		uiHooks:         uiHooks,
 	}
 }
 
@@ -124,7 +127,10 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	}
 
 	w.SetFixedSize(true)
-	w.SetContent(container.NewVBox(widgets...))
+
+	mainContent := container.NewVBox(widgets...)
+	w.SetContent(buildPickerContent(mainContent, w, picker.uiHooks))
+
 	w.CenterOnScreen()
 
 	w.ShowAndRun()

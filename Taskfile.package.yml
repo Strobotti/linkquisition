@@ -7,7 +7,7 @@ vars:
 tasks:
   clean:
     cmds:
-      - rm -rfv dist package
+      - rm -rfv dist package/linux
 
   manpages:
     description: "Builds man pages from scdoc sources"
@@ -54,6 +54,26 @@ tasks:
     description: "Builds the .app bundle and installs it to /Applications"
     cmds:
       - task package:app
+      - cp -r dist/Linkquisition.app /Applications/
+      - /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -R -f /Applications/Linkquisition.app
+      - echo "Installed to /Applications/Linkquisition.app and registered with Launch Services"
+
+  app:dev:
+    description: "Builds a macOS .app bundle with a native single-arch binary (required for plugins to load)"
+    cmds:
+      - rm -rf dist/Linkquisition.app
+      - mkdir -p dist/Linkquisition.app/Contents/MacOS
+      - mkdir -p dist/Linkquisition.app/Contents/Resources
+      - go build -tags release -ldflags '-s -w -X main.version={{.VERSION}}' -o dist/Linkquisition.app/Contents/MacOS/linkquisition ./cmd/
+      - task build:plugins-darwin
+      - sed 's/${VERSION}/{{.VERSION}}/g' package/darwin/Info.plist > dist/Linkquisition.app/Contents/Info.plist
+      - sips -s format icns Icon.png --out dist/Linkquisition.app/Contents/Resources/Icon.icns 2>/dev/null || cp Icon.png dist/Linkquisition.app/Contents/Resources/Icon.icns
+      - echo "dist/Linkquisition.app created successfully (single-arch, plugin-compatible)"
+
+  app:install-dev:
+    description: "Builds a single-arch .app bundle and installs to /Applications (plugins work correctly)"
+    cmds:
+      - task package:app:dev
       - cp -r dist/Linkquisition.app /Applications/
       - /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -R -f /Applications/Linkquisition.app
       - echo "Installed to /Applications/Linkquisition.app and registered with Launch Services"
