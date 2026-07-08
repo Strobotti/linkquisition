@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
@@ -15,6 +16,14 @@ import (
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/resources"
+)
+
+const (
+	horizontalButtonIconSize = 64
+	horizontalButtonWidth    = 100
+	horizontalButtonHeight   = 100
+	verticalWindowWidth      = 600
+	verticalWindowMinHeight  = 50
 )
 
 type BrowserPicker struct {
@@ -41,7 +50,7 @@ func NewBrowserPicker(
 	}
 }
 
-//nolint:funlen
+//nolint:funlen,cyclop
 func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	var buttons []fyne.CanvasObject
 	remember := binding.NewBool()
@@ -50,11 +59,23 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	// TODO give user the option to choose between site and domain (and later on regex, too)
 	_ = rememberMatchType.Set(linkquisition.BrowserMatchTypeSite)
 
+	settings := picker.settingsService.GetSettings()
+	pickerLayout := settings.Ui.GetPickerLayout()
+
 	for i := range picker.browsers {
-		buttons = append(
-			buttons,
-			picker.makeBrowserButton(picker.browsers[i], urlToOpen, remember, rememberMatchType),
-		)
+		if pickerLayout == linkquisition.PickerLayoutHorizontal {
+			buttons = append(
+				buttons,
+				picker.makeHorizontalBrowserButton(
+					picker.browsers[i], urlToOpen, remember, rememberMatchType,
+				),
+			)
+		} else {
+			buttons = append(
+				buttons,
+				picker.makeBrowserButton(picker.browsers[i], urlToOpen, remember, rememberMatchType),
+			)
+		}
 	}
 
 	w := picker.fapp.NewWindow(i18n.T("picker.window_title"))
@@ -70,6 +91,44 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		},
 	)
 
+	picker.setupKeyboardShortcuts(w, buttons)
+
+	var widgets []fyne.CanvasObject
+
+	if pickerLayout == linkquisition.PickerLayoutHorizontal {
+		widgets = append(widgets, picker.buildHorizontalGrid(buttons, settings.Ui.GetMaxItemsPerRow()))
+	} else {
+		widgets = append(widgets, buttons...)
+	}
+
+	widgets = append(widgets, picker.buildURLDisplay(urlToOpen)...)
+	widgets = append(widgets, picker.buildRememberCheck(urlToOpen, remember)...)
+
+	if !settings.Ui.HideKeyboardGuideLabel {
+		widgets = append(widgets, picker.buildKeyboardGuide()...)
+	}
+
+	w.SetFixedSize(true)
+	if pickerLayout == linkquisition.PickerLayoutHorizontal {
+		cols := min(len(buttons), settings.Ui.GetMaxItemsPerRow())
+		rows := (len(buttons) + cols - 1) / cols
+		width := float32(cols*horizontalButtonWidth) + float32(cols+1)*10         //nolint:mnd
+		height := float32(rows*horizontalButtonHeight) + float32(rows+1)*10 + 120 //nolint:mnd
+		w.Resize(fyne.NewSize(max(width, verticalWindowWidth), height))
+	} else {
+		w.Resize(fyne.NewSize(verticalWindowWidth, verticalWindowMinHeight))
+	}
+	w.CenterOnScreen()
+	w.SetIcon(resources.LinkquisitionIcon)
+
+	w.SetContent(container.NewVBox(widgets...))
+
+	w.ShowAndRun()
+
+	return nil
+}
+
+func (picker *BrowserPicker) setupKeyboardShortcuts(w fyne.Window, buttons []fyne.CanvasObject) {
 	w.Canvas().SetOnTypedKey(
 		func(keyEvent *fyne.KeyEvent) {
 			if keyEvent.Name == fyne.KeyEscape {
@@ -77,7 +136,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 			}
 			if len(buttons) > 0 {
 				if keyEvent.Name == fyne.KeyReturn {
-					buttons[0].(*widget.Button).OnTapped()
+					picker.tapButton(buttons[0])
 					return
 				}
 
@@ -96,19 +155,37 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 				for i := range buttons {
 					if keyEvent.Name == numkeyNames[i] {
-						buttons[i].(*widget.Button).OnTapped()
+						picker.tapButton(buttons[i])
 						return
 					}
 				}
 			}
 		},
 	)
+}
 
-	var widgets []fyne.CanvasObject
+// tapButton triggers the OnTapped handler for a button canvas object.
+// Supports both widget.Button (vertical layout) and the tappable container (horizontal layout).
+func (picker *BrowserPicker) tapButton(obj fyne.CanvasObject) {
+	if btn, ok := obj.(*widget.Button); ok {
+		btn.OnTapped()
+		return
+	}
+	// For horizontal layout, the tappable wrapper holds the callback
+	if tappable, ok := obj.(*tappableContainer); ok {
+		tappable.onTapped()
+	}
+}
 
-	widgets = append(widgets, buttons...)
+func (picker *BrowserPicker) buildHorizontalGrid(buttons []fyne.CanvasObject, maxPerRow int) fyne.CanvasObject {
+	cols := min(len(buttons), maxPerRow)
+	cellSize := fyne.NewSize(horizontalButtonWidth, horizontalButtonHeight)
+	grid := container.New(layout.NewGridWrapLayout(cellSize), buttons...)
+	_ = cols // cols is implicitly handled by GridWrap based on container width
+	return grid
+}
 
-	// if the text is too long, it will be truncated
+func (picker *BrowserPicker) buildURLDisplay(urlToOpen string) []fyne.CanvasObject {
 	text := urlToOpen
 	if len(urlToOpen) > 75 { //nolint:mnd
 		text = urlToOpen[:75] + "..."
@@ -118,11 +195,12 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	input.SetText(text)
 	input.Disable()
 
-	widgets = append(
-		widgets,
+	return []fyne.CanvasObject{
 		container.NewBorder(nil, nil, widget.NewLabel(i18n.T("picker.open_label")), nil, input),
-	)
+	}
+}
 
+func (picker *BrowserPicker) buildRememberCheck(urlToOpen string, remember binding.Bool) []fyne.CanvasObject {
 	uto := linkquisition.NewURL(urlToOpen)
 	site, _ := uto.GetSite()
 	check := widget.NewCheckWithData(
@@ -130,36 +208,21 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		remember,
 	)
 
-	widgets = append(
-		widgets,
-		check,
-	)
+	return []fyne.CanvasObject{check}
+}
 
-	if !picker.settingsService.GetSettings().Ui.HideKeyboardGuideLabel {
-		copyShortcut := "Ctrl+C"
-		if runtime.GOOS == "darwin" {
-			copyShortcut = "⌘+C"
-		}
-
-		widgets = append(
-			widgets,
-			layout.NewSpacer(),
-			widget.NewLabel(i18n.T("picker.keyboard_guide", map[string]interface{}{
-				"CopyShortcut": copyShortcut,
-			})),
-		)
+func (picker *BrowserPicker) buildKeyboardGuide() []fyne.CanvasObject {
+	copyShortcut := "Ctrl+C"
+	if runtime.GOOS == "darwin" {
+		copyShortcut = "⌘+C"
 	}
 
-	w.SetFixedSize(true)
-	w.Resize(fyne.NewSize(600, 50)) //nolint:mnd
-	w.CenterOnScreen()
-	w.SetIcon(resources.LinkquisitionIcon)
-
-	w.SetContent(container.NewVBox(widgets...))
-
-	w.ShowAndRun()
-
-	return nil
+	return []fyne.CanvasObject{
+		layout.NewSpacer(),
+		widget.NewLabel(i18n.T("picker.keyboard_guide", map[string]interface{}{
+			"CopyShortcut": copyShortcut,
+		})),
+	}
 }
 
 func (picker *BrowserPicker) makeBrowserButton(
@@ -180,31 +243,99 @@ func (picker *BrowserPicker) makeBrowserButton(
 	return widget.NewButtonWithIcon(
 		browser.Name,
 		icon,
-		func() {
-			rem, _ := remember.Get()
-			picker.logger.Debug("Opening URL with browser", "browser", browser.Name, "remember", rem)
+		picker.browserOpenCallback(browser, urlToOpen, remember, rememberMatchType),
+	)
+}
 
-			settings := picker.settingsService.GetSettings()
-			remType, _ := rememberMatchType.Get()
+func (picker *BrowserPicker) makeHorizontalBrowserButton(
+	browser linkquisition.Browser,
+	urlToOpen string,
+	remember binding.Bool,
+	rememberMatchType binding.String,
+) fyne.CanvasObject {
+	callback := picker.browserOpenCallback(browser, urlToOpen, remember, rememberMatchType)
 
-			if rem {
-				uto := linkquisition.NewURL(urlToOpen)
-				matchValue, _ := uto.GetDomain()
+	var iconWidget fyne.CanvasObject
+	iconBytes, err := picker.browserService.GetIconForBrowser(browser)
+	if err != nil {
+		picker.logger.Debug("Failed to load browser icon", "browser", browser.Name, "error", err)
+		iconWidget = layout.NewSpacer()
+	} else {
+		res := fyne.NewStaticResource("icon.png", iconBytes)
+		img := canvas.NewImageFromResource(res)
+		img.FillMode = canvas.ImageFillContain
+		img.SetMinSize(fyne.NewSize(horizontalButtonIconSize, horizontalButtonIconSize))
+		iconWidget = img
+	}
 
-				if remType == linkquisition.BrowserMatchTypeSite {
-					matchValue, _ = uto.GetSite()
-				}
+	nameLabel := widget.NewLabel(browser.Name)
+	nameLabel.Alignment = fyne.TextAlignCenter
+	nameLabel.Truncation = fyne.TextTruncateEllipsis
 
-				settings.AddRuleToBrowser(&browser, remType, matchValue)
-				if writeErr := picker.settingsService.WriteSettings(settings); writeErr != nil {
-					picker.logger.Error("Failed to write settings", "error", writeErr)
-				}
+	content := container.NewVBox(
+		iconWidget,
+		nameLabel,
+	)
+
+	return newTappableContainer(content, callback)
+}
+
+func (picker *BrowserPicker) browserOpenCallback(
+	browser linkquisition.Browser,
+	urlToOpen string,
+	remember binding.Bool,
+	rememberMatchType binding.String,
+) func() {
+	return func() {
+		rem, _ := remember.Get()
+		picker.logger.Debug("Opening URL with browser", "browser", browser.Name, "remember", rem)
+
+		settings := picker.settingsService.GetSettings()
+		remType, _ := rememberMatchType.Get()
+
+		if rem {
+			uto := linkquisition.NewURL(urlToOpen)
+			matchValue, _ := uto.GetDomain()
+
+			if remType == linkquisition.BrowserMatchTypeSite {
+				matchValue, _ = uto.GetSite()
 			}
 
-			go func() {
-				_ = picker.browserService.OpenUrlWithBrowser(urlToOpen, &browser)
-			}()
-			picker.fapp.Quit()
-		},
-	)
+			settings.AddRuleToBrowser(&browser, remType, matchValue)
+			if writeErr := picker.settingsService.WriteSettings(settings); writeErr != nil {
+				picker.logger.Error("Failed to write settings", "error", writeErr)
+			}
+		}
+
+		go func() {
+			_ = picker.browserService.OpenUrlWithBrowser(urlToOpen, &browser)
+		}()
+		picker.fapp.Quit()
+	}
+}
+
+// tappableContainer wraps a canvas object to make it respond to tap events.
+type tappableContainer struct {
+	widget.BaseWidget
+	content  fyne.CanvasObject
+	onTapped func()
+}
+
+func newTappableContainer(content fyne.CanvasObject, onTapped func()) *tappableContainer {
+	t := &tappableContainer{
+		content:  content,
+		onTapped: onTapped,
+	}
+	t.ExtendBaseWidget(t)
+	return t
+}
+
+func (t *tappableContainer) Tapped(_ *fyne.PointEvent) {
+	if t.onTapped != nil {
+		t.onTapped()
+	}
+}
+
+func (t *tappableContainer) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(t.content)
 }
