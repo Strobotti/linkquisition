@@ -195,9 +195,17 @@ when it appears.
 
 ### Available effects
 
-- `matrix` — Green "Matrix rain" characters falling over the picker content
-- `fire` — Flames licking up from the bottom half of the window
-- `random` — Randomly picks one of the above effects each time
+- `random` — Randomly picks one of the effects below (default)
+- `aurora` — Northern lights with flowing green/purple/blue bands
+- `fire` — Realistic flames rising from the bottom of the window
+- `fireworks` — Rockets launching and exploding into colorful particle bursts
+- `football` — Top-down football/soccer pitch with animated spotlight sweep
+- `glitch` — Cyberpunk-style RGB channel splitting with periodic static bursts
+- `matrix` — Green Matrix-style falling characters
+- `plasma` — Classic demoscene swirling color blobs
+- `pride` — Animated rainbow pride flag waving in the wind
+- `snow` — Gentle snowfall with varying sizes and wobble
+- `starfield` — 3D warp-speed stars flying toward the viewer
 
 ### Configuration
 
@@ -219,9 +227,9 @@ when it appears.
 
 ### Settings
 
-| Setting  | Type   | Default    | Description                                             |
-|----------|--------|------------|---------------------------------------------------------|
-| `effect` | choice | `"random"` | Which visual effect to show: `matrix`, `fire`, `random` |
+| Setting  | Type   | Default    | Description                                      |
+|----------|--------|------------|--------------------------------------------------|
+| `effect` | choice | `"random"` | Which visual effect to show on the picker window |
 
 ## Developing plugins
 
