@@ -54,9 +54,9 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 				Type:        linkquisition.SettingTypeChoice,
 				Default:     effectRandom,
 				Options: []string{
-					effectMatrix, effectFire, effectSnow, effectPlasma,
+					effectRandom, effectMatrix, effectFire, effectSnow, effectPlasma,
 					effectStarfield, effectAurora, effectGlitch, effectPride,
-					effectFootball, effectFireworks, effectRandom,
+					effectFootball, effectFireworks,
 				},
 			},
 		},
