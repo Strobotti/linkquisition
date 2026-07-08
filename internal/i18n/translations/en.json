@@ -241,5 +241,17 @@
   },
   "config.macos_picker_note": {
     "other": "Note: The browser picker window is not available while this settings screen is open. Links clicked while settings are open will be opened in the first matching browser automatically."
+  },
+  "config.picker_layout_label": {
+    "other": "Picker layout:"
+  },
+  "config.picker_layout_vertical": {
+    "other": "Vertical (list)"
+  },
+  "config.picker_layout_horizontal": {
+    "other": "Horizontal (buttons)"
+  },
+  "config.picker_max_per_row_label": {
+    "other": "Max items per row:"
   }
 }

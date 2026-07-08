@@ -17,7 +17,21 @@ import (
 func (c *Configurator) getBrowsersTab() fyne.CanvasObject {
 	content := container.NewVBox()
 	c.rebuildBrowsersList(content)
-	return container.NewVScroll(content)
+
+	scrollArea := container.NewVScroll(content)
+
+	scanBtn := widget.NewButton(i18n.T("config.rescan_browsers"), nil)
+	scanBtn.OnTapped = func() {
+		c.scanBrowsersAndRebuild(content, scanBtn)
+	}
+
+	addBtn := widget.NewButton(i18n.T("config.browsers_add"), func() {
+		c.showAddBrowserDialog(content)
+	})
+
+	bottomBar := container.NewHBox(scanBtn, addBtn)
+
+	return container.NewBorder(nil, bottomBar, nil, nil, scrollArea)
 }
 
 func (c *Configurator) rebuildBrowsersList(content *fyne.Container) {
@@ -49,19 +63,6 @@ func (c *Configurator) rebuildBrowsersList(content *fyne.Container) {
 		content.Add(c.buildBrowserCard(settings, idx, content))
 	}
 
-	// Action buttons at the bottom
-	content.Add(layout.NewSpacer())
-
-	scanBtn := widget.NewButton(i18n.T("config.rescan_browsers"), nil)
-	scanBtn.OnTapped = func() {
-		c.scanBrowsersAndRebuild(content, scanBtn)
-	}
-
-	addBtn := widget.NewButton(i18n.T("config.browsers_add"), func() {
-		c.showAddBrowserDialog(content)
-	})
-
-	content.Add(container.NewHBox(scanBtn, addBtn))
 	content.Refresh()
 }
 

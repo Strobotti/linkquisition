@@ -241,5 +241,17 @@
   },
   "config.macos_picker_note": {
     "other": "Obs: Webbläsarväljaren är inte tillgänglig medan detta inställningsfönster är öppet. Länkar öppnas automatiskt i den första matchande webbläsaren."
+  },
+  "config.picker_layout_label": {
+    "other": "Väljarens layout:"
+  },
+  "config.picker_layout_vertical": {
+    "other": "Vertikal (lista)"
+  },
+  "config.picker_layout_horizontal": {
+    "other": "Horisontell (knappar)"
+  },
+  "config.picker_max_per_row_label": {
+    "other": "Max per rad:"
   }
 }

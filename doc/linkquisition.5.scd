@@ -89,6 +89,14 @@ and *rule* subcommands).
 *hideKeyboardGuideLabel* (boolean, optional)
 	If _true_, hides the keyboard shortcut guide at the bottom of the picker.
 
+*pickerLayout* (string, optional)
+	Layout style for the browser picker window. One of: _vertical_ (default,
+	list of buttons) or _horizontal_ (grid of square icon buttons).
+
+*maxItemsPerRow* (integer, optional)
+	Maximum number of browser buttons per row in _horizontal_ layout.
+	Default: _5_. Browsers exceeding this number wrap to additional rows.
+
 # EXAMPLE
 
 ```
@@ -114,7 +122,11 @@ and *rule* subcommands).
       "path": "unwrap",
       "isDisabled": false
     }
-  ]
+  ],
+  "ui": {
+    "pickerLayout": "horizontal",
+    "maxItemsPerRow": 5
+  }
 }
 ```
 

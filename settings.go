@@ -21,6 +21,11 @@ const (
 	LogLevelInfo  = "info"
 	LogLevelWarn  = "warn"
 	LogLevelError = "error"
+
+	PickerLayoutVertical   = "vertical"
+	PickerLayoutHorizontal = "horizontal"
+
+	DefaultMaxItemsPerRow = 5
 )
 
 type BrowserMatch struct {
@@ -105,7 +110,25 @@ type PluginSettings struct {
 }
 
 type UiSettings struct {
-	HideKeyboardGuideLabel bool `json:"hideKeyboardGuideLabel,omitempty"`
+	HideKeyboardGuideLabel bool   `json:"hideKeyboardGuideLabel,omitempty"`
+	PickerLayout           string `json:"pickerLayout,omitempty"`
+	MaxItemsPerRow         int    `json:"maxItemsPerRow,omitempty"`
+}
+
+// GetPickerLayout returns the effective picker layout, defaulting to vertical.
+func (u *UiSettings) GetPickerLayout() string {
+	if u.PickerLayout == PickerLayoutHorizontal {
+		return PickerLayoutHorizontal
+	}
+	return PickerLayoutVertical
+}
+
+// GetMaxItemsPerRow returns the effective max items per row, defaulting to DefaultMaxItemsPerRow.
+func (u *UiSettings) GetMaxItemsPerRow() int {
+	if u.MaxItemsPerRow > 0 {
+		return u.MaxItemsPerRow
+	}
+	return DefaultMaxItemsPerRow
 }
 
 type Settings struct {
