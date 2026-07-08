@@ -937,3 +937,68 @@ func TestBrowserSettings_MatchesUrl_FallbackCompilesRegexOnDemand(t *testing.T) 
 	assert.True(t, browser.MatchesUrl("https://internal.corp.example.com/app"))
 	assert.False(t, browser.MatchesUrl("https://external.example.com"))
 }
+
+func TestUiSettings_GetPickerLayout(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		ui       UiSettings
+		expected string
+	}{
+		{
+			name:     "defaults to vertical when empty",
+			ui:       UiSettings{},
+			expected: PickerLayoutVertical,
+		},
+		{
+			name:     "returns vertical when explicitly set",
+			ui:       UiSettings{PickerLayout: PickerLayoutVertical},
+			expected: PickerLayoutVertical,
+		},
+		{
+			name:     "returns horizontal when set",
+			ui:       UiSettings{PickerLayout: PickerLayoutHorizontal},
+			expected: PickerLayoutHorizontal,
+		},
+		{
+			name:     "defaults to vertical for unknown value",
+			ui:       UiSettings{PickerLayout: "unknown"},
+			expected: PickerLayoutVertical,
+		},
+	} {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				assert.Equal(t, tt.expected, tt.ui.GetPickerLayout())
+			},
+		)
+	}
+}
+
+func TestUiSettings_GetMaxItemsPerRow(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		ui       UiSettings
+		expected int
+	}{
+		{
+			name:     "defaults to DefaultMaxItemsPerRow when zero",
+			ui:       UiSettings{},
+			expected: DefaultMaxItemsPerRow,
+		},
+		{
+			name:     "returns configured value when positive",
+			ui:       UiSettings{MaxItemsPerRow: 3},
+			expected: 3,
+		},
+		{
+			name:     "defaults when negative",
+			ui:       UiSettings{MaxItemsPerRow: -1},
+			expected: DefaultMaxItemsPerRow,
+		},
+	} {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				assert.Equal(t, tt.expected, tt.ui.GetMaxItemsPerRow())
+			},
+		)
+	}
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"image/color"
 	"log/slog"
 	"runtime"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
@@ -19,9 +21,9 @@ import (
 )
 
 const (
-	horizontalButtonIconSize = 64
-	horizontalButtonWidth    = 100
-	horizontalButtonHeight   = 100
+	horizontalButtonIconSize = 96
+	horizontalButtonWidth    = 148
+	horizontalButtonHeight   = 148
 	verticalWindowWidth      = 600
 	verticalWindowMinHeight  = 50
 )
@@ -109,19 +111,19 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	}
 
 	w.SetFixedSize(true)
+	w.SetIcon(resources.LinkquisitionIcon)
+	w.SetContent(container.NewVBox(widgets...))
+
 	if pickerLayout == linkquisition.PickerLayoutHorizontal {
 		cols := min(len(buttons), settings.Ui.GetMaxItemsPerRow())
 		rows := (len(buttons) + cols - 1) / cols
-		width := float32(cols*horizontalButtonWidth) + float32(cols+1)*10         //nolint:mnd
-		height := float32(rows*horizontalButtonHeight) + float32(rows+1)*10 + 120 //nolint:mnd
-		w.Resize(fyne.NewSize(max(width, verticalWindowWidth), height))
+		width := float32(cols*horizontalButtonWidth) + 32    //nolint:mnd
+		height := float32(rows*horizontalButtonHeight) + 140 //nolint:mnd
+		w.Resize(fyne.NewSize(width, height))
 	} else {
 		w.Resize(fyne.NewSize(verticalWindowWidth, verticalWindowMinHeight))
 	}
 	w.CenterOnScreen()
-	w.SetIcon(resources.LinkquisitionIcon)
-
-	w.SetContent(container.NewVBox(widgets...))
 
 	w.ShowAndRun()
 
@@ -178,11 +180,10 @@ func (picker *BrowserPicker) tapButton(obj fyne.CanvasObject) {
 }
 
 func (picker *BrowserPicker) buildHorizontalGrid(buttons []fyne.CanvasObject, maxPerRow int) fyne.CanvasObject {
-	cols := min(len(buttons), maxPerRow)
+	_ = maxPerRow // column count is controlled by window width + cell size
 	cellSize := fyne.NewSize(horizontalButtonWidth, horizontalButtonHeight)
 	grid := container.New(layout.NewGridWrapLayout(cellSize), buttons...)
-	_ = cols // cols is implicitly handled by GridWrap based on container width
-	return grid
+	return container.NewPadded(grid)
 }
 
 func (picker *BrowserPicker) buildURLDisplay(urlToOpen string) []fyne.CanvasObject {
@@ -259,7 +260,14 @@ func (picker *BrowserPicker) makeHorizontalBrowserButton(
 	iconBytes, err := picker.browserService.GetIconForBrowser(browser)
 	if err != nil {
 		picker.logger.Debug("Failed to load browser icon", "browser", browser.Name, "error", err)
-		iconWidget = layout.NewSpacer()
+		// Show a placeholder with the first letter when no icon is available
+		bg := canvas.NewRectangle(color.NRGBA{R: 200, G: 200, B: 200, A: 40}) //nolint:mnd
+		bg.SetMinSize(fyne.NewSize(horizontalButtonIconSize, horizontalButtonIconSize))
+		placeholder := canvas.NewText(string([]rune(browser.Name)[0]), color.NRGBA{R: 80, G: 80, B: 80, A: 255}) //nolint:mnd,lll
+		placeholder.TextSize = 36                                                                                //nolint:mnd
+		placeholder.TextStyle = fyne.TextStyle{Bold: true}
+		placeholder.Alignment = fyne.TextAlignCenter
+		iconWidget = container.NewStack(bg, container.NewCenter(placeholder))
 	} else {
 		res := fyne.NewStaticResource("icon.png", iconBytes)
 		img := canvas.NewImageFromResource(res)
@@ -273,7 +281,7 @@ func (picker *BrowserPicker) makeHorizontalBrowserButton(
 	nameLabel.Truncation = fyne.TextTruncateEllipsis
 
 	content := container.NewVBox(
-		iconWidget,
+		container.NewCenter(iconWidget),
 		nameLabel,
 	)
 
@@ -314,16 +322,26 @@ func (picker *BrowserPicker) browserOpenCallback(
 	}
 }
 
-// tappableContainer wraps a canvas object to make it respond to tap events.
+// tappableContainer wraps a canvas object to make it respond to tap and hover events.
 type tappableContainer struct {
 	widget.BaseWidget
 	content  fyne.CanvasObject
+	bg       *canvas.Rectangle
 	onTapped func()
 }
 
+// Compile-time interface checks.
+var (
+	_ fyne.Tappable     = (*tappableContainer)(nil)
+	_ desktop.Hoverable = (*tappableContainer)(nil)
+)
+
 func newTappableContainer(content fyne.CanvasObject, onTapped func()) *tappableContainer {
+	bg := canvas.NewRectangle(color.Transparent)
+	bg.CornerRadius = 8 //nolint:mnd
 	t := &tappableContainer{
 		content:  content,
+		bg:       bg,
 		onTapped: onTapped,
 	}
 	t.ExtendBaseWidget(t)
@@ -336,6 +354,18 @@ func (t *tappableContainer) Tapped(_ *fyne.PointEvent) {
 	}
 }
 
+func (t *tappableContainer) MouseIn(_ *desktop.MouseEvent) {
+	t.bg.FillColor = color.NRGBA{R: 150, G: 150, B: 150, A: 30} //nolint:mnd
+	t.bg.Refresh()
+}
+
+func (t *tappableContainer) MouseMoved(_ *desktop.MouseEvent) {}
+
+func (t *tappableContainer) MouseOut() {
+	t.bg.FillColor = color.Transparent
+	t.bg.Refresh()
+}
+
 func (t *tappableContainer) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(t.content)
+	return widget.NewSimpleRenderer(container.NewStack(t.bg, t.content))
 }
