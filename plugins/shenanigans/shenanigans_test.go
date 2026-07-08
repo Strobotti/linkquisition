@@ -1,3 +1,4 @@
+//nolint:mnd,gosec // Test file for visual effects plugin — magic numbers expected.
 package main
 
 import (
@@ -89,7 +90,9 @@ func TestShenanigans_ProcessURL_PassThrough(t *testing.T) {
 func TestShenanigans_ImplementsPluginUIHook(t *testing.T) {
 	p := NewForTesting()
 
-	var _ linkquisition.PluginUIHook = p
+	// Verify the plugin satisfies the PluginUIHook interface at compile time
+	var hook linkquisition.PluginUIHook = p
+	assert.NotNil(t, hook)
 }
 
 func TestShenanigans_OnPickerShown_Matrix(t *testing.T) {
@@ -373,10 +376,13 @@ func TestMatrixState_Render(t *testing.T) {
 
 func TestFireColor(t *testing.T) {
 	// Low values should be transparent
-	_, _, _, a := fireColor(0)
+	r, g, b, a := fireColor(0)
 	assert.Equal(t, uint8(0), a)
+	assert.Equal(t, uint8(0), r)
+	assert.Equal(t, uint8(0), g)
+	assert.Equal(t, uint8(0), b)
 
 	// High values should have full red
-	r, _, _, _ := fireColor(200)
+	r, _, _, _ = fireColor(200)
 	assert.Equal(t, uint8(255), r)
 }

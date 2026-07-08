@@ -1,3 +1,4 @@
+//nolint:mnd,gosec // Visual effects plugin: magic numbers (colors, speeds, sizes) and weak random are by design.
 package main
 
 import (
@@ -27,6 +28,8 @@ const (
 	fireHeight        = 100
 	matrixColumns     = 40
 	rgbaChannels      = 4
+
+	settingKeyEffect = "effect"
 )
 
 // Compile-time interface checks.
@@ -48,7 +51,7 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 		URL:         "https://github.com/Strobotti/linkquisition",
 		Settings: []linkquisition.PluginSettingDescriptor{
 			{
-				Key:         "effect",
+				Key:         settingKeyEffect,
 				Label:       "Effect",
 				Description: "Which visual effect to show on the picker window",
 				Type:        linkquisition.SettingTypeChoice,
@@ -70,7 +73,7 @@ func (p *shenanigans) Setup(
 ) error {
 	p.serviceProvider = serviceProvider
 
-	if effectVal, ok := config["effect"]; ok {
+	if effectVal, ok := config[settingKeyEffect]; ok {
 		if s, isStr := effectVal.(string); isStr {
 			p.effect = s
 		}
@@ -185,7 +188,7 @@ func (s *matrixState) initColumns() {
 		s.columns[i] = matrixColumn{
 			y:     -rand.Float64() * float64(s.height),
 			speed: 2 + rand.Float64()*6,
-			chars: generateMatrixChars(20 + rand.IntN(15)), //nolint:mnd
+			chars: generateMatrixChars(20 + rand.IntN(15)),
 		}
 	}
 }
@@ -201,7 +204,7 @@ func (s *matrixState) update() {
 		if s.columns[i].y > h+float64(len(s.columns[i].chars)*16) {
 			s.columns[i].y = -float64(len(s.columns[i].chars) * 16)
 			s.columns[i].speed = 2 + rand.Float64()*6
-			s.columns[i].chars = generateMatrixChars(20 + rand.IntN(15)) //nolint:mnd
+			s.columns[i].chars = generateMatrixChars(20 + rand.IntN(15))
 		}
 	}
 }
@@ -230,7 +233,7 @@ func (s *matrixState) render() []uint8 {
 			}
 
 			// Fade out older characters
-			brightness := uint8(255 - min(j*12, 230)) //nolint:mnd
+			brightness := uint8(255 - min(j*12, 230))
 
 			// Draw a simple block for each character
 			for dx := 2; dx < min(colWidth-2, 10); dx++ {
@@ -305,8 +308,8 @@ func (s *fireState) init() {
 func (s *fireState) update() {
 	// Set the bottom two rows to random hot values (wider fuel source)
 	for x := range s.width {
-		s.grid[s.height-1][x] = uint8(180 + rand.IntN(76))  //nolint:mnd
-		s.grid[s.height-2][x] = uint8(150 + rand.IntN(106)) //nolint:mnd
+		s.grid[s.height-1][x] = uint8(180 + rand.IntN(76))
+		s.grid[s.height-2][x] = uint8(150 + rand.IntN(106))
 	}
 
 	// Propagate fire upward with averaging and cooling
@@ -326,17 +329,17 @@ func (s *fireState) update() {
 				int(s.grid[y+2][x])*2 +
 				int(s.grid[y+2][r2])
 
-			avg := sum / 9 //nolint:mnd
+			avg := sum / 9
 
 			// Cooling increases toward the top for natural fadeout
-			coolBase := 2 + (s.height-y)/15 //nolint:mnd
+			coolBase := 2 + (s.height-y)/15
 			cooling := rand.IntN(coolBase + 1)
 			val := avg - cooling
 
 			if val < 0 {
 				val = 0
 			}
-			s.grid[y][x] = uint8(val) //nolint:gosec
+			s.grid[y][x] = uint8(val)
 		}
 	}
 }
@@ -397,57 +400,57 @@ func (s *fireState) sampleBilinear(fx, fy float64) uint8 {
 	bottom := v01*(1-xFrac) + v11*xFrac
 	val := top*(1-yFrac) + bottom*yFrac
 
-	return uint8(min(max(int(val), 0), 255)) //nolint:gosec
+	return uint8(min(max(int(val), 0), 255))
 }
 
 // fireColor maps a heat value (0-255) to a realistic fire palette.
 // Gradient: transparent → dark red/brown → red → orange → gold → pale yellow
 func fireColor(val uint8) (r, g, b, a uint8) {
-	if val < 24 { //nolint:mnd
+	if val < 24 {
 		return 0, 0, 0, 0
 	}
 
 	// Normalize to 0.0-1.0 range (24-255 → 0.0-1.0)
-	t := float64(val-24) / 231.0 //nolint:mnd
+	t := float64(val-24) / 231.0
 
 	// Piecewise palette for realistic fire
 	switch {
-	case t < 0.2: //nolint:mnd
+	case t < 0.2:
 		// Black → dark maroon/brown
-		p := t / 0.2       //nolint:mnd
-		r = uint8(p * 80)  //nolint:mnd,gosec
-		g = uint8(p * 10)  //nolint:mnd,gosec
-		a = uint8(p * 180) //nolint:mnd,gosec
+		p := t / 0.2
+		r = uint8(p * 80)
+		g = uint8(p * 10)
+		a = uint8(p * 180)
 		return r, g, 0, a
-	case t < 0.45: //nolint:mnd
+	case t < 0.45:
 		// Dark maroon → bright red
-		p := (t - 0.2) / 0.25 //nolint:mnd
-		r = uint8(80 + p*175) //nolint:mnd,gosec
-		g = uint8(10 + p*20)  //nolint:mnd,gosec
-		a = uint8(180 + p*75) //nolint:mnd,gosec
+		p := (t - 0.2) / 0.25
+		r = uint8(80 + p*175)
+		g = uint8(10 + p*20)
+		a = uint8(180 + p*75)
 		return r, g, 0, a
-	case t < 0.7: //nolint:mnd
+	case t < 0.7:
 		// Red → orange
-		p := (t - 0.45) / 0.25 //nolint:mnd
-		r = 255                //nolint:mnd
-		g = uint8(30 + p*170)  //nolint:mnd,gosec
-		a = 255                //nolint:mnd
+		p := (t - 0.45) / 0.25
+		r = 255
+		g = uint8(30 + p*170)
+		a = 255
 		return r, g, 0, a
-	case t < 0.9: //nolint:mnd
+	case t < 0.9:
 		// Orange → golden yellow
-		p := (t - 0.7) / 0.2  //nolint:mnd
-		r = 255               //nolint:mnd
-		g = uint8(200 + p*55) //nolint:mnd,gosec
-		b = uint8(p * 30)     //nolint:mnd,gosec
-		a = 255               //nolint:mnd
+		p := (t - 0.7) / 0.2
+		r = 255
+		g = uint8(200 + p*55)
+		b = uint8(p * 30)
+		a = 255
 		return r, g, b, a
 	default:
 		// Golden yellow → pale yellow/white tips
-		p := (t - 0.9) / 0.1  //nolint:mnd
-		r = 255               //nolint:mnd
-		g = 255               //nolint:mnd
-		b = uint8(30 + p*120) //nolint:mnd,gosec
-		a = uint8(255 - p*80) //nolint:mnd,gosec
+		p := (t - 0.9) / 0.1
+		r = 255
+		g = 255
+		b = uint8(30 + p*120)
+		a = uint8(255 - p*80)
 		return r, g, b, a
 	}
 }
@@ -516,7 +519,7 @@ func (s *snowState) init() {
 	for i := range s.flakes {
 		// Start most flakes above the window so they drift in gradually.
 		// A few start on-screen so it's not completely empty at first.
-		onScreen := i < snowFlakeCount/5 //nolint:mnd
+		onScreen := i < snowFlakeCount/5
 		s.flakes[i] = s.newFlake(onScreen)
 	}
 }
@@ -533,9 +536,9 @@ func (s *snowState) newFlake(onScreen bool) snowflake {
 		y:      y,
 		size:   1 + rand.Float64()*float64(snowMaxSize-1),
 		speed:  0.5 + rand.Float64()*2.0,
-		drift:  (rand.Float64() - 0.5) * 0.3, //nolint:mnd
-		wobble: 0.3 + rand.Float64()*0.7,     //nolint:mnd
-		phase:  rand.Float64() * 6.28,        //nolint:mnd
+		drift:  (rand.Float64() - 0.5) * 0.3,
+		wobble: 0.3 + rand.Float64()*0.7,
+		phase:  rand.Float64() * 6.28,
 	}
 }
 
@@ -543,13 +546,13 @@ func (s *snowState) update() {
 	for i := range s.flakes {
 		f := &s.flakes[i]
 		f.y += f.speed
-		f.phase += 0.05 //nolint:mnd
+		f.phase += 0.05
 
 		// Gentle sine-wave wobble for horizontal drift
-		f.x += f.drift + f.wobble*sinApprox(f.phase)*0.3 //nolint:mnd
+		f.x += f.drift + f.wobble*sinApprox(f.phase)*0.3
 
 		// Respawn at top if fallen below window
-		if f.y > float64(s.height)+10 { //nolint:mnd
+		if f.y > float64(s.height)+10 {
 			*f = s.newFlake(false)
 		}
 
@@ -599,7 +602,7 @@ func (s *snowState) drawFlake(pixels []uint8, f snowflake) {
 			}
 
 			// Soft edge: alpha falls off near the border
-			alpha := uint8((1.0 - dist*dist) * 220) //nolint:mnd,gosec
+			alpha := uint8((1.0 - dist*dist) * 220)
 
 			offset := (py*w + px) * rgbaChannels
 			// Blend: white snowflake with alpha
@@ -635,8 +638,8 @@ func sinApprox(x float64) float64 {
 	}
 
 	// Bhaskara I's approximation: sin(x) ≈ 16x(π-x) / (5π²-4x(π-x))
-	num := 16 * x * (pi - x)    //nolint:mnd
-	den := 5*pi*pi - 4*x*(pi-x) //nolint:mnd
+	num := 16 * x * (pi - x)
+	den := 5*pi*pi - 4*x*(pi-x)
 	return sign * num / den
 }
 
@@ -661,7 +664,7 @@ func (p *shenanigans) startPlasma(pc linkquisition.PickerCanvas) {
 			if p.stopped.Load() {
 				return
 			}
-			state.time += 0.06 //nolint:mnd
+			state.time += 0.06
 			pc.ScheduleRefresh()
 		}
 	}()
@@ -681,26 +684,26 @@ func (s *plasmaState) render(w, h int) []uint8 {
 			fx := float64(px) / float64(w)
 
 			// Overlapping sine waves at different frequencies and phases
-			v1 := sinApprox((fx*4 + t) * 3.14159)                //nolint:mnd
-			v2 := sinApprox((fy*4 + t*0.7) * 3.14159)            //nolint:mnd
-			v3 := sinApprox(((fx+fy)*3 + t*1.3) * 3.14159)       //nolint:mnd
-			v4 := sinApprox(((fx-fy)*2 + t*0.5) * 3.14159)       //nolint:mnd
-			v5 := sinApprox(((fx*fx+fy*fy)*4 - t*0.9) * 3.14159) //nolint:mnd
+			v1 := sinApprox((fx*4 + t) * 3.14159)
+			v2 := sinApprox((fy*4 + t*0.7) * 3.14159)
+			v3 := sinApprox(((fx+fy)*3 + t*1.3) * 3.14159)
+			v4 := sinApprox(((fx-fy)*2 + t*0.5) * 3.14159)
+			v5 := sinApprox(((fx*fx+fy*fy)*4 - t*0.9) * 3.14159)
 
 			// Combine waves (result in -1 to 1 range, normalize to 0-1)
-			val := (v1 + v2 + v3 + v4 + v5) / 5.0 //nolint:mnd
+			val := (v1 + v2 + v3 + v4 + v5) / 5.0
 			val = (val + 1.0) / 2.0
 
 			// Map to color using three phase-shifted sine waves for RGB
-			r := uint8(sinNorm(val*3.14159*2+t*0.3) * 255)      //nolint:mnd,gosec
-			g := uint8(sinNorm(val*3.14159*2+t*0.3+2.09) * 255) //nolint:mnd,gosec
-			b := uint8(sinNorm(val*3.14159*2+t*0.3+4.19) * 255) //nolint:mnd,gosec
+			r := uint8(sinNorm(val*3.14159*2+t*0.3) * 255)
+			g := uint8(sinNorm(val*3.14159*2+t*0.3+2.09) * 255)
+			b := uint8(sinNorm(val*3.14159*2+t*0.3+4.19) * 255)
 
 			offset := (py*w + px) * rgbaChannels
 			pixels[offset] = r
 			pixels[offset+1] = g
 			pixels[offset+2] = b
-			pixels[offset+3] = 200 //nolint:mnd
+			pixels[offset+3] = 200
 		}
 	}
 
@@ -761,7 +764,7 @@ func (s *starfieldState) init() {
 func (s *starfieldState) newStar(randomDepth bool) star {
 	z := 0.01 + rand.Float64()*0.99
 	if randomDepth {
-		z = 0.1 + rand.Float64()*0.9 //nolint:mnd
+		z = 0.1 + rand.Float64()*0.9
 	}
 
 	return star{
@@ -773,12 +776,12 @@ func (s *starfieldState) newStar(randomDepth bool) star {
 
 func (s *starfieldState) update() {
 	for i := range s.stars {
-		s.stars[i].z -= 0.015 //nolint:mnd
+		s.stars[i].z -= 0.015
 
 		// Respawn stars that have passed the viewer
-		if s.stars[i].z <= 0.001 { //nolint:mnd
+		if s.stars[i].z <= 0.001 {
 			s.stars[i] = s.newStar(false)
-			s.stars[i].z = 0.9 + rand.Float64()*0.1 //nolint:mnd
+			s.stars[i].z = 0.9 + rand.Float64()*0.1
 		}
 	}
 }
@@ -803,41 +806,45 @@ func (s *starfieldState) render() []uint8 {
 		}
 
 		// Size and brightness increase as stars get closer (z → 0)
-		brightness := uint8(min(int((1.0-st.z)*255), 255)) //nolint:mnd,gosec
-		size := int(1 + (1.0-st.z)*3)                      //nolint:mnd
+		brightness := uint8(min(int((1.0-st.z)*255), 255))
+		size := int(1 + (1.0-st.z)*3)
 
-		// Draw star with glow
-		for dy := -size; dy <= size; dy++ {
-			for dx := -size; dx <= size; dx++ {
-				px := screenX + dx
-				py := screenY + dy
-
-				if px < 0 || px >= w || py < 0 || py >= h {
-					continue
-				}
-
-				dist := dx*dx + dy*dy
-				maxDist := size * size
-				if dist > maxDist {
-					continue
-				}
-
-				// Alpha falls off with distance from center
-				falloff := 1.0 - float64(dist)/float64(maxDist+1)
-				alpha := uint8(float64(brightness) * falloff) //nolint:gosec
-
-				offset := (py*w + px) * rgbaChannels
-				if alpha > pixels[offset+3] {
-					pixels[offset] = brightness
-					pixels[offset+1] = brightness
-					pixels[offset+2] = 255 // slight blue tint
-					pixels[offset+3] = alpha
-				}
-			}
-		}
+		s.drawStar(pixels, screenX, screenY, size, brightness)
 	}
 
 	return pixels
+}
+
+func (s *starfieldState) drawStar(pixels []uint8, screenX, screenY, size int, brightness uint8) {
+	w, h := s.width, s.height
+	for dy := -size; dy <= size; dy++ {
+		for dx := -size; dx <= size; dx++ {
+			px := screenX + dx
+			py := screenY + dy
+
+			if px < 0 || px >= w || py < 0 || py >= h {
+				continue
+			}
+
+			dist := dx*dx + dy*dy
+			maxDist := size * size
+			if dist > maxDist {
+				continue
+			}
+
+			// Alpha falls off with distance from center
+			falloff := 1.0 - float64(dist)/float64(maxDist+1)
+			alpha := uint8(float64(brightness) * falloff)
+
+			offset := (py*w + px) * rgbaChannels
+			if alpha > pixels[offset+3] {
+				pixels[offset] = brightness
+				pixels[offset+1] = brightness
+				pixels[offset+2] = 255 // slight blue tint
+				pixels[offset+3] = alpha
+			}
+		}
+	}
 }
 
 // --- Aurora Effect ---
@@ -863,7 +870,7 @@ func (p *shenanigans) startAurora(pc linkquisition.PickerCanvas) {
 			if p.stopped.Load() {
 				return
 			}
-			state.time += 0.03 //nolint:mnd
+			state.time += 0.03
 			pc.ScheduleRefresh()
 		}
 	}()
@@ -892,21 +899,21 @@ func (s *auroraState) render(w, h int) []uint8 {
 			for layer := range auroraLayers {
 				fl := float64(layer)
 				// Each layer has different frequency, speed, and phase
-				wave := sinApprox((fx*(3+fl) + t*(0.4+fl*0.15) + fl*1.7) * 3.14159)     //nolint:mnd
-				wave2 := sinApprox((fx*(2+fl*0.7) - t*(0.3+fl*0.1) + fl*2.3) * 3.14159) //nolint:mnd
+				wave := sinApprox((fx*(3+fl) + t*(0.4+fl*0.15) + fl*1.7) * 3.14159)
+				wave2 := sinApprox((fx*(2+fl*0.7) - t*(0.3+fl*0.1) + fl*2.3) * 3.14159)
 
 				// Curtain shape: thin band that undulates
-				curtainCenter := 0.2 + 0.15*fl + 0.1*(wave*0.5+0.5) //nolint:mnd
-				curtainWidth := 0.08 + 0.04*wave2                   //nolint:mnd
+				curtainCenter := 0.2 + 0.15*fl + 0.1*(wave*0.5+0.5)
+				curtainWidth := 0.08 + 0.04*wave2
 
 				// Gaussian-like falloff from the curtain center
 				dist := (fy - curtainCenter) / curtainWidth
-				layerIntensity := fastExp(-dist * dist * 0.5) //nolint:mnd
+				layerIntensity := fastExp(-dist * dist * 0.5)
 
-				intensity += layerIntensity * (0.6 + 0.4/(fl+1)) //nolint:mnd
+				intensity += layerIntensity * (0.6 + 0.4/(fl+1))
 			}
 
-			if intensity < 0.01 { //nolint:mnd
+			if intensity < 0.01 {
 				continue
 			}
 			if intensity > 1.0 {
@@ -914,10 +921,10 @@ func (s *auroraState) render(w, h int) []uint8 {
 			}
 
 			// Aurora color: shift from green to purple/blue based on position and time
-			colorPhase := fx*0.5 + fy*0.3 + t*0.1 //nolint:mnd
+			colorPhase := fx*0.5 + fy*0.3 + t*0.1
 			r, g, b := auroraColor(colorPhase, intensity)
 
-			alpha := uint8(intensity * 180) //nolint:mnd,gosec
+			alpha := uint8(intensity * 180)
 
 			offset := (py*w + px) * rgbaChannels
 			pixels[offset] = r
@@ -934,49 +941,49 @@ func (s *auroraState) render(w, h int) []uint8 {
 // Shifts between green, teal, blue, and purple.
 func auroraColor(phase, intensity float64) (r, g, b uint8) {
 	// Cycle through aurora palette
-	p := sinApprox(phase * 3.14159 * 2) //nolint:mnd
-	p = (p + 1.0) / 2.0                 // normalize to 0-1
+	p := sinApprox(phase * 3.14159 * 2)
+	p = (p + 1.0) / 2.0 // normalize to 0-1
 
 	// Blend between green-dominant and purple-dominant
 	var rf, gf, bf float64
 	switch {
-	case p < 0.33: //nolint:mnd
+	case p < 0.33:
 		// Green to teal
-		t := p / 0.33 //nolint:mnd
+		t := p / 0.33
 		rf = 0.1 * t
-		gf = 0.8 + 0.2*t //nolint:mnd
-		bf = 0.2 + 0.5*t //nolint:mnd
-	case p < 0.66: //nolint:mnd
+		gf = 0.8 + 0.2*t
+		bf = 0.2 + 0.5*t
+	case p < 0.66:
 		// Teal to purple
-		t := (p - 0.33) / 0.33 //nolint:mnd
-		rf = 0.1 + 0.5*t       //nolint:mnd
-		gf = 1.0 - 0.6*t       //nolint:mnd
-		bf = 0.7 + 0.3*t       //nolint:mnd
+		t := (p - 0.33) / 0.33
+		rf = 0.1 + 0.5*t
+		gf = 1.0 - 0.6*t
+		bf = 0.7 + 0.3*t
 	default:
 		// Purple back to green
-		t := (p - 0.66) / 0.34 //nolint:mnd
-		rf = 0.6 - 0.5*t       //nolint:mnd
-		gf = 0.4 + 0.4*t       //nolint:mnd
-		bf = 1.0 - 0.8*t       //nolint:mnd
+		t := (p - 0.66) / 0.34
+		rf = 0.6 - 0.5*t
+		gf = 0.4 + 0.4*t
+		bf = 1.0 - 0.8*t
 	}
 
-	r = uint8(rf * intensity * 255) //nolint:mnd,gosec
-	g = uint8(gf * intensity * 255) //nolint:mnd,gosec
-	b = uint8(bf * intensity * 255) //nolint:mnd,gosec
+	r = uint8(rf * intensity * 255)
+	g = uint8(gf * intensity * 255)
+	b = uint8(bf * intensity * 255)
 	return r, g, b
 }
 
 // fastExp approximates e^x for negative x values (used for Gaussian falloff).
 func fastExp(x float64) float64 {
-	if x < -6 { //nolint:mnd
+	if x < -6 {
 		return 0
 	}
 	// Padé approximation: (1 + x/n)^n for small |x|
 	// Using n=8 for reasonable accuracy
-	t := 1.0 + x/8.0 //nolint:mnd
-	t *= t           // ^2
-	t *= t           // ^4
-	t *= t           // ^8
+	t := 1.0 + x/8.0
+	t *= t // ^2
+	t *= t // ^4
+	t *= t // ^8
 	if t < 0 {
 		return 0
 	}
@@ -1030,11 +1037,11 @@ func (s *glitchState) update() {
 			// End burst
 			s.isBursting = false
 			s.slices = nil
-			s.burstTimer = 20 + rand.IntN(40) //nolint:mnd
+			s.burstTimer = 20 + rand.IntN(40)
 		} else {
 			// Start burst
 			s.isBursting = true
-			s.burstTimer = 3 + rand.IntN(8) //nolint:mnd
+			s.burstTimer = 3 + rand.IntN(8)
 			s.generateSlices()
 		}
 	} else if s.isBursting && s.frame%2 == 0 {
@@ -1044,16 +1051,16 @@ func (s *glitchState) update() {
 }
 
 func (s *glitchState) generateSlices() {
-	count := 3 + rand.IntN(8) //nolint:mnd
+	count := 3 + rand.IntN(8)
 	s.slices = make([]glitchSlice, count)
 
 	for i := range s.slices {
 		s.slices[i] = glitchSlice{
-			y:       rand.IntN(400),             //nolint:mnd
-			height:  2 + rand.IntN(20),          //nolint:mnd
-			offsetX: -30 + rand.IntN(60),        //nolint:mnd
-			channel: rand.IntN(3),               //nolint:mnd
-			alpha:   uint8(80 + rand.IntN(176)), //nolint:mnd,gosec
+			y:       rand.IntN(400),
+			height:  2 + rand.IntN(20),
+			offsetX: -30 + rand.IntN(60),
+			channel: rand.IntN(3),
+			alpha:   uint8(80 + rand.IntN(176)),
 		}
 	}
 }
@@ -1071,55 +1078,61 @@ func (s *glitchState) render(w, h int) []uint8 {
 
 	// Draw glitch slices
 	for _, slice := range s.slices {
-		sy := slice.y * h / 400      //nolint:mnd
-		sh := slice.height * h / 400 //nolint:mnd
-
-		for py := sy; py < sy+sh && py < h; py++ {
-			if py < 0 {
-				continue
-			}
-			for px := 0; px < w; px++ {
-				offset := (py*w + px) * rgbaChannels
-
-				// RGB channel separation effect
-				switch slice.channel {
-				case 0: // Red shift
-					srcX := px - slice.offsetX
-					if srcX >= 0 && srcX < w {
-						pixels[offset] = slice.alpha
-						pixels[offset+3] = slice.alpha / 2
-					}
-				case 1: // Green shift
-					srcX := px + slice.offsetX
-					if srcX >= 0 && srcX < w {
-						pixels[offset+1] = slice.alpha
-						pixels[offset+3] = slice.alpha / 2
-					}
-				case 2: // Blue/cyan shift
-					pixels[offset+2] = slice.alpha
-					pixels[offset+1] = slice.alpha / 3
-					pixels[offset+3] = slice.alpha / 2
-				}
-			}
-		}
+		s.drawSlice(pixels, slice, w, h)
 	}
 
 	// Add random static noise during bursts
-	if s.isBursting {
-		noiseCount := w * h / 40 //nolint:mnd
-		for range noiseCount {
-			px := rand.IntN(w)
-			py := rand.IntN(h)
-			offset := (py*w + px) * rgbaChannels
-			v := uint8(rand.IntN(256)) //nolint:mnd,gosec
-			pixels[offset] = v
-			pixels[offset+1] = v
-			pixels[offset+2] = v
-			pixels[offset+3] = uint8(rand.IntN(100)) //nolint:mnd,gosec
-		}
-	}
+	s.addNoise(pixels, w, h)
 
 	return pixels
+}
+
+func (s *glitchState) drawSlice(pixels []uint8, slice glitchSlice, w, h int) {
+	sy := slice.y * h / 400
+	sh := slice.height * h / 400
+
+	for py := sy; py < sy+sh && py < h; py++ {
+		if py < 0 {
+			continue
+		}
+		for px := 0; px < w; px++ {
+			offset := (py*w + px) * rgbaChannels
+
+			// RGB channel separation effect
+			switch slice.channel {
+			case 0: // Red shift
+				srcX := px - slice.offsetX
+				if srcX >= 0 && srcX < w {
+					pixels[offset] = slice.alpha
+					pixels[offset+3] = slice.alpha / 2
+				}
+			case 1: // Green shift
+				srcX := px + slice.offsetX
+				if srcX >= 0 && srcX < w {
+					pixels[offset+1] = slice.alpha
+					pixels[offset+3] = slice.alpha / 2
+				}
+			default: // Blue/cyan shift
+				pixels[offset+2] = slice.alpha
+				pixels[offset+1] = slice.alpha / 3
+				pixels[offset+3] = slice.alpha / 2
+			}
+		}
+	}
+}
+
+func (s *glitchState) addNoise(pixels []uint8, w, h int) {
+	noiseCount := w * h / 40
+	for range noiseCount {
+		px := rand.IntN(w)
+		py := rand.IntN(h)
+		offset := (py*w + px) * rgbaChannels
+		v := uint8(rand.IntN(256))
+		pixels[offset] = v
+		pixels[offset+1] = v
+		pixels[offset+2] = v
+		pixels[offset+3] = uint8(rand.IntN(100))
+	}
 }
 
 // --- Pride Effect ---
@@ -1153,7 +1166,7 @@ func (p *shenanigans) startPride(pc linkquisition.PickerCanvas) {
 			if p.stopped.Load() {
 				return
 			}
-			state.time += 0.04 //nolint:mnd
+			state.time += 0.04
 			pc.ScheduleRefresh()
 		}
 	}()
@@ -1175,9 +1188,9 @@ func (s *prideState) render(w, h int) []uint8 {
 
 			// Flag wave: pinned on the left edge, wave amplitude increases to the right
 			// This simulates fabric attached to a pole on the left side
-			amplitude := fx * fx * 0.05 //nolint:mnd
+			amplitude := fx * fx * 0.05
 			wave := sinApprox((fx*2.0-t*1.5)*3.14159) * amplitude
-			wave2 := sinApprox((fx*3.0-t*2.0)*3.14159) * amplitude * 0.4 //nolint:mnd
+			wave2 := sinApprox((fx*3.0-t*2.0)*3.14159) * amplitude * 0.4
 
 			// Determine which stripe this pixel belongs to (with wave offset)
 			stripePos := (fy + wave + wave2) * stripeCount
@@ -1201,24 +1214,24 @@ func (s *prideState) render(w, h int) []uint8 {
 			c2 := prideColors[nextIdx]
 
 			// Smooth interpolation (smoothstep-like)
-			blend = blend * blend * (3 - 2*blend) //nolint:mnd
+			blend = blend * blend * (3 - 2*blend)
 
-			r := uint8(float64(c1[0])*(1-blend) + float64(c2[0])*blend) //nolint:gosec
-			g := uint8(float64(c1[1])*(1-blend) + float64(c2[1])*blend) //nolint:gosec
-			b := uint8(float64(c1[2])*(1-blend) + float64(c2[2])*blend) //nolint:gosec
+			r := uint8(float64(c1[0])*(1-blend) + float64(c2[0])*blend)
+			g := uint8(float64(c1[1])*(1-blend) + float64(c2[1])*blend)
+			b := uint8(float64(c1[2])*(1-blend) + float64(c2[2])*blend)
 
 			// Subtle shading to simulate fabric folds (stronger toward free edge)
-			foldDepth := fx * 0.15                                               //nolint:mnd
-			shade := 1.0 - foldDepth + foldDepth*sinApprox((fx*3-t*1.5)*3.14159) //nolint:mnd
-			r = uint8(float64(r) * shade)                                        //nolint:gosec
-			g = uint8(float64(g) * shade)                                        //nolint:gosec
-			b = uint8(float64(b) * shade)                                        //nolint:gosec
+			foldDepth := fx * 0.15
+			shade := 1.0 - foldDepth + foldDepth*sinApprox((fx*3-t*1.5)*3.14159)
+			r = uint8(float64(r) * shade)
+			g = uint8(float64(g) * shade)
+			b = uint8(float64(b) * shade)
 
 			offset := (py*w + px) * rgbaChannels
 			pixels[offset] = r
 			pixels[offset+1] = g
 			pixels[offset+2] = b
-			pixels[offset+3] = 200 //nolint:mnd
+			pixels[offset+3] = 200
 		}
 	}
 
@@ -1250,7 +1263,7 @@ func (p *shenanigans) startFootball(pc linkquisition.PickerCanvas) {
 			if p.stopped.Load() {
 				return
 			}
-			state.time += 0.03 //nolint:mnd
+			state.time += 0.03
 			pc.ScheduleRefresh()
 		}
 	}()
@@ -1271,86 +1284,88 @@ func (s *footballState) render() []uint8 {
 			fx := float64(px) / float64(w)
 
 			// Green pitch base with subtle stripe pattern (mowed grass look)
-			stripeWidth := 0.08 //nolint:mnd
+			stripeWidth := 0.08
 			stripe := int(fx/stripeWidth) % 2
 			var gr, gg, gb uint8
 			if stripe == 0 {
-				gr, gg, gb = 34, 139, 34 //nolint:mnd
+				gr, gg, gb = 34, 139, 34
 			} else {
-				gr, gg, gb = 30, 124, 30 //nolint:mnd
-			}
-
-			// Draw white pitch lines
-			isLine := false
-
-			// Center line (vertical)
-			if absF(fx-0.5) < 0.004 { //nolint:mnd
-				isLine = true
-			}
-
-			// Center circle
-			cx, cy := 0.5, 0.5
-			dist := (fx-cx)*(fx-cx)*1.5 + (fy-cy)*(fy-cy) //nolint:mnd
-			if absF(dist-0.04) < 0.003 {                  //nolint:mnd
-				isLine = true
-			}
-
-			// Center dot
-			if dist < 0.002 { //nolint:mnd
-				isLine = true
-			}
-
-			// Outer boundary
-			if fx < 0.02 || fx > 0.98 || fy < 0.03 || fy > 0.97 { //nolint:mnd
-				if fx > 0.015 && fx < 0.985 && fy > 0.025 && fy < 0.975 { //nolint:mnd
-					isLine = true
-				}
-			}
-
-			// Penalty areas (left and right)
-			penaltyW := 0.15 //nolint:mnd
-			penaltyH := 0.35 //nolint:mnd
-			penaltyTop := 0.5 - penaltyH
-			penaltyBot := 0.5 + penaltyH
-
-			// Left penalty area
-			if fx < penaltyW && fy > penaltyTop && fy < penaltyBot {
-				if absF(fx-penaltyW) < 0.004 || absF(fy-penaltyTop) < 0.005 || absF(fy-penaltyBot) < 0.005 { //nolint:mnd
-					isLine = true
-				}
-			}
-
-			// Right penalty area
-			if fx > (1-penaltyW) && fy > penaltyTop && fy < penaltyBot {
-				if absF(fx-(1-penaltyW)) < 0.004 || absF(fy-penaltyTop) < 0.005 || absF(fy-penaltyBot) < 0.005 { //nolint:mnd
-					isLine = true
-				}
+				gr, gg, gb = 30, 124, 30
 			}
 
 			// Animated element: a "spotlight" sweeping across the pitch
-			spotX := 0.5 + 0.4*sinApprox(t*1.5)     //nolint:mnd
-			spotY := 0.5 + 0.3*sinApprox(t*1.1+1.0) //nolint:mnd
+			spotX := 0.5 + 0.4*sinApprox(t*1.5)
+			spotY := 0.5 + 0.3*sinApprox(t*1.1+1.0)
 			spotDist := (fx-spotX)*(fx-spotX) + (fy-spotY)*(fy-spotY)
-			spotLight := fastExp(-spotDist*15) * 0.3 //nolint:mnd
+			spotLight := fastExp(-spotDist*15) * 0.3
 
 			var r, g, b uint8
-			if isLine {
+			if isPitchLine(fx, fy) {
 				r, g, b = 255, 255, 255
 			} else {
-				r = uint8(min(int(float64(gr)*(1+spotLight)), 255)) //nolint:gosec
-				g = uint8(min(int(float64(gg)*(1+spotLight)), 255)) //nolint:gosec
-				b = uint8(min(int(float64(gb)*(1+spotLight)), 255)) //nolint:gosec
+				r = uint8(min(int(float64(gr)*(1+spotLight)), 255))
+				g = uint8(min(int(float64(gg)*(1+spotLight)), 255))
+				b = uint8(min(int(float64(gb)*(1+spotLight)), 255))
 			}
 
 			offset := (py*w + px) * rgbaChannels
 			pixels[offset] = r
 			pixels[offset+1] = g
 			pixels[offset+2] = b
-			pixels[offset+3] = 180 //nolint:mnd
+			pixels[offset+3] = 180
 		}
 	}
 
 	return pixels
+}
+
+// isPitchLine determines if a normalized coordinate is on a white pitch marking.
+func isPitchLine(fx, fy float64) bool {
+	// Center line (vertical)
+	if absF(fx-0.5) < 0.004 {
+		return true
+	}
+
+	// Center circle
+	cx, cy := 0.5, 0.5
+	dist := (fx-cx)*(fx-cx)*1.5 + (fy-cy)*(fy-cy)
+	if absF(dist-0.04) < 0.003 {
+		return true
+	}
+
+	// Center dot
+	if dist < 0.002 {
+		return true
+	}
+
+	// Outer boundary
+	if fx < 0.02 || fx > 0.98 || fy < 0.03 || fy > 0.97 {
+		if fx > 0.015 && fx < 0.985 && fy > 0.025 && fy < 0.975 {
+			return true
+		}
+	}
+
+	// Penalty areas (left and right)
+	penaltyW := 0.15
+	penaltyH := 0.35
+	penaltyTop := 0.5 - penaltyH
+	penaltyBot := 0.5 + penaltyH
+
+	// Left penalty area
+	if fx < penaltyW && fy > penaltyTop && fy < penaltyBot {
+		if absF(fx-penaltyW) < 0.004 || absF(fy-penaltyTop) < 0.005 || absF(fy-penaltyBot) < 0.005 {
+			return true
+		}
+	}
+
+	// Right penalty area
+	if fx > (1-penaltyW) && fy > penaltyTop && fy < penaltyBot {
+		if absF(fx-(1-penaltyW)) < 0.004 || absF(fy-penaltyTop) < 0.005 || absF(fy-penaltyBot) < 0.005 {
+			return true
+		}
+	}
+
+	return false
 }
 
 // --- Fireworks Effect ---
@@ -1423,13 +1438,13 @@ func (s *fireworksState) update() {
 	}
 
 	// Chance to launch a new rocket
-	if len(s.rockets) < fireworksMaxRockets && rand.IntN(100) < fireworksLaunchChance { //nolint:mnd
+	if len(s.rockets) < fireworksMaxRockets && rand.IntN(100) < fireworksLaunchChance {
 		color := fireworksColors[rand.IntN(len(fireworksColors))]
 		s.rockets = append(s.rockets, fireworksRocket{
-			x:       0.2 + rand.Float64()*0.6, //nolint:mnd
+			x:       0.2 + rand.Float64()*0.6,
 			y:       1.0,
-			vy:      -0.025 - rand.Float64()*0.015, //nolint:mnd
-			targetY: 0.15 + rand.Float64()*0.35,    //nolint:mnd
+			vy:      -0.025 - rand.Float64()*0.015,
+			targetY: 0.15 + rand.Float64()*0.35,
 			color:   color,
 		})
 	}
@@ -1446,13 +1461,13 @@ func (s *fireworksState) update() {
 				r.exploded = true
 				r.particles = make([]fireworksParticle, fireworksParticles)
 				for j := range r.particles {
-					angle := rand.Float64() * 6.283       //nolint:mnd
-					speed := 0.005 + rand.Float64()*0.015 //nolint:mnd
+					angle := rand.Float64() * 6.283
+					speed := 0.005 + rand.Float64()*0.015
 					r.particles[j] = fireworksParticle{
 						x:    r.x,
 						y:    r.y,
 						vx:   sinApprox(angle) * speed,
-						vy:   sinApprox(angle+1.5708) * speed, //nolint:mnd
+						vy:   sinApprox(angle+1.5708) * speed,
 						life: 1.0,
 						r:    r.color[0],
 						g:    r.color[1],
@@ -1470,10 +1485,10 @@ func (s *fireworksState) update() {
 				}
 				p.x += p.vx
 				p.y += p.vy
-				p.vy += 0.0004  // gravity //nolint:mnd
-				p.vx *= 0.98    // drag    //nolint:mnd
-				p.vy *= 0.98    //nolint:mnd
-				p.life -= 0.015 //nolint:mnd
+				p.vy += 0.0004 // gravity
+				p.vx *= 0.98   // drag
+				p.vy *= 0.98
+				p.life -= 0.015
 				if p.life > 0 {
 					allDead = false
 				}
@@ -1500,10 +1515,10 @@ func (s *fireworksState) render() []uint8 {
 			// Draw rising rocket as a small bright dot with trail
 			px := int(rocket.x * float64(w))
 			py := int(rocket.y * float64(h))
-			s.drawDot(pixels, px, py, 2, 255, 220, 150, 255) //nolint:mnd
+			s.drawDot(pixels, px, py, 2, 255, 220, 150, 255)
 			// Trail
-			s.drawDot(pixels, px, py+3, 1, 255, 150, 50, 150) //nolint:mnd
-			s.drawDot(pixels, px, py+6, 1, 255, 100, 30, 80)  //nolint:mnd
+			s.drawDot(pixels, px, py+3, 1, 255, 150, 50, 150)
+			s.drawDot(pixels, px, py+6, 1, 255, 100, 30, 80)
 		} else {
 			// Draw particles
 			for _, p := range rocket.particles {
@@ -1512,9 +1527,9 @@ func (s *fireworksState) render() []uint8 {
 				}
 				px := int(p.x * float64(w))
 				py := int(p.y * float64(h))
-				alpha := uint8(p.life * 255) //nolint:mnd,gosec
+				alpha := uint8(p.life * 255)
 				size := 1
-				if p.life > 0.7 { //nolint:mnd
+				if p.life > 0.7 {
 					size = 2
 				}
 				s.drawDot(pixels, px, py, size, p.r, p.g, p.b, alpha)
