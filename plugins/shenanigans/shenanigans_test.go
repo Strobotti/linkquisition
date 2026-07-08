@@ -47,7 +47,9 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Len(t, meta.Settings, 1)
 	assert.Equal(t, "effect", meta.Settings[0].Key)
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[0].Type)
-	assert.Equal(t, []string{"matrix", "fire", "snow", "plasma", "starfield", "aurora", "glitch", "random"}, meta.Settings[0].Options)
+	assert.Equal(t, []string{
+		"matrix", "fire", "snow", "plasma", "starfield", "aurora", "glitch", "pride", "random",
+	}, meta.Settings[0].Options)
 }
 
 func TestShenanigans_Setup_DefaultEffect(t *testing.T) {
@@ -253,6 +255,30 @@ func TestGlitchState_BurstCycle(t *testing.T) {
 	// Just verify it doesn't panic
 	pixels := state.render(200, 100)
 	assert.Len(t, pixels, 200*100*4)
+}
+
+func TestShenanigans_OnPickerShown_Pride(t *testing.T) {
+	p := NewForTesting()
+	_ = p.Setup(newTestServiceProvider(), map[string]interface{}{"effect": "pride"})
+
+	mc := &mockPickerCanvas{}
+	p.OnPickerShown(mc)
+
+	assert.True(t, mc.overlayAdded)
+	assert.NotNil(t, mc.drawFn)
+
+	pixels := mc.drawFn(400, 300)
+	assert.Len(t, pixels, 400*300*4)
+
+	// Should have colorful pixels (not all black)
+	hasColor := false
+	for i := 0; i < len(pixels); i += 4 {
+		if pixels[i] > 0 || pixels[i+1] > 0 || pixels[i+2] > 0 {
+			hasColor = true
+			break
+		}
+	}
+	assert.True(t, hasColor)
 }
 
 func TestShenanigans_Shutdown(t *testing.T) {
