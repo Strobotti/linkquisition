@@ -47,7 +47,7 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Len(t, meta.Settings, 1)
 	assert.Equal(t, "effect", meta.Settings[0].Key)
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[0].Type)
-	assert.Equal(t, []string{"matrix", "fire", "snow", "plasma", "random"}, meta.Settings[0].Options)
+	assert.Equal(t, []string{"matrix", "fire", "snow", "plasma", "starfield", "random"}, meta.Settings[0].Options)
 }
 
 func TestShenanigans_Setup_DefaultEffect(t *testing.T) {
@@ -178,6 +178,37 @@ func TestPlasmaState_Render(t *testing.T) {
 		}
 	}
 	assert.True(t, hasColor)
+}
+
+func TestShenanigans_OnPickerShown_Starfield(t *testing.T) {
+	p := NewForTesting()
+	_ = p.Setup(newTestServiceProvider(), map[string]interface{}{"effect": "starfield"})
+
+	mc := &mockPickerCanvas{}
+	p.OnPickerShown(mc)
+
+	assert.True(t, mc.overlayAdded)
+	assert.NotNil(t, mc.drawFn)
+
+	pixels := mc.drawFn(400, 300)
+	assert.Len(t, pixels, 400*300*4)
+}
+
+func TestStarfieldState_Update(t *testing.T) {
+	state := &starfieldState{width: 400, height: 300}
+	state.init()
+
+	assert.Len(t, state.stars, starCount)
+
+	// All z values should be positive after init
+	for _, s := range state.stars {
+		assert.Greater(t, s.z, 0.0)
+	}
+
+	// After update, stars should have moved closer
+	initialZ := state.stars[0].z
+	state.update()
+	assert.Less(t, state.stars[0].z, initialZ)
 }
 
 func TestShenanigans_Shutdown(t *testing.T) {
