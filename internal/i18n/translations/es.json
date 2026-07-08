@@ -241,5 +241,17 @@
   },
   "config.macos_picker_note": {
     "other": "Nota: La ventana de selección de navegador no está disponible mientras esta pantalla de ajustes está abierta. Los enlaces se abrirán automáticamente en el primer navegador coincidente."
+  },
+  "config.picker_layout_label": {
+    "other": "Diseño del selector:"
+  },
+  "config.picker_layout_vertical": {
+    "other": "Vertical (lista)"
+  },
+  "config.picker_layout_horizontal": {
+    "other": "Horizontal (botones)"
+  },
+  "config.picker_max_per_row_label": {
+    "other": "Máximo por fila:"
   }
 }

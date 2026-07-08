@@ -241,5 +241,17 @@
   },
   "config.macos_picker_note": {
     "other": "Huom: Selainvalitsinikkuna ei ole käytettävissä kun asetusikkuna on auki. Linkit avataan automaattisesti ensimmäisellä vastaavalla selaimella."
+  },
+  "config.picker_layout_label": {
+    "other": "Valitsimen asettelu:"
+  },
+  "config.picker_layout_vertical": {
+    "other": "Pystysuora (lista)"
+  },
+  "config.picker_layout_horizontal": {
+    "other": "Vaakasuora (painikkeet)"
+  },
+  "config.picker_max_per_row_label": {
+    "other": "Enimmäismäärä per rivi:"
   }
 }

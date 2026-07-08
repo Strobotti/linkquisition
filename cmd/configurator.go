@@ -214,7 +214,72 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	})
 	hideGuideCheck.Checked = settings.Ui.HideKeyboardGuideLabel
 
-	return container.NewVBox(hideGuideCheck)
+	// Picker layout selector
+	layoutOptions := []string{
+		i18n.T("config.picker_layout_vertical"),
+		i18n.T("config.picker_layout_horizontal"),
+	}
+
+	currentLayout := settings.Ui.GetPickerLayout()
+	selectedLayout := layoutOptions[0]
+	if currentLayout == linkquisition.PickerLayoutHorizontal {
+		selectedLayout = layoutOptions[1]
+	}
+
+	// Max items per row entry (only relevant for horizontal layout)
+	maxItemsEntry := widget.NewEntry()
+	maxItemsEntry.SetText(fmt.Sprintf("%d", settings.Ui.GetMaxItemsPerRow()))
+
+	updateMaxItemsEnabled := func(isHorizontal bool) {
+		if isHorizontal {
+			maxItemsEntry.Enable()
+		} else {
+			maxItemsEntry.Disable()
+		}
+	}
+	updateMaxItemsEnabled(currentLayout == linkquisition.PickerLayoutHorizontal)
+
+	layoutSelect := widget.NewSelect(layoutOptions, func(selected string) {
+		s := c.settingsService.GetSettings()
+		if selected == layoutOptions[1] {
+			s.Ui.PickerLayout = linkquisition.PickerLayoutHorizontal
+			updateMaxItemsEnabled(true)
+		} else {
+			s.Ui.PickerLayout = linkquisition.PickerLayoutVertical
+			updateMaxItemsEnabled(false)
+		}
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving picker layout setting", "error", err)
+		}
+	})
+	layoutSelect.Selected = selectedLayout
+
+	maxItemsEntry.OnChanged = func(value string) {
+		var n int
+		if _, err := fmt.Sscanf(value, "%d", &n); err != nil || n < 1 {
+			return
+		}
+		s := c.settingsService.GetSettings()
+		s.Ui.MaxItemsPerRow = n
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving max items per row setting", "error", err)
+		}
+	}
+
+	return container.NewVBox(
+		hideGuideCheck,
+		widget.NewSeparator(),
+		container.NewBorder(
+			nil, nil,
+			widget.NewLabel(i18n.T("config.picker_layout_label")), nil,
+			layoutSelect,
+		),
+		container.NewBorder(
+			nil, nil,
+			widget.NewLabel(i18n.T("config.picker_max_per_row_label")), nil,
+			maxItemsEntry,
+		),
+	)
 }
 
 func (c *Configurator) getAboutTab() fyne.CanvasObject {
