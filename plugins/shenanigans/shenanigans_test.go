@@ -47,7 +47,7 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Len(t, meta.Settings, 1)
 	assert.Equal(t, "effect", meta.Settings[0].Key)
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[0].Type)
-	assert.Equal(t, []string{"matrix", "fire", "snow", "random"}, meta.Settings[0].Options)
+	assert.Equal(t, []string{"matrix", "fire", "snow", "plasma", "random"}, meta.Settings[0].Options)
 }
 
 func TestShenanigans_Setup_DefaultEffect(t *testing.T) {
@@ -146,6 +146,38 @@ func TestSnowState_Update(t *testing.T) {
 		assert.GreaterOrEqual(t, f.x, 0.0)
 		assert.Less(t, f.x, float64(state.width))
 	}
+}
+
+func TestShenanigans_OnPickerShown_Plasma(t *testing.T) {
+	p := NewForTesting()
+	_ = p.Setup(newTestServiceProvider(), map[string]interface{}{"effect": "plasma"})
+
+	mc := &mockPickerCanvas{}
+	p.OnPickerShown(mc)
+
+	assert.True(t, mc.overlayAdded)
+	assert.NotNil(t, mc.drawFn)
+
+	// Call the draw function to ensure it doesn't panic
+	pixels := mc.drawFn(200, 100)
+	assert.Len(t, pixels, 200*100*4)
+}
+
+func TestPlasmaState_Render(t *testing.T) {
+	state := &plasmaState{time: 1.5}
+	pixels := state.render(100, 50)
+
+	assert.Len(t, pixels, 100*50*4)
+
+	// Should have some non-zero color values
+	hasColor := false
+	for i := 0; i < len(pixels); i += 4 {
+		if pixels[i] > 0 || pixels[i+1] > 0 || pixels[i+2] > 0 {
+			hasColor = true
+			break
+		}
+	}
+	assert.True(t, hasColor)
 }
 
 func TestShenanigans_Shutdown(t *testing.T) {
