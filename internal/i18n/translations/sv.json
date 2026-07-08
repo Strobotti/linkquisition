@@ -59,6 +59,9 @@
   "picker.open_label": {
     "other": "Öppna:"
   },
+  "picker.copy_button": {
+    "other": "Kopiera"
+  },
   "picker.remember_choice": {
     "other": "Kom ihåg detta val för {{.Site}}"
   },

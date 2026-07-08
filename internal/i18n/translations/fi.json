@@ -59,6 +59,9 @@
   "picker.open_label": {
     "other": "Avaa:"
   },
+  "picker.copy_button": {
+    "other": "Kopioi"
+  },
   "picker.remember_choice": {
     "other": "Muista tämä valinta sivustolle {{.Site}}"
   },
