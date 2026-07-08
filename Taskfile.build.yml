@@ -71,11 +71,11 @@ tasks:
   build-plugins:
     internal: true
     vars:
-      PLUGINS: "unwrap terminus sanitize defang"
+      PLUGINS: "unwrap terminus sanitize defang shenanigans"
     cmds:
       - mkdir -p {{.OUTPUT_DIR}}
       - for: { var: PLUGINS }
-        cmd: go build -buildmode=plugin -o {{.OUTPUT_DIR}}/{{.ITEM}}.so ./plugins/{{.ITEM}}/{{.ITEM}}.go
+        cmd: go build -tags release -buildmode=plugin -o {{.OUTPUT_DIR}}/{{.ITEM}}.so ./plugins/{{.ITEM}}/{{.ITEM}}.go
 
   clean:
     cmds:

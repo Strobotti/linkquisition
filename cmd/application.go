@@ -374,7 +374,7 @@ func (a *Application) openWithBrowserOrPicker(urlToOpen string) error {
 		a.Logger.Warn("browsers not configured, falling back to system settings")
 	}
 
-	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService, a.Logger)
+	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService, a.Logger, a.collectUIHooks())
 	return bp.Run(context.Background(), urlToOpen)
 }
 
@@ -395,6 +395,17 @@ func (a *Application) shutdownPlugins() {
 		}(plug)
 	}
 	wg.Wait()
+}
+
+// collectUIHooks returns all loaded plugins that implement the PluginUIHook interface.
+func (a *Application) collectUIHooks() []linkquisition.PluginUIHook {
+	var hooks []linkquisition.PluginUIHook
+	for _, plug := range a.plugins {
+		if hook, ok := plug.(linkquisition.PluginUIHook); ok {
+			hooks = append(hooks, hook)
+		}
+	}
+	return hooks
 }
 
 func (a *Application) openInFirstBrowser(urlToOpen string) error {

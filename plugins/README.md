@@ -184,6 +184,53 @@ whatever is cached and updates lazily.
 - `warn` — shows a native dialog with an "Open anyway" option, letting the user choose to proceed
 - `log` — logs the blocked domain but still opens the URL normally (useful for monitoring without disruption)
 
+## [Shenanigans](./shenanigans/shenanigans.go) -plugin
+
+This plugin adds completely useless but entertaining visual effects to the browser picker window.
+It demonstrates the `PluginUIHook` interface — an optional extension that allows plugins to interact
+with the picker GUI.
+
+The plugin does not modify URLs in any way. It simply overlays animated effects on the picker window
+when it appears.
+
+### Available effects
+
+- `random` — Randomly picks one of the effects below (default)
+- `aurora` — Northern lights with flowing green/purple/blue bands
+- `fire` — Realistic flames rising from the bottom of the window
+- `fireworks` — Rockets launching and exploding into colorful particle bursts
+- `football` — Top-down football/soccer pitch with animated spotlight sweep
+- `glitch` — Cyberpunk-style RGB channel splitting with periodic static bursts
+- `matrix` — Green Matrix-style falling characters
+- `plasma` — Classic demoscene swirling color blobs
+- `pride` — Animated rainbow pride flag waving in the wind
+- `snow` — Gentle snowfall with varying sizes and wobble
+- `starfield` — 3D warp-speed stars flying toward the viewer
+
+### Configuration
+
+```json
+{
+  "browsers": [
+    ...
+  ],
+  "plugins": [
+    {
+      "path": "shenanigans.so",
+      "settings": {
+        "effect": "random"
+      }
+    }
+  ]
+}
+```
+
+### Settings
+
+| Setting  | Type   | Default    | Description                                      |
+|----------|--------|------------|--------------------------------------------------|
+| `effect` | choice | `"random"` | Which visual effect to show on the picker window |
+
 ## Developing plugins
 
 The plugin is a shared object file (`.so`) that is loaded by the main application. The plugin must implement the
@@ -202,3 +249,14 @@ The plugin is a shared object file (`.so`) that is loaded by the main applicatio
     - `ActionOpenDirect` — bypass browser matching and open in the first available browser
 - `Shutdown(ctx context.Context)` — called when the application is about to exit. Plugins with background work (e.g.
   downloads) should use this to finish gracefully before the context deadline expires.
+
+### Optional: PluginUIHook interface
+
+Plugins can optionally implement the [`PluginUIHook`](../plugin_ui_hook.go) interface to receive a callback when the
+browser picker window is shown:
+
+- `OnPickerShown(window fyne.Window)` — called after the picker window content is set and before it is displayed.
+  The plugin can add canvas overlays, start animations, or modify the window appearance.
+
+The host application detects this interface via a type assertion — plugins that don't implement it are simply skipped.
+See the [Shenanigans](./shenanigans/shenanigans.go) plugin for an example.
