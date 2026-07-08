@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"runtime"
 	"time"
+	"unicode/utf8"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -52,7 +53,7 @@ func NewBrowserPicker(
 	}
 }
 
-//nolint:funlen,cyclop
+//nolint:cyclop
 func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	var buttons []fyne.CanvasObject
 	remember := binding.NewBool()
@@ -115,8 +116,8 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	if pickerLayout == linkquisition.PickerLayoutHorizontal {
 		cols := min(len(buttons), settings.Ui.GetMaxItemsPerRow())
 		rows := (len(buttons) + cols - 1) / cols
-		width := float32(cols+1) * horizontalButtonWidth     //nolint:mnd
-		height := float32(rows*horizontalButtonHeight) + 180 //nolint:mnd
+		width := float32(cols+1) * horizontalButtonWidth
+		height := float32(rows*horizontalButtonHeight) + 180
 		w.Resize(fyne.NewSize(width, height))
 	} else {
 		w.Resize(fyne.NewSize(verticalWindowWidth, verticalWindowMinHeight))
@@ -260,10 +261,11 @@ func (picker *BrowserPicker) makeHorizontalBrowserButton(
 	if err != nil {
 		picker.logger.Debug("Failed to load browser icon", "browser", browser.Name, "error", err)
 		// Show a placeholder with the first letter when no icon is available
-		bg := canvas.NewRectangle(color.NRGBA{R: 200, G: 200, B: 200, A: 40}) //nolint:mnd
+		bg := canvas.NewRectangle(color.NRGBA{R: 200, G: 200, B: 200, A: 40})
 		bg.SetMinSize(fyne.NewSize(horizontalButtonIconSize, horizontalButtonIconSize))
-		placeholder := canvas.NewText(string([]rune(browser.Name)[0]), color.NRGBA{R: 80, G: 80, B: 80, A: 255}) //nolint:mnd,lll
-		placeholder.TextSize = 36                                                                                //nolint:mnd
+		firstRune, _ := utf8.DecodeRuneInString(browser.Name)
+		placeholder := canvas.NewText(string(firstRune), color.NRGBA{R: 80, G: 80, B: 80, A: 255})
+		placeholder.TextSize = 36
 		placeholder.TextStyle = fyne.TextStyle{Bold: true}
 		placeholder.Alignment = fyne.TextAlignCenter
 		iconWidget = container.NewStack(bg, container.NewCenter(placeholder))
@@ -337,7 +339,7 @@ var (
 
 func newTappableContainer(content fyne.CanvasObject, onTapped func()) *tappableContainer {
 	bg := canvas.NewRectangle(color.Transparent)
-	bg.CornerRadius = 8 //nolint:mnd
+	bg.CornerRadius = 8
 	t := &tappableContainer{
 		content:  content,
 		bg:       bg,
@@ -354,7 +356,7 @@ func (t *tappableContainer) Tapped(_ *fyne.PointEvent) {
 }
 
 func (t *tappableContainer) MouseIn(_ *desktop.MouseEvent) {
-	t.bg.FillColor = color.NRGBA{R: 150, G: 150, B: 150, A: 30} //nolint:mnd
+	t.bg.FillColor = color.NRGBA{R: 150, G: 150, B: 150, A: 30}
 	t.bg.Refresh()
 }
 
