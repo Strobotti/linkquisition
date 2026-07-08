@@ -53,10 +53,12 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 				Description: "Which visual effect to show on the picker window",
 				Type:        linkquisition.SettingTypeChoice,
 				Default:     effectRandom,
+				// Options: "random" stays on top as the default; the rest are alphabetical.
 				Options: []string{
-					effectRandom, effectMatrix, effectFire, effectSnow, effectPlasma,
-					effectStarfield, effectAurora, effectGlitch, effectPride,
-					effectFootball, effectFireworks,
+					effectRandom,
+					effectAurora, effectFire, effectFireworks, effectFootball,
+					effectGlitch, effectMatrix, effectPlasma, effectPride,
+					effectSnow, effectStarfield,
 				},
 			},
 		},
