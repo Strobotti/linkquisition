@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -107,7 +108,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		widgets = append(widgets, buttons...)
 	}
 
-	widgets = append(widgets, picker.buildURLDisplay(urlToOpen)...)
+	widgets = append(widgets, picker.buildURLDisplay(urlToOpen, w)...)
 	widgets = append(widgets, picker.buildRememberCheck(urlToOpen, remember)...)
 
 	if !settings.Ui.HideKeyboardGuideLabel {
@@ -192,18 +193,26 @@ func (picker *BrowserPicker) buildHorizontalGrid(buttons []fyne.CanvasObject, ma
 	return container.NewGridWithColumns(cols, buttons...)
 }
 
-func (picker *BrowserPicker) buildURLDisplay(urlToOpen string) []fyne.CanvasObject {
+func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []fyne.CanvasObject {
 	text := urlToOpen
 	if len(urlToOpen) > 75 { //nolint:mnd
 		text = urlToOpen[:75] + "..."
 	}
 
-	input := widget.NewEntry()
-	input.SetText(text)
-	input.Disable()
+	urlLabel := widget.NewLabel(text)
+	urlLabel.TextStyle = fyne.TextStyle{Monospace: true}
+
+	copyButton := widget.NewButtonWithIcon(i18n.T("picker.copy_button"), theme.ContentCopyIcon(), func() {
+		w.Clipboard().SetContent(urlToOpen)
+	})
+	copyButton.Importance = widget.LowImportance
 
 	return []fyne.CanvasObject{
-		container.NewBorder(nil, nil, widget.NewLabel(i18n.T("picker.open_label")), nil, input),
+		container.NewHBox(
+			copyButton,
+			widget.NewLabel(i18n.T("picker.open_label")),
+			urlLabel,
+		),
 	}
 }
 

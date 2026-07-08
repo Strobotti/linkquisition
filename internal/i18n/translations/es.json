@@ -59,6 +59,9 @@
   "picker.open_label": {
     "other": "Abrir:"
   },
+  "picker.copy_button": {
+    "other": "Copiar"
+  },
   "picker.remember_choice": {
     "other": "Recordar esta elección para {{.Site}}"
   },
