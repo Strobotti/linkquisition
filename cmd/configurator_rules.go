@@ -103,7 +103,7 @@ func (c *Configurator) buildBrowserRulesSection(
 ) fyne.CanvasObject {
 	b := settings.Browsers[browserIdx]
 
-	if !browserMatchesFilter(b, filter) {
+	if !browserMatchesFilter(&b, filter) {
 		return nil
 	}
 
@@ -265,7 +265,7 @@ func withSubtleBackground(obj fyne.CanvasObject) fyne.CanvasObject {
 // browserMatchesFilter returns true if a browser should be shown given the
 // current filter text. An empty filter always matches. Otherwise the browser
 // matches if its name contains the filter OR any of its rule values do.
-func browserMatchesFilter(b linkquisition.BrowserSettings, filter string) bool {
+func browserMatchesFilter(b *linkquisition.BrowserSettings, filter string) bool {
 	if filter == "" {
 		return true
 	}

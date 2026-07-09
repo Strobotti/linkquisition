@@ -97,15 +97,15 @@ func TestRunBrowsersList_FormatsOutput(t *testing.T) {
 	}
 
 	// Chrome line should show hidden and manual
-	if !strings.Contains(lines[1], "(hidden)") {
+	if !strings.Contains(lines[1], browserStatusHidden) {
 		t.Errorf("expected Chrome line to show hidden: %q", lines[1])
 	}
-	if !strings.Contains(lines[1], "[manual]") {
+	if !strings.Contains(lines[1], browserSourceLabel) {
 		t.Errorf("expected Chrome line to show manual: %q", lines[1])
 	}
 
 	// Edge should be plain
-	if strings.Contains(lines[2], "(hidden)") || strings.Contains(lines[2], "[manual]") || strings.Contains(lines[2], "rules") {
+	if strings.Contains(lines[2], browserStatusHidden) || strings.Contains(lines[2], browserSourceLabel) || strings.Contains(lines[2], "rules") {
 		t.Errorf("expected Edge line to be plain: %q", lines[2])
 	}
 }

@@ -281,6 +281,7 @@ func TestPrintBrowserMatch_BlockedSkips(t *testing.T) {
 
 	// Should not panic — blocked URLs skip browser matching
 	printBrowserMatch(settings, result)
+	t.Log("ok")
 }
 
 func TestPrintBrowserMatch_OpenDirectSkips(t *testing.T) {
@@ -293,6 +294,7 @@ func TestPrintBrowserMatch_OpenDirectSkips(t *testing.T) {
 
 	// Should not panic — OpenDirect skips browser matching
 	printBrowserMatch(settings, result)
+	t.Log("ok")
 }
 
 func TestPrintBrowserMatch_MatchFound(t *testing.T) {
@@ -315,6 +317,7 @@ func TestPrintBrowserMatch_MatchFound(t *testing.T) {
 
 	// Should not panic — exercises the match-found path
 	printBrowserMatch(settings, result)
+	t.Log("ok")
 }
 
 func TestPrintBrowserMatch_NoMatch(t *testing.T) {
@@ -338,6 +341,7 @@ func TestPrintBrowserMatch_NoMatch(t *testing.T) {
 
 	// Should not panic — exercises the no-match path (shows available browsers)
 	printBrowserMatch(settings, result)
+	t.Log("ok")
 }
 
 func TestPrintOutcome_Continue_NoChange(t *testing.T) {
@@ -348,6 +352,7 @@ func TestPrintOutcome_Continue_NoChange(t *testing.T) {
 
 	// Should not panic
 	printOutcome(result, "https://example.com")
+	t.Log("ok")
 }
 
 func TestPrintOutcome_Continue_URLChanged(t *testing.T) {
@@ -358,6 +363,7 @@ func TestPrintOutcome_Continue_URLChanged(t *testing.T) {
 
 	// Should not panic — prints "Final URL:"
 	printOutcome(result, "https://example.com/dirty")
+	t.Log("ok")
 }
 
 func TestPrintOutcome_Block(t *testing.T) {
@@ -367,6 +373,7 @@ func TestPrintOutcome_Block(t *testing.T) {
 		message: "Blocked by policy",
 	}
 	printOutcome(result, "https://blocked.com")
+	t.Log("ok")
 }
 
 func TestPrintOutcome_Warn(t *testing.T) {
@@ -376,6 +383,7 @@ func TestPrintOutcome_Warn(t *testing.T) {
 		message: "Suspicious URL detected",
 	}
 	printOutcome(result, "https://suspicious.com")
+	t.Log("ok")
 }
 
 func TestPrintOutcome_OpenDirect(t *testing.T) {
@@ -384,6 +392,7 @@ func TestPrintOutcome_OpenDirect(t *testing.T) {
 		action: linkquisition.ActionOpenDirect,
 	}
 	printOutcome(result, "https://direct.com")
+	t.Log("ok")
 }
 
 func TestPrintPluginStep_Continue_Unchanged(t *testing.T) {
@@ -393,6 +402,7 @@ func TestPrintPluginStep_Continue_Unchanged(t *testing.T) {
 	}
 	// Should not panic
 	printPluginStep(1, "sanitize", r, "https://example.com")
+	t.Log("ok")
 }
 
 func TestPrintPluginStep_Continue_Changed(t *testing.T) {
@@ -401,6 +411,7 @@ func TestPrintPluginStep_Continue_Changed(t *testing.T) {
 		Action: linkquisition.ActionContinue,
 	}
 	printPluginStep(1, "sanitize", r, "https://example.com/dirty")
+	t.Log("ok")
 }
 
 func TestPrintPluginStep_Block(t *testing.T) {
@@ -410,6 +421,7 @@ func TestPrintPluginStep_Block(t *testing.T) {
 		Message: "Blocked\nMulti-line message",
 	}
 	printPluginStep(1, "defang", r, "https://blocked.com")
+	t.Log("ok")
 }
 
 func TestPrintPluginStep_Warn(t *testing.T) {
@@ -419,6 +431,7 @@ func TestPrintPluginStep_Warn(t *testing.T) {
 		Message: "Be careful",
 	}
 	printPluginStep(1, "shenanigans", r, "https://warned.com")
+	t.Log("ok")
 }
 
 func TestPrintPluginStep_OpenDirect(t *testing.T) {
@@ -427,4 +440,5 @@ func TestPrintPluginStep_OpenDirect(t *testing.T) {
 		Action: linkquisition.ActionOpenDirect,
 	}
 	printPluginStep(1, "terminus", r, "https://direct.com")
+	t.Log("ok")
 }

@@ -232,6 +232,7 @@ func TestShutdownPlugins_Empty(t *testing.T) {
 
 	// Should not panic with no plugins
 	app.shutdownPlugins()
+	t.Log("shutdownPlugins with no plugins did not panic")
 }
 
 func TestShutdownPlugins_WithPlugins(t *testing.T) {

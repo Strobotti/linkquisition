@@ -56,14 +56,14 @@ func TestResolvePluginPathFromDisk_NotFound(t *testing.T) {
 }
 
 func TestBrowserMatchesFilter_EmptyFilter(t *testing.T) {
-	b := linkquisition.BrowserSettings{Name: "Firefox"}
+	b := &linkquisition.BrowserSettings{Name: "Firefox"}
 	if !browserMatchesFilter(b, "") {
 		t.Error("empty filter should always match")
 	}
 }
 
 func TestBrowserMatchesFilter_MatchesBrowserName(t *testing.T) {
-	b := linkquisition.BrowserSettings{
+	b := &linkquisition.BrowserSettings{
 		Name: "Google Chrome",
 		Matches: []linkquisition.BrowserMatch{
 			{Type: "site", Value: "unrelated.com"},
@@ -76,7 +76,7 @@ func TestBrowserMatchesFilter_MatchesBrowserName(t *testing.T) {
 }
 
 func TestBrowserMatchesFilter_MatchesRuleValue(t *testing.T) {
-	b := linkquisition.BrowserSettings{
+	b := &linkquisition.BrowserSettings{
 		Name: "Firefox",
 		Matches: []linkquisition.BrowserMatch{
 			{Type: "site", Value: "www.github.com"},
@@ -94,7 +94,7 @@ func TestBrowserMatchesFilter_MatchesRuleValue(t *testing.T) {
 }
 
 func TestBrowserMatchesFilter_NoMatch(t *testing.T) {
-	b := linkquisition.BrowserSettings{
+	b := &linkquisition.BrowserSettings{
 		Name: "Firefox",
 		Matches: []linkquisition.BrowserMatch{
 			{Type: "site", Value: "www.example.com"},
@@ -107,7 +107,7 @@ func TestBrowserMatchesFilter_NoMatch(t *testing.T) {
 }
 
 func TestBrowserMatchesFilter_CaseInsensitive(t *testing.T) {
-	b := linkquisition.BrowserSettings{
+	b := &linkquisition.BrowserSettings{
 		Name: "Microsoft Edge",
 		Matches: []linkquisition.BrowserMatch{
 			{Type: "site", Value: "www.Office365.com"},
@@ -126,7 +126,7 @@ func TestBrowserMatchesFilter_CaseInsensitive(t *testing.T) {
 }
 
 func TestBrowserMatchesFilter_NoRules(t *testing.T) {
-	b := linkquisition.BrowserSettings{
+	b := &linkquisition.BrowserSettings{
 		Name:    "Safari",
 		Matches: nil,
 	}
