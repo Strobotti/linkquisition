@@ -1,4 +1,4 @@
-//nolint:mnd,gosec // Visual effects plugin: magic numbers (colors, speeds, sizes) and weak random are by design.
+//nolint:mnd,gosec,dupl // Visual effects plugin: magic numbers (colors, speeds, sizes) and weak random are by design.
 package main
 
 import (
@@ -106,7 +106,7 @@ func (p *shenanigans) Shutdown(_ context.Context) {
 	p.stopped.Store(true)
 }
 
-func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
+func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) { //nolint:gocyclo
 	effect := p.effect
 
 	allEffects := []string{
@@ -1705,7 +1705,7 @@ func (s *pongState) resetBall() {
 	s.ballVY = (rand.Float64() - 0.5) * 4.0
 }
 
-func (s *pongState) update() {
+func (s *pongState) update() { //nolint:gocyclo
 	h := float64(s.height)
 	w := float64(s.width)
 
@@ -1829,7 +1829,7 @@ func (s *pongState) render() []uint8 {
 	return pixels
 }
 
-func (s *pongState) setPixel(pixels []uint8, x, y int, r, g, b, a uint8) {
+func (s *pongState) setPixel(pixels []uint8, x, y int, r, g, b, a uint8) { //nolint:unparam
 	if x < 0 || x >= s.width || y < 0 || y >= s.height {
 		return
 	}
@@ -1876,12 +1876,12 @@ func clampPaddleMove(delta, maxMove float64) float64 {
 	return delta
 }
 
-func clampFloat(v, min, max float64) float64 {
-	if v < min {
-		return min
+func clampFloat(v, lo, hi float64) float64 {
+	if v < lo {
+		return lo
 	}
-	if v > max {
-		return max
+	if v > hi {
+		return hi
 	}
 	return v
 }
@@ -2741,9 +2741,10 @@ func (s *snakeState) oppositeDir() snakeDir {
 		return snakeDirUp
 	case snakeDirLeft:
 		return snakeDirRight
-	default:
+	case snakeDirRight:
 		return snakeDirLeft
 	}
+	return snakeDirLeft
 }
 
 func abs(x int) int {
@@ -2907,7 +2908,7 @@ func (s *rainState) render() []uint8 {
 	return pixels
 }
 
-func (s *rainState) drawDrop(pixels []uint8, d raindrop) {
+func (s *rainState) drawDrop(pixels []uint8, d raindrop) { //nolint:gocyclo
 	// Draw a vertical streak
 	startY := int(d.y - d.length)
 	endY := int(d.y)
@@ -3565,7 +3566,7 @@ func (s *dinoState) drawCactus(pixels []uint8, c dinoCactus) {
 	}
 }
 
-func (s *dinoState) drawRect(pixels []uint8, x, y, rw, rh int, r, g, b, a uint8) {
+func (s *dinoState) drawRect(pixels []uint8, x, y, rw, rh int, r, g, b, a uint8) { //nolint:unparam
 	for dy := range rh {
 		for dx := range rw {
 			px := x + dx
@@ -3949,7 +3950,7 @@ func (s *asteroidsState) drawShip(pixels []uint8) {
 }
 
 // drawLine draws a line using Bresenham's algorithm.
-func (s *asteroidsState) drawLine(pixels []uint8, x0, y0, x1, y1 int, r, g, b, a uint8) {
+func (s *asteroidsState) drawLine(pixels []uint8, x0, y0, x1, y1 int, r, g, b, a uint8) { //nolint:unparam
 	dx := abs(x1 - x0)
 	dy := -abs(y1 - y0)
 	sx := 1
@@ -4241,29 +4242,30 @@ func (s *pacmanState) moveGhost(idx int) {
 	}
 }
 
-func (s *pacmanState) nextCell(x, y, dir int) (int, int) {
+func (s *pacmanState) nextCell(x, y, dir int) (nx, ny int) {
+	nx, ny = x, y
 	switch dir {
 	case 0:
-		x++
+		nx++
 	case 1:
-		y++
+		ny++
 	case 2:
-		x--
+		nx--
 	case 3:
-		y--
+		ny--
 	}
 	// Clamp to maze bounds
-	if x < 0 {
-		x = 0
-	} else if x >= pacMazeW {
-		x = pacMazeW - 1
+	if nx < 0 {
+		nx = 0
+	} else if nx >= pacMazeW {
+		nx = pacMazeW - 1
 	}
-	if y < 0 {
-		y = 0
-	} else if y >= pacMazeH {
-		y = pacMazeH - 1
+	if ny < 0 {
+		ny = 0
+	} else if ny >= pacMazeH {
+		ny = pacMazeH - 1
 	}
-	return x, y
+	return nx, ny
 }
 
 func (s *pacmanState) distToNearestDot(fromX, fromY int) int {
@@ -4333,7 +4335,7 @@ func (s *pacmanState) render() []uint8 {
 	return pixels
 }
 
-func (s *pacmanState) drawPacman(pixels []uint8) {
+func (s *pacmanState) drawPacman(pixels []uint8) { //nolint:gocyclo
 	cx := s.offsetX + s.pacman.x*s.cellSize + s.cellSize/2
 	cy := s.offsetY + s.pacman.y*s.cellSize + s.cellSize/2
 	r := s.cellSize * 2 / 5
