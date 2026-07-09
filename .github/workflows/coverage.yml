@@ -1,0 +1,41 @@
+name: Coverage
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  coverage:
+    name: Update Coverage Badge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+
+      - name: Install build dependencies (cached)
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: gcc libgl1-mesa-dev xorg-dev
+          version: 1.0
+
+      - uses: arduino/setup-task@v3
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Tests
+        run: task test
+
+      - name: Update Coverage Badge
+        uses: action-badges/cobertura-coverage-xml-badges@0.4.1
+        with:
+          file-name: coverage.svg
+          badge-branch: gh-pages
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          coverage-file-name: test/coverage.latest/coverage.xml

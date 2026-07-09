@@ -30,12 +30,6 @@ jobs:
       - name: Run Tests
         run: task test
 
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-report
-          path: test/coverage.latest/coverage.xml
-
   build:
     name: Build (${{ matrix.target }})
     needs: [ test ]
@@ -242,27 +236,3 @@ jobs:
           git add Casks/linkquisition.rb
           git commit -m "Update linkquisition to v${VERSION}" || echo "No changes to commit"
           git push
-
-  coverage:
-    name: Coverage Badge
-    needs: [ test ]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Download coverage artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: coverage-report
-          path: test/coverage.latest/
-
-      - name: Make Coverage Badge
-        uses: action-badges/cobertura-coverage-xml-badges@0.4.1
-        with:
-          file-name: coverage.svg
-          badge-branch: gh-pages
-          coverage-file-name: test/coverage.latest/coverage.xml
-          github-token: ${{ secrets.GITHUB_TOKEN }}
