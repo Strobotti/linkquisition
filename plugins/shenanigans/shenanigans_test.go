@@ -50,8 +50,8 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Equal(t, []string{
 		"random",
 		"aurora", "fire", "fireworks", "football",
-		"glitch", "matrix", "plasma", "pong", "pride",
-		"snow", "starfield",
+		"glitch", "life", "matrix", "plasma", "pong",
+		"pride", "snow", "starfield",
 	}, meta.Settings[0].Options)
 }
 
