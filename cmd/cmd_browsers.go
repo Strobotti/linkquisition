@@ -4,9 +4,16 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/strobotti/linkquisition"
 )
 
 const cmdUseList = "list"
+
+const (
+	browserStatusHidden = " (hidden)"
+	browserSourceLabel  = " [manual]"
+)
 
 var browsersCmd = &cobra.Command{
 	Use:   "browsers",
@@ -49,12 +56,12 @@ func runBrowsersList(_ *cobra.Command, _ []string) error {
 	for i, b := range settings.Browsers {
 		status := ""
 		if b.Hidden {
-			status = " (hidden)"
+			status = browserStatusHidden
 		}
 
 		source := ""
-		if b.Source == "manual" {
-			source = " [manual]"
+		if b.Source == linkquisition.SourceManual {
+			source = browserSourceLabel
 		}
 
 		rules := ""
