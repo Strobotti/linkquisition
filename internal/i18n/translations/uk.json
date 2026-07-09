@@ -1,0 +1,260 @@
+{
+  "config.window_title": {
+    "other": "Налаштування Linkquisition"
+  },
+  "config.tab_general": {
+    "other": "Загальне"
+  },
+  "config.tab_about": {
+    "other": "Про програму"
+  },
+  "config.tab_rules": {
+    "other": "Правила"
+  },
+  "config.rules_description": {
+    "other": "Правила відповідності визначають, який браузер автоматично відкриває дану URL-адресу.\n\nПравила можуть відповідати за сайтом (напр. www.example.com), доменом (напр. example.com) або регулярним виразом.\n\nНаразі правила керуються через безпосереднє редагування конфігураційного файлу. Візуальний редактор буде додано в майбутній версії."
+  },
+  "config.rules_edit_button": {
+    "other": "Відкрити файл конфігурації в редакторі"
+  },
+  "config.make_default_label": {
+    "other": "Щоб Linkquisition працював як засіб вибору браузера,\nйого потрібно встановити як браузер за замовчуванням:"
+  },
+  "config.make_default_done": {
+    "other": "Все готово!"
+  },
+  "config.make_default_button": {
+    "other": "Встановити за замовчуванням"
+  },
+  "config.make_default_error": {
+    "other": "Помилка встановлення за замовчуванням!"
+  },
+  "config.make_default_checking": {
+    "other": "перевірка"
+  },
+  "config.scan_browsers": {
+    "other": "Пошук браузерів"
+  },
+  "config.rescan_browsers": {
+    "other": "Повторний пошук браузерів"
+  },
+  "config.scan_browsers_scanning": {
+    "other": "Пошук\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Готово"
+  },
+  "config.scan_now": {
+    "other": "Шукати зараз"
+  },
+  "config.scan_error": {
+    "other": "Помилка пошуку браузерів!"
+  },
+  "config.scan_description": {
+    "other": "Браузери слід просканувати та зберегти у конфігураційному файлі\nдля швидшого запуску та зручнішої конфігурації.\n\nСканування можна безпечно виконувати будь-коли: лише нововиявлені\nбраузери додаються, а ті, що більше не присутні в системі,\nвидаляються.\n\nІснуючі правила, порядок або налаштування не будуть порушені."
+  },
+  "picker.window_title": {
+    "other": "Linkquisition"
+  },
+  "picker.open_label": {
+    "other": "Відкрити:"
+  },
+  "picker.copy_button": {
+    "other": "Копіювати"
+  },
+  "picker.remember_choice": {
+    "other": "Запам'ятати цей вибір для {{.Site}}"
+  },
+  "picker.keyboard_guide": {
+    "other": "Натисніть 'ENTER' для першого, 'ESC' для виходу, '{{.CopyShortcut}}' для копіювання URL"
+  },
+  "config.language_label": {
+    "other": "Мова:"
+  },
+  "config.language_auto": {
+    "other": "Автоматично (системна мова)"
+  },
+  "config.language_restart_note": {
+    "other": "Зміна мови набуде чинності при наступному запуску."
+  },
+  "config.scan_in_progress": {
+    "other": "Пошук..."
+  },
+  "config.scan_success": {
+    "other": "✓ Браузери успішно знайдено"
+  },
+  "config.scan_failed": {
+    "other": "✗ Пошук не вдався"
+  },
+  "config.log_level_label": {
+    "other": "Рівень журналювання:"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Приховати підказку клавіатурних скорочень у вікні вибору"
+  },
+  "about.description": {
+    "other": "Швидкий та гнучкий засіб вибору браузера для Linux та macOS."
+  },
+  "about.author_label": {
+    "other": "Автор:"
+  },
+  "about.license_label": {
+    "other": "Ліцензія:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
+  },
+  "plugin.blocked_title": {
+    "other": "Заблоковано плагіном"
+  },
+  "plugin.warning_title": {
+    "other": "Попередження"
+  },
+  "plugin.warn_cancel": {
+    "other": "Скасувати"
+  },
+  "plugin.warn_proceed": {
+    "other": "Відкрити все одно"
+  },
+  "config.tab_plugins": {
+    "other": "Плагіни"
+  },
+  "config.plugins_enabled": {
+    "other": "Увімкнено"
+  },
+  "config.plugins_configure": {
+    "other": "Налаштувати..."
+  },
+  "config.plugins_add": {
+    "other": "Додати"
+  },
+  "config.plugins_available": {
+    "other": "Доступні (не налаштовані):"
+  },
+  "config.plugins_none_available": {
+    "other": "Додаткових плагінів немає."
+  },
+  "config.plugins_settings_title": {
+    "other": "Налаштування {{.Name}}"
+  },
+  "config.plugins_save": {
+    "other": "Зберегти"
+  },
+  "config.plugins_cancel": {
+    "other": "Скасувати"
+  },
+  "config.plugins_move_up": {
+    "other": "▲"
+  },
+  "config.plugins_move_down": {
+    "other": "▼"
+  },
+  "config.plugins_restart_note": {
+    "other": "Зміни плагінів набудуть чинності при наступному відкритті URL."
+  },
+  "config.tab_browsers": {
+    "other": "Браузери"
+  },
+  "config.browsers_empty": {
+    "other": "Браузери ще не налаштовані.\n\nНатисніть кнопку нижче для пошуку встановлених браузерів. Це необхідно для роботи Linkquisition як засобу вибору браузера."
+  },
+  "config.browsers_show_in_picker": {
+    "other": "Показувати у вікні вибору"
+  },
+  "config.browsers_add": {
+    "other": "Додати браузер..."
+  },
+  "config.browsers_add_title": {
+    "other": "Додати браузер"
+  },
+  "config.browsers_edit": {
+    "other": "Редагувати..."
+  },
+  "config.browsers_edit_title": {
+    "other": "Редагувати браузер"
+  },
+  "config.browsers_delete": {
+    "other": "Видалити"
+  },
+  "config.browsers_delete_confirm": {
+    "other": "Ви впевнені, що хочете видалити \"{{.Name}}\"?"
+  },
+  "config.browsers_name": {
+    "other": "Назва"
+  },
+  "config.browsers_command": {
+    "other": "Команда"
+  },
+  "config.browsers_name_placeholder": {
+    "other": "напр. Firefox Приватний"
+  },
+  "config.browsers_command_placeholder": {
+    "other": "напр. firefox --private-window %u"
+  },
+  "config.browsers_icon_path": {
+    "other": "Іконка"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/шлях/до/іконки.png (необов'язково)"
+  },
+  "config.browsers_source_auto": {
+    "other": "(автоматично)"
+  },
+  "config.browsers_source_manual": {
+    "other": "(вручну)"
+  },
+  "config.browsers_rules_count": {
+    "other": "{{.Count}} правил(о)"
+  },
+  "config.no_browsers_warning": {
+    "other": "⚠ Браузери не налаштовані. Перейдіть на вкладку Браузери для пошуку встановлених браузерів."
+  },
+  "config.rules_no_browsers": {
+    "other": "Браузери не налаштовані. Спочатку додайте браузери на вкладці Браузери."
+  },
+  "config.rules_empty": {
+    "other": "Правила відповідності ще не налаштовані.\n\nПравила визначають, який браузер автоматично відкриває URL. Використовуйте кнопку \"+ Додати правило\" біля назви браузера для створення правила."
+  },
+  "config.rules_add": {
+    "other": "+ Додати правило"
+  },
+  "config.rules_add_title": {
+    "other": "Додати правило для {{.Name}}"
+  },
+  "config.rules_type": {
+    "other": "Тип"
+  },
+  "config.rules_value": {
+    "other": "Значення"
+  },
+  "config.rules_value_placeholder": {
+    "other": "напр. www.example.com"
+  },
+  "config.rules_none_for_browser": {
+    "other": "Правила не налаштовані"
+  },
+  "config.rules_regex_invalid": {
+    "other": "Недійсний регулярний вираз"
+  },
+  "config.rules_filter_placeholder": {
+    "other": "Фільтрувати правила..."
+  },
+  "config.rules_no_match": {
+    "other": "Жодне правило не відповідає фільтру."
+  },
+  "config.macos_picker_note": {
+    "other": "Примітка: Вікно вибору браузера недоступне, поки відкрито екран налаштувань. Посилання, натиснуті під час відкритих налаштувань, будуть автоматично відкриті у першому відповідному браузері."
+  },
+  "config.picker_layout_label": {
+    "other": "Розташування вікна вибору:"
+  },
+  "config.picker_layout_vertical": {
+    "other": "Вертикальне (список)"
+  },
+  "config.picker_layout_horizontal": {
+    "other": "Горизонтальне (кнопки)"
+  },
+  "config.picker_max_per_row_label": {
+    "other": "Максимум елементів у рядку:"
+  }
+}

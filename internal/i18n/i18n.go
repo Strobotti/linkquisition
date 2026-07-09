@@ -22,18 +22,30 @@ var localizer *i18n.Localizer
 
 // Locale code constants.
 const (
-	LocaleEnglish = "en"
-	LocaleSpanish = "es"
-	LocaleFinnish = "fi"
-	LocaleSwedish = "sv"
+	LocaleGerman              = "de"
+	LocaleEnglish             = "en"
+	LocaleSpanish             = "es"
+	LocaleFinnish             = "fi"
+	LocaleFrench              = "fr"
+	LocaleHungarian           = "hu"
+	LocalePortuguese          = "pt"
+	LocaleBrazilianPortuguese = "pt-BR"
+	LocaleSwedish             = "sv"
+	LocaleUkrainian           = "uk"
 )
 
 // localeNames maps locale codes to their display names (in their own language).
 var localeNames = map[string]string{
-	LocaleEnglish: "English",
-	LocaleSpanish: "Español",
-	LocaleFinnish: "Suomi",
-	LocaleSwedish: "Svenska",
+	LocaleGerman:              "Deutsch",
+	LocaleEnglish:             "English",
+	LocaleSpanish:             "Español",
+	LocaleFinnish:             "Suomi",
+	LocaleFrench:              "Français",
+	LocaleHungarian:           "Magyar",
+	LocalePortuguese:          "Português",
+	LocaleBrazilianPortuguese: "Português (Brasil)",
+	LocaleSwedish:             "Svenska",
+	LocaleUkrainian:           "Українська",
 }
 
 // AvailableLocales returns the locale codes of all embedded translation files,

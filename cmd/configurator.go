@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"sort"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -135,6 +136,11 @@ func (c *Configurator) buildMakeDefaultSection() fyne.CanvasObject {
 func (c *Configurator) buildLanguageSection() fyne.CanvasObject {
 	locales := i18n.AvailableLocales()
 	autoLabel := i18n.T("config.language_auto")
+
+	// Sort locales alphabetically by display name.
+	sort.Slice(locales, func(i, j int) bool {
+		return i18n.LocaleDisplayName(locales[i]) < i18n.LocaleDisplayName(locales[j])
+	})
 
 	options := []string{autoLabel}
 	for _, code := range locales {
