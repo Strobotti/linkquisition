@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"howett.net/plist"
+
+	"github.com/strobotti/linkquisition"
 )
 
 func TestParseBrowserPlist_HTTPHandler(t *testing.T) {
@@ -321,6 +323,98 @@ func TestParseBrowserPlist_CaseInsensitiveSchemes(t *testing.T) {
 	_, _, isHTTPHandler := parseBrowserPlist(plistPath, "CaseBrowser.app")
 
 	assert.True(t, isHTTPHandler)
+}
+
+func TestGetIconPathFromApp_AppendsIcnsSuffix(t *testing.T) {
+	appPath := t.TempDir()
+	resourcesDir := filepath.Join(appPath, "Contents", "Resources")
+	require.NoError(t, os.MkdirAll(resourcesDir, 0755))
+
+	plistDir := filepath.Join(appPath, "Contents")
+	plistPath := filepath.Join(plistDir, "Info.plist")
+
+	// Icon field WITHOUT .icns extension — the function should append it
+	data := map[string]interface{}{
+		"CFBundleIdentifier": "com.example.test",
+		"CFBundleIconFile":   "AppIcon",
+	}
+	writePlist(t, plistPath, data)
+
+	result := getIconPathFromApp(appPath)
+
+	expected := filepath.Join(appPath, "Contents", "Resources", "AppIcon.icns")
+	assert.Equal(t, expected, result)
+}
+
+func TestGetIconPathFromApp_AlreadyHasIcnsSuffix(t *testing.T) {
+	appPath := t.TempDir()
+	resourcesDir := filepath.Join(appPath, "Contents", "Resources")
+	require.NoError(t, os.MkdirAll(resourcesDir, 0755))
+
+	plistDir := filepath.Join(appPath, "Contents")
+	plistPath := filepath.Join(plistDir, "Info.plist")
+
+	// Icon field WITH .icns extension — should NOT double-append
+	data := map[string]interface{}{
+		"CFBundleIdentifier": "com.example.test",
+		"CFBundleIconFile":   "AppIcon.icns",
+	}
+	writePlist(t, plistPath, data)
+
+	result := getIconPathFromApp(appPath)
+
+	expected := filepath.Join(appPath, "Contents", "Resources", "AppIcon.icns")
+	assert.Equal(t, expected, result)
+}
+
+func TestGetDefaultBrowser_ReturnsNonEmpty(t *testing.T) {
+	svc := &BrowserService{}
+	browser, err := svc.GetDefaultBrowser()
+	require.NoError(t, err)
+	assert.NotEmpty(t, browser.Name)
+	assert.NotEmpty(t, browser.Command)
+}
+
+func TestAreWeTheDefaultBrowser_ReturnsBoolean(t *testing.T) {
+	// Test that AreWeTheDefaultBrowser doesn't panic and returns a boolean.
+	// The actual result depends on whether Linkquisition is set as default.
+	svc := &BrowserService{}
+	_ = svc.AreWeTheDefaultBrowser()
+}
+
+func TestGetIconForBrowser_Safari(t *testing.T) {
+	svc := &BrowserService{}
+	browser := linkquisition.Browser{Name: "Safari", Command: "com.apple.Safari"}
+
+	iconData, err := svc.GetIconForBrowser(browser)
+	require.NoError(t, err)
+	assert.NotEmpty(t, iconData, "Safari icon should be available on macOS")
+
+	// Verify it's a valid PNG (starts with PNG magic bytes)
+	assert.True(t, len(iconData) > 8)
+	pngMagic := []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}
+	assert.Equal(t, pngMagic, iconData[:8], "icon should be valid PNG data")
+}
+
+func TestGetIconForBrowser_UnknownBundleID(t *testing.T) {
+	svc := &BrowserService{}
+	browser := linkquisition.Browser{Name: "Nonexistent", Command: "com.nonexistent.fake.browser"}
+
+	_, err := svc.GetIconForBrowser(browser)
+	assert.Error(t, err)
+}
+
+func TestGetAppPathForBundleID_Safari(t *testing.T) {
+	// Safari should always exist on macOS
+	path, err := getAppPathForBundleID("com.apple.Safari")
+	require.NoError(t, err)
+	assert.Contains(t, path, "Safari")
+	assert.True(t, strings.HasSuffix(path, ".app"))
+}
+
+func TestGetAppPathForBundleID_Unknown(t *testing.T) {
+	_, err := getAppPathForBundleID("com.nonexistent.fake.app.12345")
+	assert.Error(t, err)
 }
 
 // writePlist is a test helper that writes a plist file at the given path.
