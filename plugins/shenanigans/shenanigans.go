@@ -26,7 +26,6 @@ const (
 	effectInvaders    = "invaders"
 	effectSnake       = "snake"
 	effectRain        = "rain"
-	effectTetris      = "tetris"
 	effectRandom      = "random"
 	frameInterval     = 30 * time.Millisecond
 	fireFrameInterval = 25 * time.Millisecond
@@ -68,7 +67,6 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 					effectAurora, effectFire, effectFireworks, effectFootball,
 					effectGlitch, effectInvaders, effectLife, effectMatrix, effectPlasma,
 					effectPong, effectPride, effectRain, effectSnake, effectSnow, effectStarfield,
-					effectTetris,
 				},
 			},
 		},
@@ -108,7 +106,7 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 			effectMatrix, effectFire, effectSnow, effectPlasma,
 			effectStarfield, effectAurora, effectGlitch, effectPride,
 			effectFootball, effectFireworks, effectPong, effectLife,
-			effectInvaders, effectSnake, effectRain, effectTetris,
+			effectInvaders, effectSnake, effectRain,
 		}
 		effect = effects[rand.IntN(len(effects))]
 	}
@@ -146,8 +144,6 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 		p.startSnake(canvas)
 	case effectRain:
 		p.startRain(canvas)
-	case effectTetris:
-		p.startTetris(canvas)
 	}
 }
 
@@ -2931,275 +2927,6 @@ func (s *rainState) drawDrop(pixels []uint8, d raindrop) {
 						pixels[offset+3] = splAlpha
 					}
 				}
-			}
-		}
-	}
-}
-
-// --- Tetris Effect ---
-
-const (
-	tetrisTargetCols    = 12
-	tetrisAlpha         = 110
-	tetrisGhostAlpha    = 50
-	tetrisFrameInterval = 60 * time.Millisecond
-	tetrisDropInterval  = 8 // frames between gravity ticks
-)
-
-// Standard tetromino shapes (4 cells each, relative to top-left)
-var tetrominoes = [7][4][2]int{
-	// I
-	{{0, 0}, {1, 0}, {2, 0}, {3, 0}},
-	// O
-	{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
-	// T
-	{{0, 0}, {1, 0}, {2, 0}, {1, 1}},
-	// S
-	{{1, 0}, {2, 0}, {0, 1}, {1, 1}},
-	// Z
-	{{0, 0}, {1, 0}, {1, 1}, {2, 1}},
-	// L
-	{{0, 0}, {0, 1}, {0, 2}, {1, 2}},
-	// J
-	{{1, 0}, {1, 1}, {1, 2}, {0, 2}},
-}
-
-// Colors for each piece type (R, G, B)
-var tetrisColors = [7][3]uint8{
-	{0, 220, 220}, // I — cyan
-	{220, 220, 0}, // O — yellow
-	{180, 0, 220}, // T — purple
-	{0, 220, 0},   // S — green
-	{220, 0, 0},   // Z — red
-	{220, 130, 0}, // L — orange
-	{0, 0, 220},   // J — blue
-}
-
-type tetrisCell struct {
-	filled bool
-	color  int // index into tetrisColors
-}
-
-type tetrisPiece struct {
-	cells [4][2]int
-	color int
-	x, y  int
-}
-
-type tetrisState struct {
-	width, height int
-	cols, rows    int
-	cellSize      int
-	board         []tetrisCell
-	current       tetrisPiece
-	dropTimer     int
-	frameCount    int
-}
-
-func (p *shenanigans) startTetris(pc linkquisition.PickerCanvas) {
-	state := &tetrisState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.computeGrid()
-	state.board = make([]tetrisCell, state.cols*state.rows)
-	state.spawnPiece()
-
-	pc.AddRasterOverlay(0.4, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.computeGrid()
-			state.board = make([]tetrisCell, state.cols*state.rows)
-			state.spawnPiece()
-		}
-		return state.render()
-	})
-
-	go func() {
-		ticker := time.NewTicker(tetrisFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
-}
-
-func (s *tetrisState) computeGrid() {
-	s.cellSize = s.width / tetrisTargetCols
-	if s.cellSize < 8 {
-		s.cellSize = 8
-	}
-	if s.cellSize > 30 {
-		s.cellSize = 30
-	}
-	s.cols = s.width / s.cellSize
-	s.rows = s.height / s.cellSize
-}
-
-func (s *tetrisState) spawnPiece() {
-	kind := rand.IntN(len(tetrominoes))
-	s.current = tetrisPiece{
-		cells: tetrominoes[kind],
-		color: kind,
-		x:     s.cols/2 - 1,
-		y:     0,
-	}
-}
-
-func (s *tetrisState) update() {
-	s.frameCount++
-	s.dropTimer++
-
-	if s.dropTimer >= tetrisDropInterval {
-		s.dropTimer = 0
-		s.tick()
-	}
-}
-
-func (s *tetrisState) tick() {
-	// Try to move piece down
-	if s.canPlace(s.current.x, s.current.y+1, s.current.cells) {
-		s.current.y++
-		return
-	}
-
-	// Lock the piece
-	s.lockPiece()
-
-	// Clear full lines
-	s.clearLines()
-
-	// Spawn new piece
-	s.spawnPiece()
-
-	// If new piece can't be placed, the board is full — reset
-	if !s.canPlace(s.current.x, s.current.y, s.current.cells) {
-		s.board = make([]tetrisCell, s.cols*s.rows)
-		s.spawnPiece()
-	}
-}
-
-func (s *tetrisState) canPlace(px, py int, cells [4][2]int) bool {
-	for _, c := range cells {
-		x := px + c[0]
-		y := py + c[1]
-		if x < 0 || x >= s.cols || y >= s.rows {
-			return false
-		}
-		if y >= 0 && s.board[y*s.cols+x].filled {
-			return false
-		}
-	}
-	return true
-}
-
-func (s *tetrisState) lockPiece() {
-	for _, c := range s.current.cells {
-		x := s.current.x + c[0]
-		y := s.current.y + c[1]
-		if x >= 0 && x < s.cols && y >= 0 && y < s.rows {
-			s.board[y*s.cols+x] = tetrisCell{filled: true, color: s.current.color}
-		}
-	}
-}
-
-func (s *tetrisState) clearLines() {
-	for row := s.rows - 1; row >= 0; row-- {
-		full := true
-		for col := range s.cols {
-			if !s.board[row*s.cols+col].filled {
-				full = false
-				break
-			}
-		}
-		if full {
-			// Shift everything above down
-			copy(s.board[s.cols:row*s.cols+s.cols], s.board[:row*s.cols])
-			// Clear top row
-			for col := range s.cols {
-				s.board[col] = tetrisCell{}
-			}
-			row++ // re-check this row
-		}
-	}
-}
-
-func (s *tetrisState) render() []uint8 {
-	w, h := s.width, s.height
-	if w == 0 || h == 0 {
-		return make([]uint8, rgbaChannels)
-	}
-
-	pixels := make([]uint8, w*h*rgbaChannels)
-
-	// Draw locked cells
-	for row := range s.rows {
-		for col := range s.cols {
-			cell := s.board[row*s.cols+col]
-			if cell.filled {
-				c := tetrisColors[cell.color]
-				s.drawTetrisCell(pixels, col, row, c[0], c[1], c[2], tetrisAlpha)
-			}
-		}
-	}
-
-	// Draw current piece
-	c := tetrisColors[s.current.color]
-	for _, cell := range s.current.cells {
-		x := s.current.x + cell[0]
-		y := s.current.y + cell[1]
-		if x >= 0 && x < s.cols && y >= 0 && y < s.rows {
-			s.drawTetrisCell(pixels, x, y, c[0], c[1], c[2], tetrisAlpha)
-		}
-	}
-
-	// Draw ghost (where piece would land)
-	ghostY := s.current.y
-	for s.canPlace(s.current.x, ghostY+1, s.current.cells) {
-		ghostY++
-	}
-	if ghostY != s.current.y {
-		for _, cell := range s.current.cells {
-			x := s.current.x + cell[0]
-			y := ghostY + cell[1]
-			if x >= 0 && x < s.cols && y >= 0 && y < s.rows {
-				s.drawTetrisCell(pixels, x, y, c[0], c[1], c[2], tetrisGhostAlpha)
-			}
-		}
-	}
-
-	return pixels
-}
-
-func (s *tetrisState) drawTetrisCell(pixels []uint8, col, row int, r, g, b, a uint8) {
-	startX := col * s.cellSize
-	startY := row * s.cellSize
-
-	for dy := 1; dy < s.cellSize-1; dy++ {
-		for dx := 1; dx < s.cellSize-1; dx++ {
-			px := startX + dx
-			py := startY + dy
-			if px >= s.width || py >= s.height {
-				continue
-			}
-			offset := (py*s.width + px) * rgbaChannels
-			if a > pixels[offset+3] {
-				pixels[offset] = r
-				pixels[offset+1] = g
-				pixels[offset+2] = b
-				pixels[offset+3] = a
 			}
 		}
 	}
