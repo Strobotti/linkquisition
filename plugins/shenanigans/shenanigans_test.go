@@ -52,6 +52,7 @@ func TestShenanigans_Metadata(t *testing.T) {
 		"aurora", "fire", "fireworks", "football",
 		"glitch", "invaders", "life", "matrix", "plasma",
 		"pong", "pride", "rain", "snake", "snow", "starfield",
+		"tetris",
 	}, meta.Settings[0].Options)
 }
 
