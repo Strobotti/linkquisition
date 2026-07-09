@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.9.0](https://github.com/Strobotti/linkquisition/compare/v2.8.0...v2.9.0) (2026-07-09)
+
+
+### Features
+
+* Add new visual effects to shenanigans plugin ([#120](https://github.com/Strobotti/linkquisition/issues/120)) ([8974336](https://github.com/Strobotti/linkquisition/commit/897433628b39b706e90bb8f6cd1a73ff57a26885))
+* add translations for German, French, Hungarian, Ukrainian, and Portuguese ([#117](https://github.com/Strobotti/linkquisition/issues/117)) ([2733b1e](https://github.com/Strobotti/linkquisition/commit/2733b1eaea53f8ae7a05fbddc38a6e9d92d6b89c))
+
 ## [2.8.0](https://github.com/Strobotti/linkquisition/compare/v2.7.0...v2.8.0) (2026-07-08)
 
 
