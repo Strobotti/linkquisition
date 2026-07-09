@@ -153,9 +153,15 @@ Linkquisition supports localization. The UI language is determined in the follow
 Currently supported languages:
 
 - English (en) — default
+- Brazilian Portuguese (pt-BR)
 - Finnish (fi)
+- French (fr)
+- German (de)
+- Hungarian (hu)
+- Portuguese (pt)
 - Spanish (es)
 - Swedish (sv)
+- Ukrainian (uk)
 
 To contribute a new translation, add a JSON file to `internal/i18n/translations/` following the
 format of the existing files (e.g. `en.json`). The filename should be the locale code (e.g. `de.json` for German).

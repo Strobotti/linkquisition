@@ -1,0 +1,260 @@
+{
+  "config.window_title": {
+    "other": "Linkquisition Einstellungen"
+  },
+  "config.tab_general": {
+    "other": "Allgemein"
+  },
+  "config.tab_about": {
+    "other": "Über"
+  },
+  "config.tab_rules": {
+    "other": "Regeln"
+  },
+  "config.rules_description": {
+    "other": "Zuordnungsregeln bestimmen, welcher Browser eine URL automatisch öffnet.\n\nRegeln können nach Webseite (z.B. www.example.com), Domain (z.B. example.com) oder regulärem Ausdruck zuordnen.\n\nDerzeit werden Regeln durch direkte Bearbeitung der Konfigurationsdatei verwaltet. Ein visueller Editor wird in einer zukünftigen Version hinzugefügt."
+  },
+  "config.rules_edit_button": {
+    "other": "Konfigurationsdatei im Editor öffnen"
+  },
+  "config.make_default_label": {
+    "other": "Damit Linkquisition als Browser-Auswahl funktioniert,\nmuss es als Standardbrowser festgelegt werden:"
+  },
+  "config.make_default_done": {
+    "other": "Alles in Ordnung!"
+  },
+  "config.make_default_button": {
+    "other": "Als Standard festlegen"
+  },
+  "config.make_default_error": {
+    "other": "Fehler beim Festlegen als Standard!"
+  },
+  "config.make_default_checking": {
+    "other": "Prüfe"
+  },
+  "config.scan_browsers": {
+    "other": "Browser suchen"
+  },
+  "config.rescan_browsers": {
+    "other": "Browser erneut suchen"
+  },
+  "config.scan_browsers_scanning": {
+    "other": "Suche\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Fertig"
+  },
+  "config.scan_now": {
+    "other": "Jetzt suchen"
+  },
+  "config.scan_error": {
+    "other": "Fehler bei der Browser-Suche!"
+  },
+  "config.scan_description": {
+    "other": "Die Browser sollten gescannt und in einer Konfigurationsdatei gespeichert werden,\num schnellere Startzeiten und einfachere Konfiguration zu ermöglichen.\n\nDer Scan kann jederzeit sicher ausgeführt werden: Nur neu erkannte\nBrowser werden hinzugefügt und nicht mehr vorhandene werden entfernt.\n\nBestehende Regeln, Reihenfolge oder Anpassungen bleiben unberührt."
+  },
+  "picker.window_title": {
+    "other": "Linkquisition"
+  },
+  "picker.open_label": {
+    "other": "Öffne:"
+  },
+  "picker.copy_button": {
+    "other": "Kopieren"
+  },
+  "picker.remember_choice": {
+    "other": "Auswahl für {{.Site}} merken"
+  },
+  "picker.keyboard_guide": {
+    "other": "Drücke 'ENTER' für den ersten, 'ESC' zum Beenden, '{{.CopyShortcut}}' um die URL zu kopieren"
+  },
+  "config.language_label": {
+    "other": "Sprache:"
+  },
+  "config.language_auto": {
+    "other": "Automatisch (Systemstandard)"
+  },
+  "config.language_restart_note": {
+    "other": "Sprachänderung wird beim nächsten Start wirksam."
+  },
+  "config.scan_in_progress": {
+    "other": "Suche..."
+  },
+  "config.scan_success": {
+    "other": "✓ Browser erfolgreich gescannt"
+  },
+  "config.scan_failed": {
+    "other": "✗ Scan fehlgeschlagen"
+  },
+  "config.log_level_label": {
+    "other": "Protokollebene:"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Tastenkürzel-Anleitung im Auswahlfenster ausblenden"
+  },
+  "about.description": {
+    "other": "Eine schnelle, konfigurierbare Browser-Auswahl für Linux und macOS."
+  },
+  "about.author_label": {
+    "other": "Autor:"
+  },
+  "about.license_label": {
+    "other": "Lizenz:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
+  },
+  "plugin.blocked_title": {
+    "other": "Von Plugin blockiert"
+  },
+  "plugin.warning_title": {
+    "other": "Warnung"
+  },
+  "plugin.warn_cancel": {
+    "other": "Abbrechen"
+  },
+  "plugin.warn_proceed": {
+    "other": "Trotzdem öffnen"
+  },
+  "config.tab_plugins": {
+    "other": "Plugins"
+  },
+  "config.plugins_enabled": {
+    "other": "Aktiviert"
+  },
+  "config.plugins_configure": {
+    "other": "Konfigurieren..."
+  },
+  "config.plugins_add": {
+    "other": "Hinzufügen"
+  },
+  "config.plugins_available": {
+    "other": "Verfügbar (nicht konfiguriert):"
+  },
+  "config.plugins_none_available": {
+    "other": "Keine weiteren Plugins verfügbar."
+  },
+  "config.plugins_settings_title": {
+    "other": "{{.Name}} Einstellungen"
+  },
+  "config.plugins_save": {
+    "other": "Speichern"
+  },
+  "config.plugins_cancel": {
+    "other": "Abbrechen"
+  },
+  "config.plugins_move_up": {
+    "other": "▲"
+  },
+  "config.plugins_move_down": {
+    "other": "▼"
+  },
+  "config.plugins_restart_note": {
+    "other": "Plugin-Änderungen werden beim nächsten URL-Öffnen wirksam."
+  },
+  "config.tab_browsers": {
+    "other": "Browser"
+  },
+  "config.browsers_empty": {
+    "other": "Noch keine Browser konfiguriert.\n\nKlicke den Button unten, um das System nach installierten Browsern zu durchsuchen. Dies ist erforderlich, damit Linkquisition als Browser-Auswahl funktioniert."
+  },
+  "config.browsers_show_in_picker": {
+    "other": "Im Auswahlfenster anzeigen"
+  },
+  "config.browsers_add": {
+    "other": "Browser hinzufügen..."
+  },
+  "config.browsers_add_title": {
+    "other": "Browser hinzufügen"
+  },
+  "config.browsers_edit": {
+    "other": "Bearbeiten..."
+  },
+  "config.browsers_edit_title": {
+    "other": "Browser bearbeiten"
+  },
+  "config.browsers_delete": {
+    "other": "Löschen"
+  },
+  "config.browsers_delete_confirm": {
+    "other": "Möchtest du \"{{.Name}}\" wirklich löschen?"
+  },
+  "config.browsers_name": {
+    "other": "Name"
+  },
+  "config.browsers_command": {
+    "other": "Befehl"
+  },
+  "config.browsers_name_placeholder": {
+    "other": "z.B. Firefox Privat"
+  },
+  "config.browsers_command_placeholder": {
+    "other": "z.B. firefox --private-window %u"
+  },
+  "config.browsers_icon_path": {
+    "other": "Symbol"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/pfad/zum/symbol.png (optional)"
+  },
+  "config.browsers_source_auto": {
+    "other": "(automatisch)"
+  },
+  "config.browsers_source_manual": {
+    "other": "(manuell)"
+  },
+  "config.browsers_rules_count": {
+    "other": "{{.Count}} Regel(n)"
+  },
+  "config.no_browsers_warning": {
+    "other": "⚠ Keine Browser konfiguriert. Gehe zum Browser-Tab, um installierte Browser zu suchen."
+  },
+  "config.rules_no_browsers": {
+    "other": "Keine Browser konfiguriert. Füge zuerst Browser im Browser-Tab hinzu."
+  },
+  "config.rules_empty": {
+    "other": "Noch keine Zuordnungsregeln konfiguriert.\n\nRegeln bestimmen, welcher Browser eine URL automatisch öffnet. Verwende den \"+ Regel hinzufügen\"-Button neben einem Browser-Namen, um eine Regel zu erstellen."
+  },
+  "config.rules_add": {
+    "other": "+ Regel hinzufügen"
+  },
+  "config.rules_add_title": {
+    "other": "Regel hinzufügen für {{.Name}}"
+  },
+  "config.rules_type": {
+    "other": "Typ"
+  },
+  "config.rules_value": {
+    "other": "Wert"
+  },
+  "config.rules_value_placeholder": {
+    "other": "z.B. www.example.com"
+  },
+  "config.rules_none_for_browser": {
+    "other": "Keine Regeln konfiguriert"
+  },
+  "config.rules_regex_invalid": {
+    "other": "Ungültiger regulärer Ausdruck"
+  },
+  "config.rules_filter_placeholder": {
+    "other": "Regeln filtern..."
+  },
+  "config.rules_no_match": {
+    "other": "Keine Regeln entsprechen dem Filter."
+  },
+  "config.macos_picker_note": {
+    "other": "Hinweis: Das Browser-Auswahlfenster ist nicht verfügbar, solange die Einstellungen geöffnet sind. Links, die während der geöffneten Einstellungen angeklickt werden, werden automatisch im ersten passenden Browser geöffnet."
+  },
+  "config.picker_layout_label": {
+    "other": "Auswahl-Layout:"
+  },
+  "config.picker_layout_vertical": {
+    "other": "Vertikal (Liste)"
+  },
+  "config.picker_layout_horizontal": {
+    "other": "Horizontal (Buttons)"
+  },
+  "config.picker_max_per_row_label": {
+    "other": "Maximale Elemente pro Zeile:"
+  }
+}

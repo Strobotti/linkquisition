@@ -199,7 +199,7 @@ The app has two UI modes, both in `cmd/`:
 ## Localization
 
 - Translation files live in `internal/i18n/translations/` (JSON, keyed by locale code)
-- Supported: `en`, `fi`, `es`, `sv`
+- Supported: `de`, `en`, `es`, `fi`, `fr`, `hu`, `pt`, `pt-BR`, `sv`, `uk`
 - The `locale` config key overrides system detection
 - Plugins do NOT currently have access to the i18n system
 

@@ -1,0 +1,260 @@
+{
+  "config.window_title": {
+    "other": "Linkquisition beállítások"
+  },
+  "config.tab_general": {
+    "other": "Általános"
+  },
+  "config.tab_about": {
+    "other": "Névjegy"
+  },
+  "config.tab_rules": {
+    "other": "Szabályok"
+  },
+  "config.rules_description": {
+    "other": "Az egyezési szabályok határozzák meg, melyik böngésző nyitja meg automatikusan az adott URL-t.\n\nA szabályok egyezhetnek webhely (pl. www.example.com), domain (pl. example.com) vagy reguláris kifejezés alapján.\n\nEgyelőre a szabályok a konfigurációs fájl közvetlen szerkesztésével kezelhetők. Vizuális szerkesztő egy jövőbeli verzióban lesz elérhető."
+  },
+  "config.rules_edit_button": {
+    "other": "Konfigurációs fájl megnyitása szerkesztőben"
+  },
+  "config.make_default_label": {
+    "other": "Ahhoz, hogy a Linkquisition böngészőválasztóként működjön,\nalapértelmezett böngészőként kell beállítani:"
+  },
+  "config.make_default_done": {
+    "other": "Minden rendben!"
+  },
+  "config.make_default_button": {
+    "other": "Beállítás alapértelmezettként"
+  },
+  "config.make_default_error": {
+    "other": "Hiba az alapértelmezett beállításakor!"
+  },
+  "config.make_default_checking": {
+    "other": "ellenőrzés"
+  },
+  "config.scan_browsers": {
+    "other": "Böngészők keresése"
+  },
+  "config.rescan_browsers": {
+    "other": "Böngészők újrakeresése"
+  },
+  "config.scan_browsers_scanning": {
+    "other": "Keresés\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Kész"
+  },
+  "config.scan_now": {
+    "other": "Keresés most"
+  },
+  "config.scan_error": {
+    "other": "Hiba a böngészők keresésekor!"
+  },
+  "config.scan_description": {
+    "other": "A böngészőket be kell olvasni és el kell tárolni a konfigurációs fájlban\na gyorsabb indulás és az egyéni konfiguráció érdekében.\n\nA keresés bármikor biztonságosan végrehajtható: csak az újonnan\ntalált böngészők kerülnek hozzáadásra, a már nem jelenlevők pedig\ntörlődnek.\n\nA meglévő szabályok, sorrend vagy testreszabások nem érintettek."
+  },
+  "picker.window_title": {
+    "other": "Linkquisition"
+  },
+  "picker.open_label": {
+    "other": "Megnyitás:"
+  },
+  "picker.copy_button": {
+    "other": "Másolás"
+  },
+  "picker.remember_choice": {
+    "other": "Választás megjegyzése a(z) {{.Site}} webhelyhez"
+  },
+  "picker.keyboard_guide": {
+    "other": "Nyomj 'ENTER'-t az első kiválasztásához, 'ESC'-t a kilépéshez, '{{.CopyShortcut}}'-t az URL vágólapra másolásához"
+  },
+  "config.language_label": {
+    "other": "Nyelv:"
+  },
+  "config.language_auto": {
+    "other": "Automatikus (rendszer alapértelmezett)"
+  },
+  "config.language_restart_note": {
+    "other": "A nyelvváltozás a következő indításkor lép érvénybe."
+  },
+  "config.scan_in_progress": {
+    "other": "Keresés..."
+  },
+  "config.scan_success": {
+    "other": "✓ Böngészők sikeresen beolvasva"
+  },
+  "config.scan_failed": {
+    "other": "✗ A keresés sikertelen"
+  },
+  "config.log_level_label": {
+    "other": "Naplózási szint:"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Billentyűparancs-útmutató elrejtése a választóban"
+  },
+  "about.description": {
+    "other": "Gyors, konfigurálható böngészőválasztó Linuxhoz és macOS-hez."
+  },
+  "about.author_label": {
+    "other": "Szerző:"
+  },
+  "about.license_label": {
+    "other": "Licenc:"
+  },
+  "about.github_label": {
+    "other": "GitHub:"
+  },
+  "plugin.blocked_title": {
+    "other": "Bővítmény által blokkolva"
+  },
+  "plugin.warning_title": {
+    "other": "Figyelmeztetés"
+  },
+  "plugin.warn_cancel": {
+    "other": "Mégse"
+  },
+  "plugin.warn_proceed": {
+    "other": "Megnyitás mindenképp"
+  },
+  "config.tab_plugins": {
+    "other": "Bővítmények"
+  },
+  "config.plugins_enabled": {
+    "other": "Engedélyezve"
+  },
+  "config.plugins_configure": {
+    "other": "Beállítás..."
+  },
+  "config.plugins_add": {
+    "other": "Hozzáadás"
+  },
+  "config.plugins_available": {
+    "other": "Elérhető (nincs konfigurálva):"
+  },
+  "config.plugins_none_available": {
+    "other": "Nincs további elérhető bővítmény."
+  },
+  "config.plugins_settings_title": {
+    "other": "{{.Name}} beállítások"
+  },
+  "config.plugins_save": {
+    "other": "Mentés"
+  },
+  "config.plugins_cancel": {
+    "other": "Mégse"
+  },
+  "config.plugins_move_up": {
+    "other": "▲"
+  },
+  "config.plugins_move_down": {
+    "other": "▼"
+  },
+  "config.plugins_restart_note": {
+    "other": "A bővítmény-módosítások a következő URL megnyitásakor lépnek érvénybe."
+  },
+  "config.tab_browsers": {
+    "other": "Böngészők"
+  },
+  "config.browsers_empty": {
+    "other": "Még nincsenek böngészők konfigurálva.\n\nKattints az alábbi gombra a telepített böngészők kereséséhez. Ez szükséges a Linkquisition böngészőválasztóként való működéséhez."
+  },
+  "config.browsers_show_in_picker": {
+    "other": "Megjelenítés a választóban"
+  },
+  "config.browsers_add": {
+    "other": "Böngésző hozzáadása..."
+  },
+  "config.browsers_add_title": {
+    "other": "Böngésző hozzáadása"
+  },
+  "config.browsers_edit": {
+    "other": "Szerkesztés..."
+  },
+  "config.browsers_edit_title": {
+    "other": "Böngésző szerkesztése"
+  },
+  "config.browsers_delete": {
+    "other": "Törlés"
+  },
+  "config.browsers_delete_confirm": {
+    "other": "Biztosan törölni szeretnéd a(z) \"{{.Name}}\" böngészőt?"
+  },
+  "config.browsers_name": {
+    "other": "Név"
+  },
+  "config.browsers_command": {
+    "other": "Parancs"
+  },
+  "config.browsers_name_placeholder": {
+    "other": "pl. Firefox Privát"
+  },
+  "config.browsers_command_placeholder": {
+    "other": "pl. firefox --private-window %u"
+  },
+  "config.browsers_icon_path": {
+    "other": "Ikon"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/útvonal/ikon.png (opcionális)"
+  },
+  "config.browsers_source_auto": {
+    "other": "(automatikus)"
+  },
+  "config.browsers_source_manual": {
+    "other": "(kézi)"
+  },
+  "config.browsers_rules_count": {
+    "other": "{{.Count}} szabály"
+  },
+  "config.no_browsers_warning": {
+    "other": "⚠ Nincsenek böngészők konfigurálva. Menj a Böngészők fülre a telepített böngészők kereséséhez."
+  },
+  "config.rules_no_browsers": {
+    "other": "Nincsenek böngészők konfigurálva. Először adj hozzá böngészőket a Böngészők fülön."
+  },
+  "config.rules_empty": {
+    "other": "Még nincsenek egyezési szabályok konfigurálva.\n\nA szabályok határozzák meg, melyik böngésző nyit meg automatikusan egy URL-t. Használd a \"+ Szabály hozzáadása\" gombot a böngésző neve mellett egy szabály létrehozásához."
+  },
+  "config.rules_add": {
+    "other": "+ Szabály hozzáadása"
+  },
+  "config.rules_add_title": {
+    "other": "Szabály hozzáadása: {{.Name}}"
+  },
+  "config.rules_type": {
+    "other": "Típus"
+  },
+  "config.rules_value": {
+    "other": "Érték"
+  },
+  "config.rules_value_placeholder": {
+    "other": "pl. www.example.com"
+  },
+  "config.rules_none_for_browser": {
+    "other": "Nincsenek konfigurált szabályok"
+  },
+  "config.rules_regex_invalid": {
+    "other": "Érvénytelen reguláris kifejezés"
+  },
+  "config.rules_filter_placeholder": {
+    "other": "Szabályok szűrése..."
+  },
+  "config.rules_no_match": {
+    "other": "Nincs a szűrőnek megfelelő szabály."
+  },
+  "config.macos_picker_note": {
+    "other": "Megjegyzés: A böngészőválasztó ablak nem érhető el, amíg ez a beállítások képernyő nyitva van. A beállítások megnyitása közben kattintott linkek automatikusan az első egyező böngészőben nyílnak meg."
+  },
+  "config.picker_layout_label": {
+    "other": "Választó elrendezése:"
+  },
+  "config.picker_layout_vertical": {
+    "other": "Függőleges (lista)"
+  },
+  "config.picker_layout_horizontal": {
+    "other": "Vízszintes (gombok)"
+  },
+  "config.picker_max_per_row_label": {
+    "other": "Maximum elemek soronként:"
+  }
+}

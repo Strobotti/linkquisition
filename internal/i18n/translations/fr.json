@@ -1,0 +1,260 @@
+{
+  "config.window_title": {
+    "other": "Paramètres Linkquisition"
+  },
+  "config.tab_general": {
+    "other": "Général"
+  },
+  "config.tab_about": {
+    "other": "À propos"
+  },
+  "config.tab_rules": {
+    "other": "Règles"
+  },
+  "config.rules_description": {
+    "other": "Les règles de correspondance déterminent quel navigateur ouvre automatiquement une URL donnée.\n\nLes règles peuvent correspondre par site (ex. www.example.com), domaine (ex. example.com) ou expression régulière.\n\nPour l'instant, les règles sont gérées en modifiant directement le fichier de configuration. Un éditeur visuel sera ajouté dans une version future."
+  },
+  "config.rules_edit_button": {
+    "other": "Ouvrir le fichier de configuration dans l'éditeur"
+  },
+  "config.make_default_label": {
+    "other": "Pour que Linkquisition fonctionne comme sélecteur de navigateur,\nil doit être défini comme navigateur par défaut :"
+  },
+  "config.make_default_done": {
+    "other": "Tout est bon !"
+  },
+  "config.make_default_button": {
+    "other": "Définir par défaut"
+  },
+  "config.make_default_error": {
+    "other": "Erreur lors de la définition par défaut !"
+  },
+  "config.make_default_checking": {
+    "other": "vérification"
+  },
+  "config.scan_browsers": {
+    "other": "Rechercher les navigateurs"
+  },
+  "config.rescan_browsers": {
+    "other": "Rechercher à nouveau"
+  },
+  "config.scan_browsers_scanning": {
+    "other": "Recherche\u2026"
+  },
+  "config.scan_browsers_done": {
+    "other": "\u2713 Terminé"
+  },
+  "config.scan_now": {
+    "other": "Rechercher maintenant"
+  },
+  "config.scan_error": {
+    "other": "Erreur lors de la recherche des navigateurs !"
+  },
+  "config.scan_description": {
+    "other": "Les navigateurs doivent être détectés et enregistrés dans un fichier de configuration\npour un démarrage plus rapide et une configuration personnalisée.\n\nLa recherche peut être exécutée en toute sécurité à tout moment : seuls les\nnavigateurs nouvellement détectés sont ajoutés et ceux qui ne sont plus\nprésents sont supprimés.\n\nLes règles, l'ordre ou les personnalisations existantes ne sont pas affectés."
+  },
+  "picker.window_title": {
+    "other": "Linkquisition"
+  },
+  "picker.open_label": {
+    "other": "Ouvrir :"
+  },
+  "picker.copy_button": {
+    "other": "Copier"
+  },
+  "picker.remember_choice": {
+    "other": "Se souvenir de ce choix pour {{.Site}}"
+  },
+  "picker.keyboard_guide": {
+    "other": "Appuyez sur 'ENTRÉE' pour le premier, 'ÉCHAP' pour quitter, '{{.CopyShortcut}}' pour copier l'URL"
+  },
+  "config.language_label": {
+    "other": "Langue :"
+  },
+  "config.language_auto": {
+    "other": "Automatique (par défaut du système)"
+  },
+  "config.language_restart_note": {
+    "other": "Le changement de langue prend effet au prochain lancement."
+  },
+  "config.scan_in_progress": {
+    "other": "Recherche..."
+  },
+  "config.scan_success": {
+    "other": "✓ Navigateurs détectés avec succès"
+  },
+  "config.scan_failed": {
+    "other": "✗ Échec de la recherche"
+  },
+  "config.log_level_label": {
+    "other": "Niveau de journalisation :"
+  },
+  "config.hide_keyboard_guide": {
+    "other": "Masquer le guide des raccourcis clavier dans le sélecteur"
+  },
+  "about.description": {
+    "other": "Un sélecteur de navigateur rapide et configurable pour Linux et macOS."
+  },
+  "about.author_label": {
+    "other": "Auteur :"
+  },
+  "about.license_label": {
+    "other": "Licence :"
+  },
+  "about.github_label": {
+    "other": "GitHub :"
+  },
+  "plugin.blocked_title": {
+    "other": "Bloqué par le plugin"
+  },
+  "plugin.warning_title": {
+    "other": "Avertissement"
+  },
+  "plugin.warn_cancel": {
+    "other": "Annuler"
+  },
+  "plugin.warn_proceed": {
+    "other": "Ouvrir quand même"
+  },
+  "config.tab_plugins": {
+    "other": "Plugins"
+  },
+  "config.plugins_enabled": {
+    "other": "Activé"
+  },
+  "config.plugins_configure": {
+    "other": "Configurer..."
+  },
+  "config.plugins_add": {
+    "other": "Ajouter"
+  },
+  "config.plugins_available": {
+    "other": "Disponibles (non configurés) :"
+  },
+  "config.plugins_none_available": {
+    "other": "Aucun plugin supplémentaire disponible."
+  },
+  "config.plugins_settings_title": {
+    "other": "Paramètres de {{.Name}}"
+  },
+  "config.plugins_save": {
+    "other": "Enregistrer"
+  },
+  "config.plugins_cancel": {
+    "other": "Annuler"
+  },
+  "config.plugins_move_up": {
+    "other": "▲"
+  },
+  "config.plugins_move_down": {
+    "other": "▼"
+  },
+  "config.plugins_restart_note": {
+    "other": "Les modifications de plugins prennent effet à la prochaine ouverture d'URL."
+  },
+  "config.tab_browsers": {
+    "other": "Navigateurs"
+  },
+  "config.browsers_empty": {
+    "other": "Aucun navigateur configuré pour le moment.\n\nCliquez sur le bouton ci-dessous pour rechercher les navigateurs installés. Ceci est nécessaire pour que Linkquisition fonctionne comme sélecteur de navigateur."
+  },
+  "config.browsers_show_in_picker": {
+    "other": "Afficher dans le sélecteur"
+  },
+  "config.browsers_add": {
+    "other": "Ajouter un navigateur..."
+  },
+  "config.browsers_add_title": {
+    "other": "Ajouter un navigateur"
+  },
+  "config.browsers_edit": {
+    "other": "Modifier..."
+  },
+  "config.browsers_edit_title": {
+    "other": "Modifier le navigateur"
+  },
+  "config.browsers_delete": {
+    "other": "Supprimer"
+  },
+  "config.browsers_delete_confirm": {
+    "other": "Êtes-vous sûr de vouloir supprimer \"{{.Name}}\" ?"
+  },
+  "config.browsers_name": {
+    "other": "Nom"
+  },
+  "config.browsers_command": {
+    "other": "Commande"
+  },
+  "config.browsers_name_placeholder": {
+    "other": "ex. Firefox Privé"
+  },
+  "config.browsers_command_placeholder": {
+    "other": "ex. firefox --private-window %u"
+  },
+  "config.browsers_icon_path": {
+    "other": "Icône"
+  },
+  "config.browsers_icon_path_placeholder": {
+    "other": "/chemin/vers/icone.png (optionnel)"
+  },
+  "config.browsers_source_auto": {
+    "other": "(automatique)"
+  },
+  "config.browsers_source_manual": {
+    "other": "(manuel)"
+  },
+  "config.browsers_rules_count": {
+    "other": "{{.Count}} règle(s)"
+  },
+  "config.no_browsers_warning": {
+    "other": "⚠ Aucun navigateur configuré. Allez dans l'onglet Navigateurs pour rechercher les navigateurs installés."
+  },
+  "config.rules_no_browsers": {
+    "other": "Aucun navigateur configuré. Ajoutez d'abord des navigateurs dans l'onglet Navigateurs."
+  },
+  "config.rules_empty": {
+    "other": "Aucune règle de correspondance configurée pour le moment.\n\nLes règles déterminent quel navigateur ouvre automatiquement une URL. Utilisez le bouton \"+ Ajouter une règle\" à côté du nom d'un navigateur pour en créer une."
+  },
+  "config.rules_add": {
+    "other": "+ Ajouter une règle"
+  },
+  "config.rules_add_title": {
+    "other": "Ajouter une règle à {{.Name}}"
+  },
+  "config.rules_type": {
+    "other": "Type"
+  },
+  "config.rules_value": {
+    "other": "Valeur"
+  },
+  "config.rules_value_placeholder": {
+    "other": "ex. www.example.com"
+  },
+  "config.rules_none_for_browser": {
+    "other": "Aucune règle configurée"
+  },
+  "config.rules_regex_invalid": {
+    "other": "Expression régulière invalide"
+  },
+  "config.rules_filter_placeholder": {
+    "other": "Filtrer les règles..."
+  },
+  "config.rules_no_match": {
+    "other": "Aucune règle ne correspond au filtre."
+  },
+  "config.macos_picker_note": {
+    "other": "Note : La fenêtre de sélection de navigateur n'est pas disponible tant que cet écran de paramètres est ouvert. Les liens cliqués pendant que les paramètres sont ouverts seront ouverts automatiquement dans le premier navigateur correspondant."
+  },
+  "config.picker_layout_label": {
+    "other": "Disposition du sélecteur :"
+  },
+  "config.picker_layout_vertical": {
+    "other": "Vertical (liste)"
+  },
+  "config.picker_layout_horizontal": {
+    "other": "Horizontal (boutons)"
+  },
+  "config.picker_max_per_row_label": {
+    "other": "Éléments maximum par ligne :"
+  }
+}

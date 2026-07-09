@@ -123,12 +123,15 @@ func TestDetectLocale_EmptyOverrideFallsBack(t *testing.T) {
 func TestAvailableLocales(t *testing.T) {
 	locales := AvailableLocales()
 
-	// Should contain at least the four known locales
-	if len(locales) < 4 {
-		t.Errorf("AvailableLocales() returned %d locales, want at least 4", len(locales))
+	// Should contain at least the ten known locales
+	if len(locales) < 10 {
+		t.Errorf("AvailableLocales() returned %d locales, want at least 10", len(locales))
 	}
 
-	expected := map[string]bool{"en": false, "es": false, "fi": false, "sv": false}
+	expected := map[string]bool{
+		"de": false, "en": false, "es": false, "fi": false, "fr": false,
+		"hu": false, "pt": false, "pt-BR": false, "sv": false, "uk": false,
+	}
 	for _, loc := range locales {
 		if _, ok := expected[loc]; ok {
 			expected[loc] = true
@@ -147,10 +150,16 @@ func TestLocaleDisplayName(t *testing.T) {
 		code string
 		want string
 	}{
+		{LocaleGerman, "Deutsch"},
 		{LocaleEnglish, "English"},
-		{LocaleFinnish, "Suomi"},
 		{LocaleSpanish, "Español"},
+		{LocaleFinnish, "Suomi"},
+		{LocaleFrench, "Français"},
+		{LocaleHungarian, "Magyar"},
+		{LocalePortuguese, "Português"},
+		{LocaleBrazilianPortuguese, "Português (Brasil)"},
 		{LocaleSwedish, "Svenska"},
+		{LocaleUkrainian, "Українська"},
 		{"unknown", "unknown"}, // falls back to code itself
 		{"", ""},               // empty code returns empty
 	}
