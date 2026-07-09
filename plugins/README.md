@@ -196,14 +196,23 @@ when it appears.
 ### Available effects
 
 - `random` — Randomly picks one of the effects below (default)
+- `asteroids` — Wireframe asteroids with a ship hunting them down
 - `aurora` — Northern lights with flowing green/purple/blue bands
+- `breakout` — Classic breakout with colorful bricks and paddle AI
+- `dino` — Chrome offline T-rex jumping over cacti
 - `fire` — Realistic flames rising from the bottom of the window
 - `fireworks` — Rockets launching and exploding into colorful particle bursts
 - `football` — Top-down football/soccer pitch with animated spotlight sweep
 - `glitch` — Cyberpunk-style RGB channel splitting with periodic static bursts
+- `invaders` — Space invaders with marching formation and explosions
+- `life` — Conway's Game of Life cellular automata
 - `matrix` — Green Matrix-style falling characters
+- `pacman` — Pac-man navigating a maze, eating dots, avoiding ghosts
 - `plasma` — Classic demoscene swirling color blobs
+- `pong` — Auto-playing ping-pong
 - `pride` — Animated rainbow pride flag waving in the wind
+- `rain` — Fast vertical rain streaks with bottom splashes
+- `snake` — Snake chasing food with AI pathfinding
 - `snow` — Gentle snowfall with varying sizes and wobble
 - `starfield` — 3D warp-speed stars flying toward the viewer
 
