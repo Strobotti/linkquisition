@@ -108,15 +108,17 @@ func (p *shenanigans) Shutdown(_ context.Context) {
 
 func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 	effect := p.effect
-	if effect == effectRandom {
-		effects := []string{
-			effectMatrix, effectFire, effectSnow, effectPlasma,
-			effectStarfield, effectAurora, effectGlitch, effectPride,
-			effectFootball, effectFireworks, effectPong, effectLife,
-			effectInvaders, effectSnake, effectRain, effectBreakout, effectDino,
-			effectAsteroids, effectPacman,
-		}
-		effect = effects[rand.IntN(len(effects))]
+
+	allEffects := []string{
+		effectMatrix, effectFire, effectSnow, effectPlasma,
+		effectStarfield, effectAurora, effectGlitch, effectPride,
+		effectFootball, effectFireworks, effectPong, effectLife,
+		effectInvaders, effectSnake, effectRain, effectBreakout, effectDino,
+		effectAsteroids, effectPacman,
+	}
+
+	if effect == effectRandom || !isKnownEffect(effect, allEffects) {
+		effect = allEffects[rand.IntN(len(allEffects))]
 	}
 
 	p.serviceProvider.GetLogger().Debug("Shenanigans activating", "effect", effect)
@@ -161,6 +163,16 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 	case effectPacman:
 		p.startPacman(canvas)
 	}
+}
+
+// isKnownEffect returns true if the given effect name is in the list of known effects.
+func isKnownEffect(effect string, known []string) bool {
+	for _, e := range known {
+		if e == effect {
+			return true
+		}
+	}
+	return false
 }
 
 // --- Matrix Rain Effect ---
