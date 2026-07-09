@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.1](https://github.com/Strobotti/linkquisition/compare/v2.9.0...v2.9.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* **ci:** update coverage badge on every push to main ([#121](https://github.com/Strobotti/linkquisition/issues/121)) ([3569cff](https://github.com/Strobotti/linkquisition/commit/3569cff9da3d180d820770722396fa0bf2670d27))
+
 ## [2.9.0](https://github.com/Strobotti/linkquisition/compare/v2.8.0...v2.9.0) (2026-07-09)
 
 
