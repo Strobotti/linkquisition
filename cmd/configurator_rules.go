@@ -103,19 +103,8 @@ func (c *Configurator) buildBrowserRulesSection(
 ) fyne.CanvasObject {
 	b := settings.Browsers[browserIdx]
 
-	// Filter: check if browser name or any rule value matches
-	if filter != "" {
-		browserNameMatches := strings.Contains(strings.ToLower(b.Name), filter)
-		hasMatchingRule := false
-		for _, m := range b.Matches {
-			if strings.Contains(strings.ToLower(m.Value), filter) {
-				hasMatchingRule = true
-				break
-			}
-		}
-		if !browserNameMatches && !hasMatchingRule {
-			return nil
-		}
+	if !browserMatchesFilter(b, filter) {
+		return nil
 	}
 
 	// Section header
@@ -271,4 +260,25 @@ func (c *Configurator) deleteRule(browserIdx, ruleIdx int, listContainer *fyne.C
 func withSubtleBackground(obj fyne.CanvasObject) fyne.CanvasObject {
 	bg := canvas.NewRectangle(color.NRGBA{R: 128, G: 128, B: 128, A: 15})
 	return container.NewStack(bg, obj)
+}
+
+// browserMatchesFilter returns true if a browser should be shown given the
+// current filter text. An empty filter always matches. Otherwise the browser
+// matches if its name contains the filter OR any of its rule values do.
+func browserMatchesFilter(b linkquisition.BrowserSettings, filter string) bool {
+	if filter == "" {
+		return true
+	}
+
+	if strings.Contains(strings.ToLower(b.Name), filter) {
+		return true
+	}
+
+	for _, m := range b.Matches {
+		if strings.Contains(strings.ToLower(m.Value), filter) {
+			return true
+		}
+	}
+
+	return false
 }

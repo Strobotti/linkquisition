@@ -337,16 +337,22 @@ func (c *Configurator) getAboutTab() fyne.CanvasObject {
 // openExternalURL opens a URL in a real browser, bypassing Linkquisition if it is
 // the default browser (which would otherwise cause a circular loop).
 func (c *Configurator) openExternalURL(rawURL string) error {
-	if !c.browserService.AreWeTheDefaultBrowser() {
-		return c.browserService.OpenUrlWithDefaultBrowser(rawURL)
+	return openExternalURLWithService(rawURL, c.browserService)
+}
+
+// openExternalURLWithService opens a URL using the given browser service, choosing
+// a real browser if we are the default (to avoid a circular loop).
+func openExternalURLWithService(rawURL string, browserService linkquisition.BrowserService) error {
+	if !browserService.AreWeTheDefaultBrowser() {
+		return browserService.OpenUrlWithDefaultBrowser(rawURL)
 	}
 
 	// We are the default browser, so we need to pick a real browser to open with
-	browsers, err := c.browserService.GetAvailableBrowsers()
+	browsers, err := browserService.GetAvailableBrowsers()
 	if err != nil || len(browsers) == 0 {
 		// Last resort: try anyway
-		return c.browserService.OpenUrlWithDefaultBrowser(rawURL)
+		return browserService.OpenUrlWithDefaultBrowser(rawURL)
 	}
 
-	return c.browserService.OpenUrlWithBrowser(rawURL, &browsers[0])
+	return browserService.OpenUrlWithBrowser(rawURL, &browsers[0])
 }

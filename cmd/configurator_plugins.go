@@ -165,6 +165,12 @@ func (c *Configurator) getPluginMetadata(pluginPath string) linkquisition.Plugin
 }
 
 func (c *Configurator) resolvePluginPath(pluginPath string) string {
+	return resolvePluginPathFromDisk(pluginPath, c.settingsService.GetPluginFolderPath())
+}
+
+// resolvePluginPathFromDisk resolves a plugin path to an absolute path on disk.
+// It checks the path as-is first, then tries the plugin folder. Returns "" if not found.
+func resolvePluginPathFromDisk(pluginPath, pluginFolder string) string {
 	if !strings.HasSuffix(pluginPath, pluginExtension) {
 		pluginPath += pluginExtension
 	}
@@ -173,7 +179,7 @@ func (c *Configurator) resolvePluginPath(pluginPath string) string {
 		return pluginPath
 	}
 
-	resolved := filepath.Join(c.settingsService.GetPluginFolderPath(), pluginPath)
+	resolved := filepath.Join(pluginFolder, pluginPath)
 	if _, err := os.Stat(resolved); err == nil {
 		return resolved
 	}
