@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.0](https://github.com/Strobotti/linkquisition/compare/v2.10.0...v2.11.0) (2026-07-10)
+
+
+### Features
+
+* add new shenanigans effects, --log-level flag, and split plugin into separate files ([#128](https://github.com/Strobotti/linkquisition/issues/128)) ([384f86d](https://github.com/Strobotti/linkquisition/commit/384f86d589a6548dff6a8a638e091ad2a6a98ebe))
+
 ## [2.10.0](https://github.com/Strobotti/linkquisition/compare/v2.9.1...v2.10.0) (2026-07-10)
 
 
