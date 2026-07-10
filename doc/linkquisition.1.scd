@@ -38,6 +38,15 @@ When launched without arguments, Linkquisition opens the configuration screen.
 	_shenanigans.effect=matrix_). May be specified multiple times. Overrides
 	for unrecognized plugins or disabled plugins are silently ignored.
 
+*--no-plugins*
+	Disable all plugin loading for this run. Useful for debugging startup
+	issues caused by plugins.
+
+*--log-level* _level_
+	Override the log level for this run without modifying the config file.
+	Accepted values: _debug_, _info_, _warn_, _error_. When not specified,
+	the _logLevel_ setting from the config file is used.
+
 # COMMANDS
 
 ## config

@@ -198,23 +198,33 @@ when it appears.
 - `random` — Randomly picks one of the effects below (default)
 - `asteroids` — Wireframe asteroids with a ship hunting them down
 - `aurora` — Northern lights with flowing green/purple/blue bands
+- `boids` — Boids flocking simulation with separation, alignment, and cohesion
 - `breakout` — Classic breakout with colorful bricks and paddle AI
 - `dino` — Chrome offline T-rex jumping over cacti
 - `fire` — Realistic flames rising from the bottom of the window
+- `fireflies` — Glowing fireflies drifting with pulsing bioluminescence
 - `fireworks` — Rockets launching and exploding into colorful particle bursts
+- `flappy` — Flappy Bird navigating through pipe gaps
 - `football` — Top-down football/soccer pitch with animated spotlight sweep
+- `frogger` — Frogger dodging traffic and hopping on logs
 - `glitch` — Cyberpunk-style RGB channel splitting with periodic static bursts
 - `invaders` — Space invaders with marching formation and explosions
+- `lava` — Lava lamp with soft blobs rising and falling
 - `life` — Conway's Game of Life cellular automata
 - `matrix` — Green Matrix-style falling characters
+- `minesweeper` — Minesweeper being auto-solved, revealing the grid progressively
 - `pacman` — Pac-man navigating a maze, eating dots, avoiding ghosts
+- `pipes` — Windows 3D Pipes screensaver with colorful growing pipes and joints
 - `plasma` — Classic demoscene swirling color blobs
 - `pong` — Auto-playing ping-pong
 - `pride` — Animated rainbow pride flag waving in the wind
 - `rain` — Fast vertical rain streaks with bottom splashes
+- `raycast` — Wolfenstein 3D-style first-person maze explorer
+- `sinescroll` — Retro demoscene sine-wave text scroller with color cycling
 - `snake` — Snake chasing food with AI pathfinding
 - `snow` — Gentle snowfall with varying sizes and wobble
 - `starfield` — 3D warp-speed stars flying toward the viewer
+- `tetris` — Tetris with falling tetrominoes stacking and clearing lines
 
 ### Configuration
 

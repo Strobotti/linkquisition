@@ -209,6 +209,12 @@ linkquisition test-url "https://example.com/page?utm_source=twitter"
 
 # Override plugin settings at runtime (not persisted)
 linkquisition --plugin-opt shenanigans.effect=matrix "https://example.com"
+
+# Override log level for a single run (not persisted)
+linkquisition --log-level debug "https://example.com"
+
+# Disable all plugins (for debugging)
+linkquisition --no-plugins "https://example.com"
 ```
 
 On macOS, the binary is located at `/Applications/Linkquisition.app/Contents/MacOS/linkquisition`.
