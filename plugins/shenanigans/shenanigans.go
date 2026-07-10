@@ -49,6 +49,7 @@ type shenanigans struct {
 	serviceProvider linkquisition.PluginServiceProvider
 	effect          string
 	stopped         atomic.Bool
+	lightMode       bool
 }
 
 func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
@@ -107,6 +108,7 @@ func (p *shenanigans) Shutdown(_ context.Context) {
 }
 
 func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) { //nolint:gocyclo
+	p.lightMode = canvas.IsLightTheme()
 	effect := p.effect
 
 	allEffects := []string{
@@ -175,6 +177,27 @@ func isKnownEffect(effect string, known []string) bool {
 	return false
 }
 
+// invertForLight adjusts pixel colors for light-theme visibility.
+// In dark mode the buffer is returned unchanged.
+// In light mode, bright (white/near-white) foreground pixels are darkened
+// so they contrast against the light picker background. The background
+// remains transparent, preserving full readability of the picker UI beneath.
+func (p *shenanigans) invertForLight(pixels []uint8) []uint8 {
+	if !p.lightMode {
+		return pixels
+	}
+	for i := 0; i < len(pixels); i += rgbaChannels {
+		if pixels[i+3] == 0 {
+			continue // transparent — leave alone
+		}
+		// Invert RGB channels so white becomes dark and colors stay recognizable
+		pixels[i] = 255 - pixels[i]
+		pixels[i+1] = 255 - pixels[i+1]
+		pixels[i+2] = 255 - pixels[i+2]
+	}
+	return pixels
+}
+
 // --- Matrix Rain Effect ---
 
 type matrixState struct {
@@ -201,7 +224,7 @@ func (p *shenanigans) startMatrixRain(pc linkquisition.PickerCanvas) {
 			state.height = h
 			state.initColumns()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -621,7 +644,7 @@ func (p *shenanigans) startSnow(pc linkquisition.PickerCanvas) {
 			state.init()
 			state.initialized = true
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -857,7 +880,7 @@ func (p *shenanigans) startStarfield(pc linkquisition.PickerCanvas) {
 			state.height = h
 			state.init()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -1312,9 +1335,9 @@ func (s *prideState) render(w, h int) []uint8 {
 
 			// Flag wave: pinned on the left edge, wave amplitude increases to the right
 			// This simulates fabric attached to a pole on the left side
-			amplitude := fx * fx * 0.05
+			amplitude := fx * fx * 0.12
 			wave := sinApprox((fx*2.0-t*1.5)*3.14159) * amplitude
-			wave2 := sinApprox((fx*3.0-t*2.0)*3.14159) * amplitude * 0.4
+			wave2 := sinApprox((fx*3.0-t*2.0)*3.14159) * amplitude * 0.5
 
 			// Determine which stripe this pixel belongs to (with wave offset)
 			stripePos := (fy + wave + wave2) * stripeCount
@@ -1345,7 +1368,7 @@ func (s *prideState) render(w, h int) []uint8 {
 			b := uint8(float64(c1[2])*(1-blend) + float64(c2[2])*blend)
 
 			// Subtle shading to simulate fabric folds (stronger toward free edge)
-			foldDepth := fx * 0.15
+			foldDepth := fx * 0.2
 			shade := 1.0 - foldDepth + foldDepth*sinApprox((fx*3-t*1.5)*3.14159)
 			r = uint8(float64(r) * shade)
 			g = uint8(float64(g) * shade)
@@ -1754,7 +1777,7 @@ func (p *shenanigans) startPong(pc linkquisition.PickerCanvas) {
 			state.width = w
 			state.height = h
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -2008,7 +2031,7 @@ func (p *shenanigans) startLife(pc linkquisition.PickerCanvas) {
 			state.rows = h / lifeCellSize
 			state.randomize()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -2253,7 +2276,7 @@ func (p *shenanigans) startInvaders(pc linkquisition.PickerCanvas) {
 			state.height = h
 			state.reset()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -2648,7 +2671,7 @@ func (p *shenanigans) startSnake(pc linkquisition.PickerCanvas) {
 			state.computeGrid()
 			state.reset()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -2920,7 +2943,7 @@ func (p *shenanigans) startRain(pc linkquisition.PickerCanvas) {
 			state.init()
 			state.initialized = true
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -3106,7 +3129,7 @@ func (p *shenanigans) startBreakout(pc linkquisition.PickerCanvas) {
 			state.height = h
 			state.reset()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -3430,7 +3453,7 @@ func (p *shenanigans) startDino(pc linkquisition.PickerCanvas) {
 			state.height = h
 			state.reset()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -3749,7 +3772,7 @@ func (p *shenanigans) startAsteroids(pc linkquisition.PickerCanvas) {
 			state.height = h
 			state.reset()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {
@@ -4172,7 +4195,7 @@ func (p *shenanigans) startPacman(pc linkquisition.PickerCanvas) {
 			state.height = h
 			state.reset()
 		}
-		return state.render()
+		return p.invertForLight(state.render())
 	})
 
 	go func() {

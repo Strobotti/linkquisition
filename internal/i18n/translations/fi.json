@@ -152,6 +152,12 @@
   "config.plugins_restart_note": {
     "other": "Muutokset tulevat voimaan seuraavalla URL-avauksella."
   },
+  "config.plugins_remove_title": {
+    "other": "Poista lisäosa"
+  },
+  "config.plugins_remove_confirm": {
+    "other": "Poistetaanko \"{{.Name}}\" asetuksista?\n\nKaikki tämän lisäosan asetukset poistetaan. Lisäosan tiedostoa ei poisteta ja se voidaan lisätä uudelleen myöhemmin."
+  },
   "config.tab_browsers": {
     "other": "Selaimet"
   },
@@ -256,5 +262,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Enimmäismäärä per rivi:"
+  },
+  "config.theme_label": {
+    "other": "Teema:"
+  },
+  "config.theme_system": {
+    "other": "Järjestelmä (auto)"
+  },
+  "config.theme_dark": {
+    "other": "Tumma"
+  },
+  "config.theme_light": {
+    "other": "Vaalea"
+  },
+  "config.theme_restart_note": {
+    "other": "Teeman vaihto tulee voimaan seuraavalla käynnistyksellä."
   }
 }

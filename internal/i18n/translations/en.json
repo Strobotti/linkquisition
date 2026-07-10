@@ -152,6 +152,12 @@
   "config.plugins_restart_note": {
     "other": "Plugin changes take effect on next URL open."
   },
+  "config.plugins_remove_title": {
+    "other": "Remove Plugin"
+  },
+  "config.plugins_remove_confirm": {
+    "other": "Remove \"{{.Name}}\" from the configuration?\n\nThis will delete all settings for this plugin. The plugin file itself will not be deleted and can be re-added later."
+  },
   "config.tab_browsers": {
     "other": "Browsers"
   },
@@ -256,5 +262,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Max items per row:"
+  },
+  "config.theme_label": {
+    "other": "Theme:"
+  },
+  "config.theme_system": {
+    "other": "System (auto)"
+  },
+  "config.theme_dark": {
+    "other": "Dark"
+  },
+  "config.theme_light": {
+    "other": "Light"
+  },
+  "config.theme_restart_note": {
+    "other": "Theme change takes effect on next launch."
   }
 }

@@ -152,6 +152,12 @@
   "config.plugins_restart_note": {
     "other": "Les modifications de plugins prennent effet à la prochaine ouverture d'URL."
   },
+  "config.plugins_remove_title": {
+    "other": "Supprimer le plugin"
+  },
+  "config.plugins_remove_confirm": {
+    "other": "Supprimer \"{{.Name}}\" de la configuration ?\n\nTous les paramètres de ce plugin seront supprimés. Le fichier du plugin ne sera pas supprimé et pourra être ajouté à nouveau ultérieurement."
+  },
   "config.tab_browsers": {
     "other": "Navigateurs"
   },
@@ -256,5 +262,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Éléments maximum par ligne :"
+  },
+  "config.theme_label": {
+    "other": "Thème :"
+  },
+  "config.theme_system": {
+    "other": "Système (automatique)"
+  },
+  "config.theme_dark": {
+    "other": "Sombre"
+  },
+  "config.theme_light": {
+    "other": "Clair"
+  },
+  "config.theme_restart_note": {
+    "other": "Le changement de thème prendra effet au prochain lancement."
   }
 }

@@ -152,6 +152,12 @@
   "config.plugins_restart_note": {
     "other": "Зміни плагінів набудуть чинності при наступному відкритті URL."
   },
+  "config.plugins_remove_title": {
+    "other": "Видалити плагін"
+  },
+  "config.plugins_remove_confirm": {
+    "other": "Видалити \"{{.Name}}\" з конфігурації?\n\nУсі налаштування цього плагіна буде видалено. Файл плагіна не буде видалено, і його можна буде додати знову пізніше."
+  },
   "config.tab_browsers": {
     "other": "Браузери"
   },
@@ -256,5 +262,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Максимум елементів у рядку:"
+  },
+  "config.theme_label": {
+    "other": "Тема:"
+  },
+  "config.theme_system": {
+    "other": "Системна (автоматично)"
+  },
+  "config.theme_dark": {
+    "other": "Темна"
+  },
+  "config.theme_light": {
+    "other": "Світла"
+  },
+  "config.theme_restart_note": {
+    "other": "Зміна теми набуде чинності при наступному запуску."
   }
 }

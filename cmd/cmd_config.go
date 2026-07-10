@@ -13,6 +13,7 @@ import (
 const (
 	configKeyLocale   = "locale"
 	configKeyLogLevel = "loglevel"
+	configKeyUITheme  = "ui.theme"
 )
 
 var configCmd = &cobra.Command{
@@ -29,7 +30,8 @@ var configGetCmd = &cobra.Command{
 
 Available keys:
   locale       UI locale (e.g. "fi", "en", "es", "sv")
-  logLevel     Log level (debug, info, warn, error)`,
+  logLevel     Log level (debug, info, warn, error)
+  ui.theme     UI theme (system, dark, light)`,
 	Args: cobra.ExactArgs(1),
 	RunE: runConfigGet,
 }
@@ -41,7 +43,8 @@ var configSetCmd = &cobra.Command{
 
 Available keys:
   locale       UI locale (e.g. "fi", "en", "es", "sv")
-  logLevel     Log level (debug, info, warn, error)`,
+  logLevel     Log level (debug, info, warn, error)
+  ui.theme     UI theme (system, dark, light)`,
 	Args: cobra.ExactArgs(2), //nolint:mnd
 	RunE: runConfigSet,
 }
@@ -131,8 +134,10 @@ func getSettingsValue(settings *linkquisition.Settings, key string) (string, err
 		return settings.Locale, nil
 	case configKeyLogLevel:
 		return settings.LogLevel, nil
+	case configKeyUITheme:
+		return settings.Ui.GetTheme(), nil
 	default:
-		return "", fmt.Errorf("unknown configuration key: %s\nAvailable keys: locale, logLevel", key)
+		return "", fmt.Errorf("unknown configuration key: %s\nAvailable keys: locale, logLevel, ui.theme", key)
 	}
 }
 
@@ -163,8 +168,30 @@ func setSettingsValue(settings *linkquisition.Settings, key, value string) error
 		}
 
 		settings.LogLevel = valueLower
+	case configKeyUITheme:
+		validThemes := []string{
+			linkquisition.ThemeSystem,
+			linkquisition.ThemeDark,
+			linkquisition.ThemeLight,
+		}
+
+		valueLower := strings.ToLower(value)
+
+		valid := false
+		for _, t := range validThemes {
+			if valueLower == t {
+				valid = true
+				break
+			}
+		}
+
+		if !valid {
+			return fmt.Errorf("invalid theme %q, must be one of: %s", value, strings.Join(validThemes, ", "))
+		}
+
+		settings.Ui.Theme = valueLower
 	default:
-		return fmt.Errorf("unknown configuration key: %s\nAvailable keys: locale, logLevel", key)
+		return fmt.Errorf("unknown configuration key: %s\nAvailable keys: locale, logLevel, ui.theme", key)
 	}
 
 	return nil

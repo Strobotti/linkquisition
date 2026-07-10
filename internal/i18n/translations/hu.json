@@ -152,6 +152,12 @@
   "config.plugins_restart_note": {
     "other": "A bővítmény-módosítások a következő URL megnyitásakor lépnek érvénybe."
   },
+  "config.plugins_remove_title": {
+    "other": "Bővítmény eltávolítása"
+  },
+  "config.plugins_remove_confirm": {
+    "other": "Eltávolítja a(z) \"{{.Name}}\" bővítményt a beállításokból?\n\nA bővítmény összes beállítása törlődik. Maga a bővítményfájl nem törlődik, és később újra hozzáadható."
+  },
   "config.tab_browsers": {
     "other": "Böngészők"
   },
@@ -256,5 +262,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Maximum elemek soronként:"
+  },
+  "config.theme_label": {
+    "other": "Téma:"
+  },
+  "config.theme_system": {
+    "other": "Rendszer (automatikus)"
+  },
+  "config.theme_dark": {
+    "other": "Sötét"
+  },
+  "config.theme_light": {
+    "other": "Világos"
+  },
+  "config.theme_restart_note": {
+    "other": "A témaváltás a következő indításkor lép érvénybe."
   }
 }

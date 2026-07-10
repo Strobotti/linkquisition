@@ -41,6 +41,8 @@ func NewApplication() *Application {
 	fapp := app.New()
 	browserService, settingsService := newPlatformServices()
 
+	applyTheme(fapp, settingsService)
+
 	logger := setupLogger(settingsService)
 	pluginServiceProvider := linkquisition.NewPluginServiceProvider(
 		logger, settingsService.GetSettings(), settingsService.GetConfigFolderPath(),
@@ -51,6 +53,6 @@ func NewApplication() *Application {
 		BrowserService:  browserService,
 		SettingsService: settingsService,
 		Logger:          logger,
-		plugins:         setupPlugins(settingsService, pluginServiceProvider, logger),
+		plugins:         setupPlugins(settingsService, pluginServiceProvider, logger, parsePluginOpts(pluginOpts)),
 	}
 }

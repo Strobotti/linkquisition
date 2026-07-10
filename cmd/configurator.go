@@ -211,6 +211,8 @@ func (c *Configurator) buildLogLevelSection() fyne.CanvasObject {
 func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	settings := c.settingsService.GetSettings()
 
+	themeRow, themeNote := c.buildThemeSelector(settings)
+
 	hideGuideCheck := widget.NewCheck(i18n.T("config.hide_keyboard_guide"), func(checked bool) {
 		s := c.settingsService.GetSettings()
 		s.Ui.HideKeyboardGuideLabel = checked
@@ -220,7 +222,64 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	})
 	hideGuideCheck.Checked = settings.Ui.HideKeyboardGuideLabel
 
-	// Picker layout selector
+	layoutRow, maxItemsRow := c.buildPickerLayoutSelector(settings)
+
+	return container.NewVBox(
+		themeRow,
+		themeNote,
+		widget.NewSeparator(),
+		hideGuideCheck,
+		widget.NewSeparator(),
+		layoutRow,
+		maxItemsRow,
+	)
+}
+
+func (c *Configurator) buildThemeSelector(settings *linkquisition.Settings) (row, note fyne.CanvasObject) {
+	themeOptions := []string{
+		i18n.T("config.theme_system"),
+		i18n.T("config.theme_dark"),
+		i18n.T("config.theme_light"),
+	}
+
+	currentTheme := settings.Ui.GetTheme()
+	selectedTheme := themeOptions[0]
+	switch currentTheme {
+	case linkquisition.ThemeDark:
+		selectedTheme = themeOptions[1]
+	case linkquisition.ThemeLight:
+		selectedTheme = themeOptions[2]
+	}
+
+	themeSelect := widget.NewSelect(themeOptions, func(selected string) {
+		s := c.settingsService.GetSettings()
+		switch selected {
+		case themeOptions[1]:
+			s.Ui.Theme = linkquisition.ThemeDark
+		case themeOptions[2]:
+			s.Ui.Theme = linkquisition.ThemeLight
+		default:
+			s.Ui.Theme = linkquisition.ThemeSystem
+		}
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving theme setting", "error", err)
+		}
+	})
+	themeSelect.Selected = selectedTheme
+
+	restartLabel := widget.NewLabel(i18n.T("config.theme_restart_note"))
+	restartLabel.TextStyle = fyne.TextStyle{Italic: true}
+
+	row = container.NewBorder(
+		nil, nil,
+		widget.NewLabel(i18n.T("config.theme_label")), nil,
+		themeSelect,
+	)
+
+	return row, restartLabel
+}
+
+func (c *Configurator) buildPickerLayoutSelector(settings *linkquisition.Settings) (layoutRow, maxItemsRow fyne.CanvasObject) {
 	layoutOptions := []string{
 		i18n.T("config.picker_layout_vertical"),
 		i18n.T("config.picker_layout_horizontal"),
@@ -255,7 +314,7 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	})
 	maxItemsSelect.Selected = currentMaxItems
 
-	maxItemsRow := container.NewBorder(
+	maxItemsRow = container.NewBorder(
 		nil, nil,
 		widget.NewLabel(i18n.T("config.picker_max_per_row_label")), nil,
 		maxItemsSelect,
@@ -285,16 +344,13 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	})
 	layoutSelect.Selected = selectedLayout
 
-	return container.NewVBox(
-		hideGuideCheck,
-		widget.NewSeparator(),
-		container.NewBorder(
-			nil, nil,
-			widget.NewLabel(i18n.T("config.picker_layout_label")), nil,
-			layoutSelect,
-		),
-		maxItemsRow,
+	layoutRow = container.NewBorder(
+		nil, nil,
+		widget.NewLabel(i18n.T("config.picker_layout_label")), nil,
+		layoutSelect,
 	)
+
+	return layoutRow, maxItemsRow
 }
 
 func (c *Configurator) getAboutTab() fyne.CanvasObject {

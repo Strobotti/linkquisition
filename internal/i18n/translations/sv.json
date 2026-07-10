@@ -152,6 +152,12 @@
   "config.plugins_restart_note": {
     "other": "Pluginändringar träder i kraft vid nästa URL-öppning."
   },
+  "config.plugins_remove_title": {
+    "other": "Ta bort plugin"
+  },
+  "config.plugins_remove_confirm": {
+    "other": "Ta bort \"{{.Name}}\" från konfigurationen?\n\nAlla inställningar för detta plugin raderas. Pluginfilen tas inte bort och kan läggas till igen senare."
+  },
   "config.tab_browsers": {
     "other": "Webbläsare"
   },
@@ -256,5 +262,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Max per rad:"
+  },
+  "config.theme_label": {
+    "other": "Tema:"
+  },
+  "config.theme_system": {
+    "other": "System (automatiskt)"
+  },
+  "config.theme_dark": {
+    "other": "Mörkt"
+  },
+  "config.theme_light": {
+    "other": "Ljust"
+  },
+  "config.theme_restart_note": {
+    "other": "Temaändring träder i kraft vid nästa start."
   }
 }

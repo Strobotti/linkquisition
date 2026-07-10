@@ -35,8 +35,9 @@ func (m *mockPickerCanvas) ScheduleRefresh() {
 	m.refreshes++
 }
 
-func (m *mockPickerCanvas) Width() int  { return 600 }
-func (m *mockPickerCanvas) Height() int { return 400 }
+func (m *mockPickerCanvas) Width() int         { return 600 }
+func (m *mockPickerCanvas) Height() int        { return 400 }
+func (m *mockPickerCanvas) IsLightTheme() bool { return false }
 
 func TestShenanigans_Metadata(t *testing.T) {
 	p := NewForTesting()

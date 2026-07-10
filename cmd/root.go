@@ -14,6 +14,10 @@ const (
 	appGithubURL = "https://github.com/Strobotti/linkquisition"
 )
 
+// pluginOpts holds runtime plugin setting overrides from --plugin-opt flags.
+// Format: "pluginname.key=value" → map[pluginname]map[key]value
+var pluginOpts []string
+
 var rootCmd = &cobra.Command{
 	Use:   "linkquisition [url]",
 	Short: "A fast, configurable browser-picker",
@@ -67,6 +71,9 @@ func runRoot(cmd *cobra.Command, args []string) error {
 func initRootCmd() {
 	rootCmd.Version = version
 	rootCmd.SetVersionTemplate("Version: {{.Version}}\n")
+
+	rootCmd.Flags().StringArrayVar(&pluginOpts, "plugin-opt", nil,
+		`override plugin settings at runtime (format: plugin.key=value, e.g. shenanigans.effect=matrix)`)
 
 	initConfigCmd()
 	initPluginCmd()

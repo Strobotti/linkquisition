@@ -18,12 +18,13 @@ var _ linkquisition.PickerCanvas = (*fynePickerCanvas)(nil)
 // Effects are rendered as background layers beneath the main content,
 // so they do not intercept mouse/touch input.
 type fynePickerCanvas struct {
-	window  fyne.Window
-	rasters []*canvas.Raster
+	window    fyne.Window
+	rasters   []*canvas.Raster
+	lightMode bool
 }
 
-func newFynePickerCanvas(window fyne.Window) *fynePickerCanvas {
-	return &fynePickerCanvas{window: window}
+func newFynePickerCanvas(window fyne.Window, lightMode bool) *fynePickerCanvas {
+	return &fynePickerCanvas{window: window, lightMode: lightMode}
 }
 
 func (c *fynePickerCanvas) AddRasterOverlay(translucency float64, draw func(w, h int) []uint8) {
@@ -64,11 +65,15 @@ func (c *fynePickerCanvas) Height() int {
 	return int(c.window.Canvas().Size().Height)
 }
 
+func (c *fynePickerCanvas) IsLightTheme() bool {
+	return c.lightMode
+}
+
 // buildPickerContent wraps the main content with any plugin effect layers underneath.
 // Effects are rendered as background layers in a Stack container, so they don't block input.
 // The content (buttons, labels) sits on top and receives all mouse/keyboard events normally.
 func buildPickerContent(
-	content fyne.CanvasObject, window fyne.Window, hooks []linkquisition.PluginUIHook,
+	content fyne.CanvasObject, window fyne.Window, hooks []linkquisition.PluginUIHook, lightMode bool,
 ) fyne.CanvasObject {
 	if len(hooks) == 0 {
 		return content
@@ -78,7 +83,7 @@ func buildPickerContent(
 
 	// Let each hook add its raster layers
 	for _, hook := range hooks {
-		pc := newFynePickerCanvas(window)
+		pc := newFynePickerCanvas(window, lightMode)
 		hook.OnPickerShown(pc)
 
 		for _, r := range pc.rasters {

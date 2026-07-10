@@ -41,4 +41,8 @@ type PickerCanvas interface {
 
 	// Height returns the current canvas height in pixels.
 	Height() int
+
+	// IsLightTheme returns true when the UI is using a light color theme.
+	// Plugins can use this to adjust foreground/background colors for contrast.
+	IsLightTheme() bool
 }

@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -38,10 +39,26 @@ type Application struct {
 	plugins []linkquisition.Plugin
 }
 
+// applyTheme configures the Fyne app theme based on the user's ui.theme setting.
+// "system" (or empty) uses the OS default; "dark" and "light" force the variant.
+func applyTheme(fapp fyne.App, settingsService linkquisition.SettingsService) {
+	settings := settingsService.GetSettings()
+
+	switch settings.Ui.GetTheme() {
+	case linkquisition.ThemeDark:
+		fapp.Settings().SetTheme(theme.DarkTheme())
+	case linkquisition.ThemeLight:
+		fapp.Settings().SetTheme(theme.LightTheme())
+	case linkquisition.ThemeSystem:
+		// Fyne follows the OS by default — no action needed.
+	}
+}
+
 func setupPlugins(
 	settingsService linkquisition.SettingsService,
 	pluginServiceProvider linkquisition.PluginServiceProvider,
 	logger *slog.Logger,
+	overrides map[string]map[string]string,
 ) []linkquisition.Plugin {
 	settings := settingsService.GetSettings()
 	var plugins []linkquisition.Plugin
@@ -73,7 +90,20 @@ func setupPlugins(
 			continue
 		}
 
-		if p, err := setupPlugin(plug, pluginSettings.Settings, pluginServiceProvider); err != nil {
+		// Apply runtime overrides from --plugin-opt flags
+		effectiveSettings := pluginSettings.Settings
+		pluginName := strings.TrimSuffix(filepath.Base(pluginSettings.Path), pluginExtension)
+		if opts, ok := overrides[pluginName]; ok {
+			if effectiveSettings == nil {
+				effectiveSettings = make(map[string]interface{})
+			}
+			for k, v := range opts {
+				effectiveSettings[k] = v
+				logger.Debug("Plugin setting overridden via --plugin-opt", "plugin", pluginName, "key", k, "value", v)
+			}
+		}
+
+		if p, err := setupPlugin(plug, effectiveSettings, pluginServiceProvider); err != nil {
 			logger.Error("Error setting up plugin", "plugin", pluginSettings.Path, "error", err.Error())
 		} else {
 			logger.Debug("Plugin loaded successfully", "plugin", pluginSettings.Path)
@@ -82,6 +112,36 @@ func setupPlugins(
 	}
 
 	return plugins
+}
+
+// parsePluginOpts parses --plugin-opt flag values ("plugin.key=value") into
+// a nested map: map[pluginName]map[settingKey]value.
+// Entries that don't match the expected format are silently ignored.
+func parsePluginOpts(opts []string) map[string]map[string]string {
+	result := make(map[string]map[string]string)
+	for _, opt := range opts {
+		// Split on first "=" to get "plugin.key" and "value"
+		eqIdx := strings.IndexByte(opt, '=')
+		if eqIdx < 0 {
+			continue
+		}
+		path := opt[:eqIdx]
+		value := opt[eqIdx+1:]
+
+		// Split path on first "." to get plugin name and key
+		dotIdx := strings.IndexByte(path, '.')
+		if dotIdx < 0 || dotIdx == 0 || dotIdx == len(path)-1 {
+			continue
+		}
+		pluginName := path[:dotIdx]
+		key := path[dotIdx+1:]
+
+		if result[pluginName] == nil {
+			result[pluginName] = make(map[string]string)
+		}
+		result[pluginName][key] = value
+	}
+	return result
 }
 
 // openPlugin wraps plugin.Open with panic recovery — Go plugin loading can panic

@@ -181,6 +181,7 @@ linkquisition --version
 linkquisition config                        # show full config as JSON
 linkquisition config get logLevel           # get a single value
 linkquisition config set logLevel debug     # set a value
+linkquisition config set ui.theme dark      # set UI theme (system/dark/light)
 linkquisition config path                   # print config file path
 
 # Plugin management
@@ -205,6 +206,9 @@ linkquisition set-default
 
 # Test/trace URL processing (dry run)
 linkquisition test-url "https://example.com/page?utm_source=twitter"
+
+# Override plugin settings at runtime (not persisted)
+linkquisition --plugin-opt shenanigans.effect=matrix "https://example.com"
 ```
 
 On macOS, the binary is located at `/Applications/Linkquisition.app/Contents/MacOS/linkquisition`.
