@@ -2,7 +2,7 @@
 
 ![coverage](https://raw.githubusercontent.com/Strobotti/linkquisition/gh-pages/.badges/main/coverage.svg)
 
-Linkquisition is a fast, configurable browser-picker for Linux (and experimentally macOS) written in Go.
+Linkquisition is a fast, configurable browser-picker for Linux and macOS written in Go.
 
 ...as nobody expects the Linkquisition!
 
@@ -270,7 +270,7 @@ See [plugins](./plugins/README.md) for more information.
 - [X] Add support for browser icons
 - [ ] Add support for more platforms
 - [ ] Add support for more architectures
-- [ ] Add support for more package-formats
+- [X] Add support for more package-formats
 
 <img src="Icon.png" width="142" height="142" alt="Linkquisition" align="left"/>
 
