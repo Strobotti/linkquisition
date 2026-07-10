@@ -199,7 +199,7 @@ func (s *pipesState) chooseTurn(currentDir int) int {
 	}
 }
 
-func dirDelta(dir int) (int, int) {
+func dirDelta(dir int) (dx, dy int) {
 	switch dir {
 	case dirRight:
 		return 1, 0

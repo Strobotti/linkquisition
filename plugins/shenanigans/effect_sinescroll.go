@@ -1,4 +1,4 @@
-//nolint:mnd,gosec // Visual effects plugin: magic numbers and weak random are by design.
+//nolint:mnd // Visual effects plugin: magic numbers are by design.
 package main
 
 import (
@@ -168,12 +168,12 @@ func (s *sineScrollState) drawChar(pixels []uint8, ch rune, cx, cy, scale int, r
 }
 
 // sineScrollColor returns a rainbow color for a given hue [0,1).
-func sineScrollColor(hue float64) (uint8, uint8, uint8) {
+func sineScrollColor(hue float64) (r, g, b uint8) {
 	h := hue - float64(int(hue))
-	r := sinNorm(h*6.28) * 255
-	g := sinNorm(h*6.28+2.09) * 255
-	b := sinNorm(h*6.28+4.19) * 255
-	return uint8(r), uint8(g), uint8(b)
+	r = uint8(sinNorm(h*6.28) * 255)
+	g = uint8(sinNorm(h*6.28+2.09) * 255)
+	b = uint8(sinNorm(h*6.28+4.19) * 255)
+	return r, g, b
 }
 
 // Simple 5x7 font glyphs for uppercase + space/punctuation.

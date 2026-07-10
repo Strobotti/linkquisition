@@ -1,4 +1,3 @@
-//nolint:mnd // Visual effects plugin: magic numbers are by design.
 package main
 
 import (
@@ -133,20 +132,5 @@ func drawRect(pixels []uint8, bufW, bufH, x, y, rw, rh int, r, g, b, a uint8) {
 				pixels[offset+3] = a
 			}
 		}
-	}
-}
-
-// setPixel sets a single pixel in an RGBA buffer with bounds checking.
-// The pixel is only written if the new alpha exceeds the existing alpha.
-func setPixel(pixels []uint8, bufW, bufH, x, y int, r, g, b, a uint8) {
-	if x < 0 || x >= bufW || y < 0 || y >= bufH {
-		return
-	}
-	offset := (y*bufW + x) * rgbaChannels
-	if a > pixels[offset+3] {
-		pixels[offset] = r
-		pixels[offset+1] = g
-		pixels[offset+2] = b
-		pixels[offset+3] = a
 	}
 }

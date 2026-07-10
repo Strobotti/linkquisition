@@ -90,7 +90,7 @@ func (s *rainState) render() []uint8 {
 	return pixels
 }
 
-func (s *rainState) drawDrop(pixels []uint8, d raindrop) { //nolint:gocyclo
+func (s *rainState) drawDrop(pixels []uint8, d raindrop) {
 	// Draw a vertical streak
 	startY := int(d.y - d.length)
 	endY := int(d.y)

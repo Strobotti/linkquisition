@@ -257,7 +257,7 @@ func (s *pacmanState) render() []uint8 {
 			if pacMaze[row][col] == 1 {
 				px := s.offsetX + col*s.cellSize
 				py := s.offsetY + row*s.cellSize
-				s.drawPacRect(pixels, px+1, py+1, s.cellSize-2, s.cellSize-2, 30, 30, 180, pacWallAlpha)
+				drawRect(pixels, s.width, s.height, px+1, py+1, s.cellSize-2, s.cellSize-2, 30, 30, 180, pacWallAlpha)
 			}
 		}
 	}
@@ -289,13 +289,13 @@ func (s *pacmanState) render() []uint8 {
 		c := ghostColors[i]
 		s.drawCircle(pixels, cx, cy, r, c[0], c[1], c[2], pacGhostAlpha)
 		// Flat bottom for ghost shape
-		s.drawPacRect(pixels, cx-r, cy, r*2, r, c[0], c[1], c[2], pacGhostAlpha)
+		drawRect(pixels, s.width, s.height, cx-r, cy, r*2, r, c[0], c[1], c[2], pacGhostAlpha)
 	}
 
 	return pixels
 }
 
-func (s *pacmanState) drawPacman(pixels []uint8) { //nolint:gocyclo
+func (s *pacmanState) drawPacman(pixels []uint8) {
 	cx := s.offsetX + s.pacman.x*s.cellSize + s.cellSize/2
 	cy := s.offsetY + s.pacman.y*s.cellSize + s.cellSize/2
 	r := s.cellSize * 2 / 5
@@ -350,24 +350,6 @@ func (s *pacmanState) drawCircle(pixels []uint8, cx, cy, r int, red, g, b, a uin
 				offset := (py*s.width + px) * rgbaChannels
 				if a > pixels[offset+3] {
 					pixels[offset] = red
-					pixels[offset+1] = g
-					pixels[offset+2] = b
-					pixels[offset+3] = a
-				}
-			}
-		}
-	}
-}
-
-func (s *pacmanState) drawPacRect(pixels []uint8, x, y, rw, rh int, r, g, b, a uint8) {
-	for dy := range rh {
-		for dx := range rw {
-			px := x + dx
-			py := y + dy
-			if px >= 0 && px < s.width && py >= 0 && py < s.height {
-				offset := (py*s.width + px) * rgbaChannels
-				if a > pixels[offset+3] {
-					pixels[offset] = r
 					pixels[offset+1] = g
 					pixels[offset+2] = b
 					pixels[offset+3] = a

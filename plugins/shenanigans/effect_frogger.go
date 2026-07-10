@@ -320,25 +320,25 @@ func (s *froggerState) render() []uint8 {
 
 		switch lane.kind {
 		case froggerLaneSafe:
-			s.drawLaneRect(pixels, 0, laneTop, w, s.laneHeight, 60, 140, 60, froggerAlpha/2)
+			drawRect(pixels, s.width, s.height, 0, laneTop, w, s.laneHeight, 60, 140, 60, froggerAlpha/2)
 		case froggerLaneRoad:
-			s.drawLaneRect(pixels, 0, laneTop, w, s.laneHeight, 50, 50, 50, froggerAlpha/2)
+			drawRect(pixels, s.width, s.height, 0, laneTop, w, s.laneHeight, 50, 50, 50, froggerAlpha/2)
 			// Lane markings
 			for mx := 0; mx < w; mx += s.colWidth {
 				markY := laneTop + s.laneHeight/2
-				s.drawLaneRect(pixels, mx+s.colWidth/4, markY, s.colWidth/2, 2, 200, 200, 100, froggerAlpha/3)
+				drawRect(pixels, s.width, s.height, mx+s.colWidth/4, markY, s.colWidth/2, 2, 200, 200, 100, froggerAlpha/3)
 			}
 			// Draw vehicles
 			for _, v := range lane.vehicles {
 				vy := laneTop + (s.laneHeight-s.frogSize)/2
-				s.drawLaneRect(pixels, int(v.x), vy, v.width, s.frogSize, v.color[0], v.color[1], v.color[2], froggerAlpha)
+				drawRect(pixels, s.width, s.height, int(v.x), vy, v.width, s.frogSize, v.color[0], v.color[1], v.color[2], froggerAlpha)
 			}
 		case froggerLaneRiver:
-			s.drawLaneRect(pixels, 0, laneTop, w, s.laneHeight, 30, 60, 150, froggerAlpha/2)
+			drawRect(pixels, s.width, s.height, 0, laneTop, w, s.laneHeight, 30, 60, 150, froggerAlpha/2)
 			// Draw logs
 			for _, log := range lane.logs {
 				ly := laneTop + (s.laneHeight-s.frogSize*2/3)/2
-				s.drawLaneRect(pixels, int(log.x), ly, log.width, s.frogSize*2/3, 140, 90, 40, froggerAlpha)
+				drawRect(pixels, s.width, s.height, int(log.x), ly, log.width, s.frogSize*2/3, 140, 90, 40, froggerAlpha)
 			}
 		}
 	}
@@ -388,24 +388,6 @@ func (s *froggerState) drawFrogEye(pixels []uint8, ex, ey, size int) {
 					pixels[offset] = 255
 					pixels[offset+1] = 255
 					pixels[offset+2] = 255
-					pixels[offset+3] = a
-				}
-			}
-		}
-	}
-}
-
-func (s *froggerState) drawLaneRect(pixels []uint8, x, y, rw, rh int, r, g, b, a uint8) {
-	for dy := range rh {
-		for dx := range rw {
-			px := x + dx
-			py := y + dy
-			if px >= 0 && px < s.width && py >= 0 && py < s.height {
-				offset := (py*s.width + px) * rgbaChannels
-				if a > pixels[offset+3] {
-					pixels[offset] = r
-					pixels[offset+1] = g
-					pixels[offset+2] = b
 					pixels[offset+3] = a
 				}
 			}

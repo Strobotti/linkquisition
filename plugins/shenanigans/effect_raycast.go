@@ -1,4 +1,4 @@
-//nolint:mnd,gosec // Visual effects plugin: magic numbers and weak random are by design.
+//nolint:mnd // Visual effects plugin: magic numbers are by design.
 package main
 
 import (
@@ -269,7 +269,7 @@ func (s *raycastState) render() []uint8 {
 }
 
 // castRay performs DDA raycasting and returns distance to the nearest wall and which side was hit.
-func (s *raycastState) castRay(rayDirX, rayDirY float64) (float64, int) {
+func (s *raycastState) castRay(rayDirX, rayDirY float64) (dist float64, side int) {
 	mapX := int(s.posX)
 	mapY := int(s.posY)
 
@@ -305,7 +305,7 @@ func (s *raycastState) castRay(rayDirX, rayDirY float64) (float64, int) {
 	}
 
 	// DDA
-	side := 0
+	side = 0
 	for range int(raycastMaxDist * 4) {
 		if sideDistX < sideDistY {
 			sideDistX += deltaDistX

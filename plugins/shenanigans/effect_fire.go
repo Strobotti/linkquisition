@@ -199,4 +199,3 @@ func fireColor(val uint8) (r, g, b, a uint8) {
 		return r, g, b, a
 	}
 }
-

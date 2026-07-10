@@ -65,7 +65,7 @@ func (s *pongState) resetBall() {
 	s.ballVY = (rand.Float64() - 0.5) * 4.0
 }
 
-func (s *pongState) update() { //nolint:gocyclo
+func (s *pongState) update() {
 	h := float64(s.height)
 	w := float64(s.width)
 
