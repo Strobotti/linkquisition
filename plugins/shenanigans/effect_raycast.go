@@ -7,6 +7,8 @@ import (
 	"github.com/strobotti/linkquisition"
 )
 
+// First-person raycaster — a Wolfenstein 3D-style maze explorer using DDA ray casting.
+
 // --- Raycaster Effect ---
 
 const (

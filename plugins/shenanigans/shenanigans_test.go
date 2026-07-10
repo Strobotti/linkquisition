@@ -50,11 +50,13 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[0].Type)
 	assert.Equal(t, []string{
 		"random",
-		"asteroids", "aurora", "breakout", "dino",
-		"fire", "fireworks", "football", "glitch",
-		"invaders", "life", "matrix", "pacman",
-		"plasma", "pong", "pride", "rain",
-		"snake", "snow", "starfield",
+		"asteroids", "aurora", "boids", "breakout",
+		"dino", "fire", "fireflies", "fireworks",
+		"flappy", "football", "frogger", "glitch",
+		"invaders", "lava", "life", "matrix",
+		"minesweeper", "pacman", "plasma", "pong",
+		"pride", "rain", "raycast", "snake",
+		"sinescroll", "snow", "starfield", "tetris",
 	}, meta.Settings[0].Options)
 }
 
