@@ -66,6 +66,67 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 	d.Show()
 }
 
+// showAddPluginSettings shows a settings dialog for a not-yet-configured plugin.
+// If the user clicks Save, the plugin is added to the config with the chosen settings.
+// If the plugin has no configurable settings, it is added immediately with defaults.
+func (c *Configurator) showAddPluginSettings(
+	pluginName string, meta linkquisition.PluginMetadata, listContainer *fyne.Container,
+) {
+	// If no settings to configure, add immediately with defaults
+	if len(meta.Settings) == 0 {
+		c.addPlugin(pluginName, listContainer)
+		return
+	}
+
+	// Build form items from metadata setting descriptors using defaults
+	defaultSettings := make(map[string]interface{})
+	editors := make(map[string]func() interface{})
+	formItems := make([]*widget.FormItem, 0, len(meta.Settings))
+
+	for i := range meta.Settings {
+		desc := &meta.Settings[i]
+		item, getValue := c.buildSettingWidget(desc, defaultSettings)
+		formItems = append(formItems, item)
+		editors[desc.Key] = getValue
+	}
+
+	form := widget.NewForm(formItems...)
+
+	title := i18n.T("config.plugins_settings_title", map[string]interface{}{templateKeyName: meta.Name})
+
+	windows := c.fapp.Driver().AllWindows()
+	if len(windows) == 0 {
+		return
+	}
+	parentWindow := windows[0]
+
+	scrollContent := container.NewVScroll(form)
+	scrollContent.SetMinSize(fyne.NewSize(550, 300)) //nolint:mnd
+
+	d := dialog.NewCustomConfirm(
+		title,
+		i18n.T("config.plugins_save"),
+		i18n.T("config.plugins_cancel"),
+		scrollContent,
+		func(save bool) {
+			if !save {
+				return
+			}
+			// Collect settings from editors
+			pluginSettings := make(map[string]interface{})
+			for key, getValue := range editors {
+				if val := getValue(); val != nil {
+					pluginSettings[key] = val
+				}
+			}
+			c.addPluginWithSettings(pluginName, pluginSettings, listContainer)
+		},
+		parentWindow,
+	)
+	d.Resize(fyne.NewSize(600, 450)) //nolint:mnd
+	d.Show()
+}
+
 func (c *Configurator) savePluginSettings(
 	pluginIdx int, editors map[string]func() interface{}, listContainer *fyne.Container,
 ) {

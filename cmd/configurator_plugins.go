@@ -133,7 +133,7 @@ func (c *Configurator) buildAvailablePluginRow(name string, listContainer *fyne.
 	desc.Wrapping = fyne.TextWrapWord
 
 	addBtn := widget.NewButton(i18n.T("config.plugins_add"), func() {
-		c.addPlugin(pluginName, listContainer)
+		c.showAddPluginSettings(pluginName, meta, listContainer)
 	})
 
 	headerRow := container.NewBorder(nil, nil, title, addBtn)
@@ -210,6 +210,25 @@ func (c *Configurator) addPlugin(name string, listContainer *fyne.Container) {
 	settings.Plugins = append(settings.Plugins, linkquisition.PluginSettings{
 		Path:       name + pluginExtension,
 		IsDisabled: false,
+	})
+
+	if err := c.settingsService.WriteSettings(settings); err != nil {
+		c.logger.Error("Error adding plugin", "error", err, "plugin", name)
+		return
+	}
+
+	c.rebuildPluginsList(listContainer)
+}
+
+func (c *Configurator) addPluginWithSettings(
+	name string, pluginSettings map[string]interface{}, listContainer *fyne.Container,
+) {
+	settings := c.settingsService.GetSettings()
+
+	settings.Plugins = append(settings.Plugins, linkquisition.PluginSettings{
+		Path:       name + pluginExtension,
+		IsDisabled: false,
+		Settings:   pluginSettings,
 	})
 
 	if err := c.settingsService.WriteSettings(settings); err != nil {
