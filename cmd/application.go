@@ -242,9 +242,14 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 		return fallbackLog
 	}
 
+	logLevel := settings.LogLevel
+	if logLevelOverride != "" {
+		logLevel = logLevelOverride
+	}
+
 	logHandlerOpts := &slog.HandlerOptions{
 		Level: linkquisition.MapSettingsLogLevelToSlog(
-			settings.LogLevel,
+			logLevel,
 		),
 	}
 

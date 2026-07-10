@@ -48,11 +48,16 @@ func NewApplication() *Application {
 		logger, settingsService.GetSettings(), settingsService.GetConfigFolderPath(),
 	)
 
+	var plugins []linkquisition.Plugin
+	if !noPlugins {
+		plugins = setupPlugins(settingsService, pluginServiceProvider, logger, parsePluginOpts(pluginOpts))
+	}
+
 	return &Application{
 		Fapp:            fapp,
 		BrowserService:  browserService,
 		SettingsService: settingsService,
 		Logger:          logger,
-		plugins:         setupPlugins(settingsService, pluginServiceProvider, logger, parsePluginOpts(pluginOpts)),
+		plugins:         plugins,
 	}
 }

@@ -113,7 +113,10 @@ linters:
       - path: freedesktop/
         linters:
           - noctx
-          - goconst
+      - path: plugins/shenanigans/
+        linters:
+          - gocyclo
+          - funlen
       - path: internal/i18n/
         linters:
           - goconst

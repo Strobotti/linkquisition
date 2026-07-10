@@ -50,11 +50,13 @@ func TestShenanigans_Metadata(t *testing.T) {
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[0].Type)
 	assert.Equal(t, []string{
 		"random",
-		"asteroids", "aurora", "breakout", "dino",
-		"fire", "fireworks", "football", "glitch",
-		"invaders", "life", "matrix", "pacman",
-		"plasma", "pong", "pride", "rain",
-		"snake", "snow", "starfield",
+		"asteroids", "aurora", "boids", "breakout",
+		"dino", "fire", "fireflies", "fireworks",
+		"flappy", "football", "frogger", "glitch",
+		"invaders", "lava", "life", "matrix",
+		"minesweeper", "pacman", "pipes", "plasma", "pong",
+		"pride", "rain", "raycast", "snake",
+		"sinescroll", "snow", "starfield", "tetris",
 	}, meta.Settings[0].Options)
 }
 
@@ -143,8 +145,8 @@ func TestShenanigans_OnPickerShown_Snow(t *testing.T) {
 }
 
 func TestSnowState_Update(t *testing.T) {
-	state := &snowState{width: 600, height: 400}
-	state.init()
+	state := &snowState{}
+	state.init(600, 400)
 
 	assert.Len(t, state.flakes, snowFlakeCount)
 
@@ -205,8 +207,8 @@ func TestShenanigans_OnPickerShown_Starfield(t *testing.T) {
 }
 
 func TestStarfieldState_Update(t *testing.T) {
-	state := &starfieldState{width: 400, height: 300}
-	state.init()
+	state := &starfieldState{}
+	state.init(400, 300)
 
 	assert.Len(t, state.stars, starCount)
 

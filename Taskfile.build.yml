@@ -75,7 +75,7 @@ tasks:
     cmds:
       - mkdir -p {{.OUTPUT_DIR}}
       - for: { var: PLUGINS }
-        cmd: go build -tags release -buildmode=plugin -o {{.OUTPUT_DIR}}/{{.ITEM}}.so ./plugins/{{.ITEM}}/{{.ITEM}}.go
+        cmd: go build -tags release -buildmode=plugin -o {{.OUTPUT_DIR}}/{{.ITEM}}.so ./plugins/{{.ITEM}}/
 
   clean:
     cmds:
