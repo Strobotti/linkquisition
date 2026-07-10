@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -29,7 +30,17 @@ func (c *Configurator) getBrowsersTab() fyne.CanvasObject {
 		c.showAddBrowserDialog(content)
 	})
 
-	bottomBar := container.NewHBox(scanBtn, addBtn)
+	// Legend with hidden-eye icon explaining visibility behavior
+	legendIcon := widget.NewIcon(theme.VisibilityOffIcon())
+	legendLabel := widget.NewLabel(i18n.T("config.browsers_visibility_legend"))
+	legendLabel.TextStyle = fyne.TextStyle{Italic: true}
+	legendLabel.Wrapping = fyne.TextWrapWord
+	legendRow := container.NewBorder(nil, nil, legendIcon, nil, legendLabel)
+
+	bottomBar := container.NewVBox(
+		legendRow,
+		container.NewHBox(scanBtn, addBtn),
+	)
 
 	return container.NewBorder(nil, bottomBar, nil, nil, scrollArea)
 }
@@ -95,11 +106,6 @@ func (c *Configurator) buildBrowserCard(
 	title := widget.NewLabel(b.Name)
 	title.TextStyle = fyne.TextStyle{Bold: true}
 
-	// Command
-	command := widget.NewLabel(b.Command)
-	command.TextStyle = fyne.TextStyle{Italic: true}
-	command.Truncation = fyne.TextTruncateEllipsis
-
 	// Source badge
 	sourceText := i18n.T("config.browsers_source_auto")
 	if b.Source == linkquisition.SourceManual {
@@ -108,15 +114,24 @@ func (c *Configurator) buildBrowserCard(
 	sourceLabel := widget.NewLabel(sourceText)
 	sourceLabel.TextStyle = fyne.TextStyle{Italic: true}
 
-	// Visible toggle
-	visibleCheck := widget.NewCheck(i18n.T("config.browsers_show_in_picker"), func(checked bool) {
-		s := c.settingsService.GetSettings()
-		s.Browsers[idx].Hidden = !checked
-		if err := c.settingsService.WriteSettings(s); err != nil {
-			c.logger.Error("Error saving browser visibility", "error", err)
-		}
-	})
-	visibleCheck.Checked = !b.Hidden
+	// Visibility toggle — eye icon
+	visibilityBtn := widget.NewButtonWithIcon("", theme.VisibilityIcon(), nil)
+	if b.Hidden {
+		visibilityBtn.Icon = theme.VisibilityOffIcon()
+	}
+	visibilityBtn.OnTapped = func() {
+		visibilityBtn.Disable()
+		go func() {
+			s := c.settingsService.GetSettings()
+			s.Browsers[idx].Hidden = !s.Browsers[idx].Hidden
+			if err := c.settingsService.WriteSettings(s); err != nil {
+				c.logger.Error("Error saving browser visibility", "error", err)
+				visibilityBtn.Enable()
+				return
+			}
+			c.rebuildBrowsersList(listContainer)
+		}()
+	}
 
 	// Reorder buttons
 	upBtn := widget.NewButton(i18n.T("config.plugins_move_up"), func() {
@@ -133,21 +148,25 @@ func (c *Configurator) buildBrowserCard(
 		downBtn.Disable()
 	}
 
-	// Edit/Delete buttons for manual browsers
-	var actionRow fyne.CanvasObject
+	// Edit button — only for manual browsers
+	var editBtn *widget.Button
 	if b.Source == linkquisition.SourceManual {
-		editBtn := widget.NewButton(i18n.T("config.browsers_edit"), func() {
+		editBtn = widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
 			c.showEditBrowserDialog(idx, listContainer)
 		})
-		deleteBtn := widget.NewButton("🗑", func() {
-			c.confirmDeleteBrowser(idx, listContainer)
-		})
-		actionRow = container.NewHBox(editBtn, deleteBtn)
-	} else {
-		actionRow = container.NewHBox()
 	}
 
-	// Rules count indicator
+	// Delete button — trash icon with confirmation
+	deleteBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
+		c.confirmDeleteBrowser(idx, listContainer)
+	})
+
+	// Command label
+	command := widget.NewLabel(b.Command)
+	command.TextStyle = fyne.TextStyle{Italic: true}
+	command.Truncation = fyne.TextTruncateEllipsis
+
+	// Rules count indicator (same line as command, right-aligned)
 	rulesCount := len(b.Matches)
 	var rulesLabel *widget.Label
 	if rulesCount > 0 {
@@ -157,15 +176,7 @@ func (c *Configurator) buildBrowserCard(
 		rulesLabel.TextStyle = fyne.TextStyle{Italic: true}
 	}
 
-	// Icon path (read-only display)
-	var iconPathLabel *widget.Label
-	if b.IconPath != "" {
-		iconPathLabel = widget.NewLabel(b.IconPath)
-		iconPathLabel.TextStyle = fyne.TextStyle{Italic: true}
-		iconPathLabel.Truncation = fyne.TextTruncateEllipsis
-	}
-
-	// Layout
+	// Layout — title row
 	var titleRow fyne.CanvasObject
 	if iconWidget != nil {
 		titleRow = container.NewHBox(iconWidget, title, sourceLabel)
@@ -173,20 +184,28 @@ func (c *Configurator) buildBrowserCard(
 		titleRow = container.NewHBox(title, sourceLabel)
 	}
 
+	// Right-side controls
+	controls := container.NewHBox(visibilityBtn, upBtn, downBtn)
+	if editBtn != nil {
+		controls.Add(editBtn)
+	}
+	controls.Add(deleteBtn)
+
 	headerRow := container.NewBorder(
 		nil, nil,
 		titleRow,
-		container.NewHBox(upBtn, downBtn),
+		controls,
 	)
 
-	cardContent := container.NewVBox(headerRow, command)
-	if iconPathLabel != nil {
-		cardContent.Add(iconPathLabel)
-	}
+	// Command row with rules count on the right
+	var commandRow fyne.CanvasObject
 	if rulesLabel != nil {
-		cardContent.Add(rulesLabel)
+		commandRow = container.NewBorder(nil, nil, nil, rulesLabel, command)
+	} else {
+		commandRow = command
 	}
-	cardContent.Add(container.NewHBox(visibleCheck, layout.NewSpacer(), actionRow))
+
+	cardContent := container.NewVBox(headerRow, commandRow)
 
 	return widget.NewCard("", "", cardContent)
 }
