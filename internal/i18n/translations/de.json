@@ -152,6 +152,12 @@
   "config.plugins_restart_note": {
     "other": "Plugin-Änderungen werden beim nächsten URL-Öffnen wirksam."
   },
+  "config.plugins_remove_title": {
+    "other": "Plugin entfernen"
+  },
+  "config.plugins_remove_confirm": {
+    "other": "\"{{.Name}}\" aus der Konfiguration entfernen?\n\nAlle Einstellungen für dieses Plugin werden gelöscht. Die Plugin-Datei selbst wird nicht gelöscht und kann später erneut hinzugefügt werden."
+  },
   "config.tab_browsers": {
     "other": "Browser"
   },

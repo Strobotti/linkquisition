@@ -152,6 +152,12 @@
   "config.plugins_restart_note": {
     "other": "As alterações de plugins terão efeito na próxima abertura de URL."
   },
+  "config.plugins_remove_title": {
+    "other": "Remover plugin"
+  },
+  "config.plugins_remove_confirm": {
+    "other": "Remover \"{{.Name}}\" da configuração?\n\nTodas as configurações deste plugin serão excluídas. O arquivo do plugin não será excluído e pode ser adicionado novamente mais tarde."
+  },
   "config.tab_browsers": {
     "other": "Navegadores"
   },

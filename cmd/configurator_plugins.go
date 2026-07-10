@@ -7,6 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -95,6 +96,11 @@ func (c *Configurator) buildPluginCard(
 		configBtn.Hide()
 	}
 
+	// Delete button — trash icon
+	deleteBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
+		c.confirmRemovePlugin(idx, meta.Name, listContainer)
+	})
+
 	// Reorder buttons
 	upBtn := widget.NewButton(i18n.T("config.plugins_move_up"), func() {
 		c.movePlugin(idx, -1, listContainer)
@@ -114,7 +120,7 @@ func (c *Configurator) buildPluginCard(
 	headerRow := container.NewBorder(
 		nil, nil,
 		container.NewHBox(title),
-		container.NewHBox(configBtn, upBtn, downBtn, enableCheck),
+		container.NewHBox(configBtn, upBtn, downBtn, enableCheck, deleteBtn),
 	)
 
 	card := container.NewVBox(headerRow, desc)
@@ -202,6 +208,35 @@ func (c *Configurator) movePlugin(idx, direction int, listContainer *fyne.Contai
 	}
 
 	c.rebuildPluginsList(listContainer)
+}
+
+func (c *Configurator) confirmRemovePlugin(idx int, displayName string, listContainer *fyne.Container) {
+	windows := c.fapp.Driver().AllWindows()
+	if len(windows) == 0 {
+		return
+	}
+	parentWindow := windows[0]
+
+	dialog.ShowConfirm(
+		i18n.T("config.plugins_remove_title"),
+		i18n.T("config.plugins_remove_confirm", map[string]interface{}{templateKeyName: displayName}),
+		func(confirmed bool) {
+			if !confirmed {
+				return
+			}
+			settings := c.settingsService.GetSettings()
+			if idx < 0 || idx >= len(settings.Plugins) {
+				return
+			}
+			settings.Plugins = append(settings.Plugins[:idx], settings.Plugins[idx+1:]...)
+			if err := c.settingsService.WriteSettings(settings); err != nil {
+				c.logger.Error("Error removing plugin", "error", err)
+				return
+			}
+			c.rebuildPluginsList(listContainer)
+		},
+		parentWindow,
+	)
 }
 
 func (c *Configurator) addPlugin(name string, listContainer *fyne.Container) {
