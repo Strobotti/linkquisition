@@ -39,6 +39,7 @@ const (
 	effectFireflies   = "fireflies"
 	effectBoids       = "boids"
 	effectRaycast     = "raycast"
+	effectPipes       = "pipes"
 	effectRandom      = "random"
 	frameInterval     = 30 * time.Millisecond
 	fireFrameInterval = 25 * time.Millisecond
@@ -83,7 +84,7 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 					effectDino, effectFire, effectFireflies, effectFireworks,
 					effectFlappy, effectFootball, effectFrogger, effectGlitch,
 					effectInvaders, effectLava, effectLife, effectMatrix,
-					effectMinesweeper, effectPacman, effectPlasma, effectPong,
+					effectMinesweeper, effectPacman, effectPipes, effectPlasma, effectPong,
 					effectPride, effectRain, effectRaycast, effectSnake,
 					effectSineScroll, effectSnow, effectStarfield, effectTetris,
 				},
@@ -129,7 +130,7 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) { //nolin
 		effectInvaders, effectSnake, effectRain, effectBreakout, effectDino,
 		effectAsteroids, effectPacman, effectTetris, effectFrogger,
 		effectMinesweeper, effectFlappy, effectLava, effectSineScroll,
-		effectFireflies, effectBoids, effectRaycast,
+		effectFireflies, effectBoids, effectRaycast, effectPipes,
 	}
 
 	if effect == effectRandom || !isKnownEffect(effect, allEffects) {
@@ -195,6 +196,8 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) { //nolin
 		p.startBoids(canvas)
 	case effectRaycast:
 		p.startRaycast(canvas)
+	case effectPipes:
+		p.startPipes(canvas)
 	}
 }
 

@@ -9,3 +9,4 @@
 /dist/
 /test/
 gl-code-quality-report.json
+*.so
