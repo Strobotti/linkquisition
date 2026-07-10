@@ -212,6 +212,9 @@
   "config.browsers_rules_count": {
     "other": "{{.Count}} szabály"
   },
+  "config.browsers_visibility_legend": {
+    "other": "A rejtett böngészők szabályai továbbra is kiértékelődnek — csak nem jelennek meg a választóablakban."
+  },
   "config.no_browsers_warning": {
     "other": "⚠ Nincsenek böngészők konfigurálva. Menj a Böngészők fülre a telepített böngészők kereséséhez."
   },

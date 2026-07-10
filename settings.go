@@ -120,12 +120,12 @@ type UiSettings struct {
 	Theme                  string `json:"theme,omitempty"`
 }
 
-// GetPickerLayout returns the effective picker layout, defaulting to vertical.
+// GetPickerLayout returns the effective picker layout, defaulting to horizontal.
 func (u *UiSettings) GetPickerLayout() string {
-	if u.PickerLayout == PickerLayoutHorizontal {
-		return PickerLayoutHorizontal
+	if u.PickerLayout == PickerLayoutVertical {
+		return PickerLayoutVertical
 	}
-	return PickerLayoutVertical
+	return PickerLayoutHorizontal
 }
 
 // GetMaxItemsPerRow returns the effective max items per row, defaulting to DefaultMaxItemsPerRow.

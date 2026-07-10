@@ -212,6 +212,9 @@
   "config.browsers_rules_count": {
     "other": "{{.Count}} regel/regler"
   },
+  "config.browsers_visibility_legend": {
+    "other": "Dolda webbläsares regler utvärderas fortfarande — de visas bara inte i väljaren."
+  },
   "config.no_browsers_warning": {
     "other": "⚠ Inga webbläsare konfigurerade. Gå till fliken Webbläsare för att söka efter installerade webbläsare."
   },

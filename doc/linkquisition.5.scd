@@ -90,8 +90,8 @@ and *rule* subcommands).
 	If _true_, hides the keyboard shortcut guide at the bottom of the picker.
 
 *pickerLayout* (string, optional)
-	Layout style for the browser picker window. One of: _vertical_ (default,
-	list of buttons) or _horizontal_ (grid of square icon buttons).
+	Layout style for the browser picker window. One of: _horizontal_ (default,
+	grid of square icon buttons) or _vertical_ (list of buttons).
 
 *maxItemsPerRow* (integer, optional)
 	Maximum number of browser buttons per row in _horizontal_ layout.

@@ -212,6 +212,9 @@
   "config.browsers_rules_count": {
     "other": "{{.Count}} regra(s)"
   },
+  "config.browsers_visibility_legend": {
+    "other": "Navegadores ocultos ainda têm as suas regras avaliadas — simplesmente não aparecem na janela de seleção."
+  },
   "config.no_browsers_warning": {
     "other": "⚠ Nenhum navegador configurado. Vá ao separador Navegadores para procurar navegadores instalados."
   },

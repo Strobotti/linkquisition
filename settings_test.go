@@ -945,9 +945,9 @@ func TestUiSettings_GetPickerLayout(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "defaults to vertical when empty",
+			name:     "defaults to horizontal when empty",
 			ui:       UiSettings{},
-			expected: PickerLayoutVertical,
+			expected: PickerLayoutHorizontal,
 		},
 		{
 			name:     "returns vertical when explicitly set",
@@ -960,9 +960,9 @@ func TestUiSettings_GetPickerLayout(t *testing.T) {
 			expected: PickerLayoutHorizontal,
 		},
 		{
-			name:     "defaults to vertical for unknown value",
+			name:     "defaults to horizontal for unknown value",
 			ui:       UiSettings{PickerLayout: "unknown"},
-			expected: PickerLayoutVertical,
+			expected: PickerLayoutHorizontal,
 		},
 	} {
 		t.Run(
