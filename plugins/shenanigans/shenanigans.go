@@ -38,6 +38,7 @@ const (
 	effectSineScroll  = "sinescroll"
 	effectFireflies   = "fireflies"
 	effectBoids       = "boids"
+	effectRaycast     = "raycast"
 	effectRandom      = "random"
 	frameInterval     = 30 * time.Millisecond
 	fireFrameInterval = 25 * time.Millisecond
@@ -83,8 +84,8 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 					effectFlappy, effectFootball, effectFrogger, effectGlitch,
 					effectInvaders, effectLava, effectLife, effectMatrix,
 					effectMinesweeper, effectPacman, effectPlasma, effectPong,
-					effectPride, effectRain, effectSnake, effectSineScroll,
-					effectSnow, effectStarfield, effectTetris,
+					effectPride, effectRain, effectRaycast, effectSnake,
+					effectSineScroll, effectSnow, effectStarfield, effectTetris,
 				},
 			},
 		},
@@ -128,7 +129,7 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) { //nolin
 		effectInvaders, effectSnake, effectRain, effectBreakout, effectDino,
 		effectAsteroids, effectPacman, effectTetris, effectFrogger,
 		effectMinesweeper, effectFlappy, effectLava, effectSineScroll,
-		effectFireflies, effectBoids,
+		effectFireflies, effectBoids, effectRaycast,
 	}
 
 	if effect == effectRandom || !isKnownEffect(effect, allEffects) {
@@ -192,6 +193,8 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) { //nolin
 		p.startFireflies(canvas)
 	case effectBoids:
 		p.startBoids(canvas)
+	case effectRaycast:
+		p.startRaycast(canvas)
 	}
 }
 
@@ -7248,6 +7251,311 @@ func boidColor(hue float64) (uint8, uint8, uint8) {
 	g := uint8(sinNorm(h*6.28+2.09) * 230)
 	b := uint8(sinNorm(h*6.28) * 255)
 	return r, g, b
+}
+
+// --- Raycaster Effect ---
+
+const (
+	raycastAlpha         = 55
+	raycastFrameInterval = 30 * time.Millisecond
+	raycastMapSize       = 16
+	raycastFOV           = 1.0 // ~60 degrees
+	raycastMaxDist       = 16.0
+	raycastResDiv        = 3 // render at 1/3 horizontal resolution
+)
+
+// Simple maze map (1 = wall, 0 = open).
+var raycastMap = [raycastMapSize][raycastMapSize]uint8{
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1},
+	{1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1},
+	{1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+	{1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
+	{1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+	{1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1},
+	{1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1},
+	{1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1},
+	{1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+	{1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+}
+
+type raycastState struct {
+	width, height int
+	posX, posY    float64
+	dirX, dirY    float64
+	time          float64
+}
+
+func (p *shenanigans) startRaycast(pc linkquisition.PickerCanvas) {
+	state := &raycastState{
+		width:  pc.Width(),
+		height: pc.Height(),
+		posX:   4.5,
+		posY:   1.5,
+		dirX:   1.0,
+		dirY:   0.0,
+	}
+	if state.width == 0 {
+		state.width = 600
+	}
+	if state.height == 0 {
+		state.height = 400
+	}
+
+	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
+		if w != state.width || h != state.height {
+			state.width = w
+			state.height = h
+		}
+		return p.invertForLight(state.render())
+	})
+
+	go func() {
+		ticker := time.NewTicker(raycastFrameInterval)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			if p.stopped.Load() {
+				return
+			}
+			state.update()
+			pc.ScheduleRefresh()
+		}
+	}()
+}
+
+func (s *raycastState) update() {
+	s.time += 0.02
+
+	speed := 0.035
+
+	// Look ahead further to avoid getting close to walls
+	lookDist := 1.2
+	aheadX := s.posX + s.dirX*lookDist
+	aheadY := s.posY + s.dirY*lookDist
+
+	forwardClear := s.isOpen(aheadX, aheadY)
+
+	if forwardClear {
+		// Also check a shorter distance to prevent clipping
+		shortX := s.posX + s.dirX*0.3
+		shortY := s.posY + s.dirY*0.3
+		if s.isOpen(shortX, shortY) {
+			s.posX += s.dirX * speed
+			s.posY += s.dirY * speed
+		} else {
+			forwardClear = false
+		}
+	}
+
+	if !forwardClear {
+		// Turn right in one go until a clear path is found
+		for range 30 {
+			s.rotateDir(0.15)
+			aX := s.posX + s.dirX*lookDist
+			aY := s.posY + s.dirY*lookDist
+			if s.isOpen(aX, aY) {
+				break
+			}
+		}
+	}
+
+	// Every so often, try to turn left to avoid right-hand spirals
+	if int(s.time*100)%200 == 0 && forwardClear {
+		leftDirX := s.dirY
+		leftDirY := -s.dirX
+		leftX := s.posX + leftDirX*lookDist
+		leftY := s.posY + leftDirY*lookDist
+		if s.isOpen(leftX, leftY) {
+			s.rotateDir(-0.5)
+		}
+	}
+}
+
+func (s *raycastState) isOpen(x, y float64) bool {
+	ix, iy := int(x), int(y)
+	if ix < 0 || ix >= raycastMapSize || iy < 0 || iy >= raycastMapSize {
+		return false
+	}
+	return raycastMap[iy][ix] == 0
+}
+
+func (s *raycastState) rotateDir(angle float64) {
+	cosA := sinApprox(angle + 1.5708) // cos(a) = sin(a + pi/2)
+	sinA := sinApprox(angle)
+	oldDirX := s.dirX
+	s.dirX = s.dirX*cosA - s.dirY*sinA
+	s.dirY = oldDirX*sinA + s.dirY*cosA
+}
+
+func (s *raycastState) render() []uint8 {
+	w, h := s.width, s.height
+	if w == 0 || h == 0 {
+		return make([]uint8, rgbaChannels)
+	}
+
+	pixels := make([]uint8, w*h*rgbaChannels)
+	step := raycastResDiv
+
+	// Draw ceiling and floor for the entire frame first
+	for py := 0; py < h; py++ {
+		for px := 0; px < w; px += step {
+			if py < h/2 {
+				// Ceiling: darker at top, lighter toward horizon
+				ceilFade := 1.0 - float64(py)/float64(h/2)
+				ca := uint8(float64(raycastAlpha) * (0.1 + ceilFade*0.3))
+				for dx := 0; dx < step && px+dx < w; dx++ {
+					off := (py*w + px + dx) * rgbaChannels
+					pixels[off] = 30
+					pixels[off+1] = 30
+					pixels[off+2] = 50
+					pixels[off+3] = ca
+				}
+			} else {
+				// Floor: lighter toward bottom
+				floorFade := float64(py-h/2) / float64(h/2)
+				fa := uint8(float64(raycastAlpha) * (0.1 + floorFade*0.4))
+				for dx := 0; dx < step && px+dx < w; dx++ {
+					off := (py*w + px + dx) * rgbaChannels
+					pixels[off] = 50
+					pixels[off+1] = 45
+					pixels[off+2] = 35
+					pixels[off+3] = fa
+				}
+			}
+		}
+	}
+
+	// Camera plane (perpendicular to direction)
+	planeX := -s.dirY * raycastFOV * 0.5
+	planeY := s.dirX * raycastFOV * 0.5
+
+	for x := 0; x < w; x += step {
+		// Ray direction for this column
+		cameraX := 2.0*float64(x)/float64(w) - 1.0
+		rayDirX := s.dirX + planeX*cameraX
+		rayDirY := s.dirY + planeY*cameraX
+
+		// DDA raycasting
+		dist, side := s.castRay(rayDirX, rayDirY)
+
+		if dist <= 0 {
+			continue
+		}
+
+		// Calculate wall height
+		lineHeight := int(float64(h) / dist)
+		if lineHeight > h*2 {
+			lineHeight = h * 2
+		}
+
+		drawStart := h/2 - lineHeight/2
+		drawEnd := h/2 + lineHeight/2
+
+		// Wall color (darker on Y-side for depth)
+		var r, g, b uint8
+		if side == 0 {
+			r, g, b = 160, 80, 80 // X-side: red-brown
+		} else {
+			r, g, b = 120, 60, 60 // Y-side: darker
+		}
+
+		// Fog: fade with distance
+		fog := 1.0 - dist/raycastMaxDist
+		if fog < 0.1 {
+			fog = 0.1
+		}
+		r = uint8(float64(r) * fog)
+		g = uint8(float64(g) * fog)
+		b = uint8(float64(b) * fog)
+
+		// Draw the column (walls only — ceiling/floor already drawn)
+		for px := x; px < x+step && px < w; px++ {
+			for py := max(drawStart, 0); py < min(drawEnd, h); py++ {
+				offset := (py*w + px) * rgbaChannels
+				if raycastAlpha > pixels[offset+3] {
+					pixels[offset] = r
+					pixels[offset+1] = g
+					pixels[offset+2] = b
+					pixels[offset+3] = raycastAlpha
+				}
+			}
+		}
+	}
+
+	return pixels
+}
+
+// castRay performs DDA raycasting and returns distance to the nearest wall and which side was hit.
+func (s *raycastState) castRay(rayDirX, rayDirY float64) (float64, int) {
+	mapX := int(s.posX)
+	mapY := int(s.posY)
+
+	// Length of ray from one side to next
+	var deltaDistX, deltaDistY float64
+	if rayDirX == 0 {
+		deltaDistX = 1e30
+	} else {
+		deltaDistX = absF(1.0 / rayDirX)
+	}
+	if rayDirY == 0 {
+		deltaDistY = 1e30
+	} else {
+		deltaDistY = absF(1.0 / rayDirY)
+	}
+
+	var stepX, stepY int
+	var sideDistX, sideDistY float64
+
+	if rayDirX < 0 {
+		stepX = -1
+		sideDistX = (s.posX - float64(mapX)) * deltaDistX
+	} else {
+		stepX = 1
+		sideDistX = (float64(mapX) + 1.0 - s.posX) * deltaDistX
+	}
+	if rayDirY < 0 {
+		stepY = -1
+		sideDistY = (s.posY - float64(mapY)) * deltaDistY
+	} else {
+		stepY = 1
+		sideDistY = (float64(mapY) + 1.0 - s.posY) * deltaDistY
+	}
+
+	// DDA
+	side := 0
+	for range int(raycastMaxDist * 4) {
+		if sideDistX < sideDistY {
+			sideDistX += deltaDistX
+			mapX += stepX
+			side = 0
+		} else {
+			sideDistY += deltaDistY
+			mapY += stepY
+			side = 1
+		}
+
+		if mapX < 0 || mapX >= raycastMapSize || mapY < 0 || mapY >= raycastMapSize {
+			return raycastMaxDist, side
+		}
+		if raycastMap[mapY][mapX] > 0 {
+			// Calculate perpendicular distance
+			var perpDist float64
+			if side == 0 {
+				perpDist = sideDistX - deltaDistX
+			} else {
+				perpDist = sideDistY - deltaDistY
+			}
+			return perpDist, side
+		}
+	}
+
+	return raycastMaxDist, side
 }
 
 // NewForTesting creates a fresh shenanigans instance for use in tests,
