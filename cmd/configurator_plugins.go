@@ -139,7 +139,7 @@ func (c *Configurator) buildAvailablePluginRow(name string, listContainer *fyne.
 	desc.Wrapping = fyne.TextWrapWord
 
 	addBtn := widget.NewButton(i18n.T("config.plugins_add"), func() {
-		c.showAddPluginSettings(pluginName, meta, listContainer)
+		c.showAddPluginSettings(pluginName, &meta, listContainer)
 	})
 
 	headerRow := container.NewBorder(nil, nil, title, addBtn)

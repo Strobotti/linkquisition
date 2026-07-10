@@ -70,7 +70,7 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 // If the user clicks Save, the plugin is added to the config with the chosen settings.
 // If the plugin has no configurable settings, it is added immediately with defaults.
 func (c *Configurator) showAddPluginSettings(
-	pluginName string, meta linkquisition.PluginMetadata, listContainer *fyne.Container,
+	pluginName string, meta *linkquisition.PluginMetadata, listContainer *fyne.Container,
 ) {
 	// If no settings to configure, add immediately with defaults
 	if len(meta.Settings) == 0 {
