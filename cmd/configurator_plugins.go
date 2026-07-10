@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -84,8 +85,8 @@ func (c *Configurator) buildPluginCard(
 	})
 	enableCheck.Checked = !ps.IsDisabled
 
-	// Configure button — uses default importance (visible border)
-	configBtn := widget.NewButton(i18n.T("config.plugins_configure"), func() {
+	// Configure button — gear icon, compact
+	configBtn := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {
 		c.showPluginSettings(idx, listContainer)
 	})
 
@@ -113,12 +114,10 @@ func (c *Configurator) buildPluginCard(
 	headerRow := container.NewBorder(
 		nil, nil,
 		container.NewHBox(title),
-		container.NewHBox(upBtn, downBtn, enableCheck),
+		container.NewHBox(configBtn, upBtn, downBtn, enableCheck),
 	)
 
-	actionRow := container.NewHBox(configBtn)
-
-	card := container.NewVBox(headerRow, desc, actionRow)
+	card := container.NewVBox(headerRow, desc)
 
 	return widget.NewCard("", "", card)
 }
