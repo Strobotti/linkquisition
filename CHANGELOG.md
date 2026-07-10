@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.10.0](https://github.com/Strobotti/linkquisition/compare/v2.9.1...v2.10.0) (2026-07-10)
+
+
+### Features
+
+* configurable UI theme and plugin UX improvements ([#125](https://github.com/Strobotti/linkquisition/issues/125)) ([46b63e0](https://github.com/Strobotti/linkquisition/commit/46b63e001a5a5f3e9e3c9e52d44502a6d84edc77))
+* Redesign browsers tab UI and default to horizontal picker layout ([#126](https://github.com/Strobotti/linkquisition/issues/126)) ([8db11c1](https://github.com/Strobotti/linkquisition/commit/8db11c1c757d08f3967c5848514803b35a675506))
+
+
+### Bug Fixes
+
+* improve matrix rain effect rendering ([#123](https://github.com/Strobotti/linkquisition/issues/123)) ([ac8a1b8](https://github.com/Strobotti/linkquisition/commit/ac8a1b8981bab26ca83248c7a666eee47e7f0172))
+
 ## [2.9.1](https://github.com/Strobotti/linkquisition/compare/v2.9.0...v2.9.1) (2026-07-09)
 
 
