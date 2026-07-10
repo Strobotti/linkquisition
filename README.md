@@ -1,6 +1,10 @@
 # Linkquisition
 
-![coverage](https://raw.githubusercontent.com/Strobotti/linkquisition/gh-pages/.badges/main/coverage.svg)
+[![Go](https://img.shields.io/github/go-mod/go-version/Strobotti/linkquisition)](https://go.dev/)
+[![License](https://img.shields.io/github/license/Strobotti/linkquisition)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Strobotti/linkquisition)](https://github.com/Strobotti/linkquisition/releases/latest)
+[![Coverage](https://raw.githubusercontent.com/Strobotti/linkquisition/gh-pages/.badges/main/coverage.svg)](https://github.com/Strobotti/linkquisition)
+[![Homebrew](https://img.shields.io/badge/homebrew-available-blue?logo=homebrew)](https://github.com/strobotti/homebrew-tap)
 
 Linkquisition is a fast, configurable browser-picker for Linux and macOS written in Go.
 
@@ -232,7 +236,7 @@ amd64, as I do not have time/access to other architectures for testing easily.
 
 ### Requirements
 
-- Go 1.25 (https://go.dev/doc/install)
+- Go 1.26 (https://go.dev/doc/install)
 - Taskfile (https://taskfile.dev/#/installation)
 - Build-dependencies:
   ```shell
