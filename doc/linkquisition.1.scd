@@ -32,6 +32,12 @@ When launched without arguments, Linkquisition opens the configuration screen.
 *--version*, *-v*
 	Print the version and exit.
 
+*--plugin-opt* _plugin.key=value_
+	Override a plugin setting at runtime without modifying the config file.
+	The format is _pluginname.settingkey=value_ (e.g.
+	_shenanigans.effect=matrix_). May be specified multiple times. Overrides
+	for unrecognized plugins or disabled plugins are silently ignored.
+
 # COMMANDS
 
 ## config
