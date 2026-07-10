@@ -1,4 +1,4 @@
-//nolint:mnd,gosec // Visual effects plugin: magic numbers and weak random are by design.
+//nolint:gosec // Visual effects plugin: weak random is by design.
 package main
 
 import (
