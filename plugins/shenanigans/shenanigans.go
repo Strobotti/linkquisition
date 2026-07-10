@@ -1335,9 +1335,9 @@ func (s *prideState) render(w, h int) []uint8 {
 
 			// Flag wave: pinned on the left edge, wave amplitude increases to the right
 			// This simulates fabric attached to a pole on the left side
-			amplitude := fx * fx * 0.05
+			amplitude := fx * fx * 0.12
 			wave := sinApprox((fx*2.0-t*1.5)*3.14159) * amplitude
-			wave2 := sinApprox((fx*3.0-t*2.0)*3.14159) * amplitude * 0.4
+			wave2 := sinApprox((fx*3.0-t*2.0)*3.14159) * amplitude * 0.5
 
 			// Determine which stripe this pixel belongs to (with wave offset)
 			stripePos := (fy + wave + wave2) * stripeCount
@@ -1368,7 +1368,7 @@ func (s *prideState) render(w, h int) []uint8 {
 			b := uint8(float64(c1[2])*(1-blend) + float64(c2[2])*blend)
 
 			// Subtle shading to simulate fabric folds (stronger toward free edge)
-			foldDepth := fx * 0.15
+			foldDepth := fx * 0.2
 			shade := 1.0 - foldDepth + foldDepth*sinApprox((fx*3-t*1.5)*3.14159)
 			r = uint8(float64(r) * shade)
 			g = uint8(float64(g) * shade)
