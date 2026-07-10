@@ -115,23 +115,7 @@ func (c *Configurator) buildBrowserCard(
 	sourceLabel.TextStyle = fyne.TextStyle{Italic: true}
 
 	// Visibility toggle — eye icon
-	visibilityBtn := widget.NewButtonWithIcon("", theme.VisibilityIcon(), nil)
-	if b.Hidden {
-		visibilityBtn.Icon = theme.VisibilityOffIcon()
-	}
-	visibilityBtn.OnTapped = func() {
-		visibilityBtn.Disable()
-		go func() {
-			s := c.settingsService.GetSettings()
-			s.Browsers[idx].Hidden = !s.Browsers[idx].Hidden
-			if err := c.settingsService.WriteSettings(s); err != nil {
-				c.logger.Error("Error saving browser visibility", "error", err)
-				visibilityBtn.Enable()
-				return
-			}
-			c.rebuildBrowsersList(listContainer)
-		}()
-	}
+	visibilityBtn := c.buildVisibilityToggle(b.Hidden, idx, listContainer)
 
 	// Reorder buttons
 	upBtn := widget.NewButton(i18n.T("config.plugins_move_up"), func() {
@@ -208,6 +192,27 @@ func (c *Configurator) buildBrowserCard(
 	cardContent := container.NewVBox(headerRow, commandRow)
 
 	return widget.NewCard("", "", cardContent)
+}
+
+func (c *Configurator) buildVisibilityToggle(hidden bool, idx int, listContainer *fyne.Container) *widget.Button {
+	btn := widget.NewButtonWithIcon("", theme.VisibilityIcon(), nil)
+	if hidden {
+		btn.Icon = theme.VisibilityOffIcon()
+	}
+	btn.OnTapped = func() {
+		btn.Disable()
+		go func() {
+			s := c.settingsService.GetSettings()
+			s.Browsers[idx].Hidden = !s.Browsers[idx].Hidden
+			if err := c.settingsService.WriteSettings(s); err != nil {
+				c.logger.Error("Error saving browser visibility", "error", err)
+				btn.Enable()
+				return
+			}
+			c.rebuildBrowsersList(listContainer)
+		}()
+	}
+	return btn
 }
 
 func (c *Configurator) moveBrowser(idx, direction int, listContainer *fyne.Container) {
