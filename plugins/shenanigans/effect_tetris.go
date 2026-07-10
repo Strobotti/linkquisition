@@ -293,8 +293,7 @@ func (s *tetrisState) scorePlacement(shape [4][4]bool, px, py int) int {
 	score += py * 4
 
 	// Simulate placing the piece and check for completed lines
-	var tempGrid [tetrisRows][tetrisCols]tetrisCell
-	tempGrid = s.grid
+	tempGrid := s.grid
 	for row := range 4 {
 		for col := range 4 {
 			if shape[row][col] {
@@ -594,4 +593,3 @@ func (s *tetrisState) drawGridBorder(pixels []uint8) {
 		}
 	}
 }
-

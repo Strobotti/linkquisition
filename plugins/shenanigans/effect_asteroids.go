@@ -397,4 +397,3 @@ func (s *asteroidsState) setAstPixel(pixels []uint8, x, y int, r, g, b, a uint8)
 		pixels[offset+3] = a
 	}
 }
-

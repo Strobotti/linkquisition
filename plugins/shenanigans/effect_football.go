@@ -1,4 +1,4 @@
-//nolint:mnd,gosec // Visual effects plugin: magic numbers and weak random are by design.
+//nolint:mnd // Visual effects plugin: magic numbers are by design.
 package main
 
 import (
@@ -144,4 +144,3 @@ func isPitchPenaltyArea(fx, fy float64) bool {
 
 	return false
 }
-

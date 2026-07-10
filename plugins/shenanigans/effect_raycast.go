@@ -183,7 +183,7 @@ func (s *raycastState) isOpen(x, y float64) bool {
 }
 
 func (s *raycastState) rotateDir(angle float64) {
-	cosA := sinApprox(angle + 1.5708) // cos(a) = sin(a + pi/2)
+	cosA := sinApprox(angle + 1.5708) // cos(a) ≡ sin(a + π/2)
 	sinA := sinApprox(angle)
 	oldDirX := s.dirX
 	s.dirX = s.dirX*cosA - s.dirY*sinA

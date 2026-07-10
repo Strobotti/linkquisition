@@ -146,7 +146,7 @@ func (s *firefliesState) render() []uint8 {
 		if brightness < 0 {
 			brightness = 0 // off half the time
 		}
-		brightness = brightness * brightness // sharper on/off
+		brightness *= brightness // sharper on/off
 
 		if brightness < 0.05 {
 			continue
@@ -187,11 +187,10 @@ func (s *firefliesState) render() []uint8 {
 	return pixels
 }
 
-func fireflyColor(hue, brightness float64) (uint8, uint8, uint8) {
+func fireflyColor(hue, brightness float64) (r, g, b uint8) {
 	// Warm glow: yellow core fading to green at edges
-	r := uint8((0.9 + hue*0.5) * brightness * 255)
-	g := uint8((0.8 + hue) * brightness * 255)
-	b := uint8(0.1 * brightness * 255)
+	r = uint8((0.9 + hue*0.5) * brightness * 255)
+	g = uint8((0.8 + hue) * brightness * 255)
+	b = uint8(0.1 * brightness * 255)
 	return r, g, b
 }
-

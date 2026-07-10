@@ -12,11 +12,11 @@ import (
 // --- Boids Effect ---
 
 const (
-	boidCount         = 60
-	boidAlpha         = 60
-	boidFrameInterval = 25 * time.Millisecond
-	boidMaxSpeed      = 3.5
-	boidVisualRange   = 60.0
+	boidCount          = 60
+	boidAlpha          = 60
+	boidFrameInterval  = 25 * time.Millisecond
+	boidMaxSpeed       = 3.5
+	boidVisualRange    = 60.0
 	boidSeparationDist = 20.0
 )
 
@@ -32,42 +32,16 @@ type boidsState struct {
 }
 
 func (p *shenanigans) startBoids(pc linkquisition.PickerCanvas) {
-	state := &boidsState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.init()
-
-	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.init()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &boidsState{},
+		opacity:       0.6,
+		frameInterval: boidFrameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(boidFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *boidsState) init() {
+func (s *boidsState) init(width, height int) {
+	s.width = width
+	s.height = height
 	s.flock = make([]boid, boidCount)
 	for i := range s.flock {
 		s.flock[i] = boid{
@@ -88,9 +62,9 @@ func (s *boidsState) update() {
 		b := &s.flock[i]
 
 		// Flocking forces
-		var sepX, sepY float64 // separation
+		var sepX, sepY float64       // separation
 		var alignVX, alignVY float64 // alignment
-		var cohX, cohY float64 // cohesion
+		var cohX, cohY float64       // cohesion
 		neighbors := 0
 
 		for j := range s.flock {
@@ -264,12 +238,11 @@ func (s *boidsState) drawBoidLine(pixels []uint8, w, h, x0, y0, x1, y1 int, r, g
 	}
 }
 
-func boidColor(hue float64) (uint8, uint8, uint8) {
+func boidColor(hue float64) (r, g, b uint8) {
 	// Map hue to a nice color (blue-teal-cyan range)
 	h := hue - float64(int(hue))
-	r := uint8(sinNorm(h*6.28+4.19) * 200)
-	g := uint8(sinNorm(h*6.28+2.09) * 230)
-	b := uint8(sinNorm(h*6.28) * 255)
+	r = uint8(sinNorm(h*6.28+4.19) * 200)
+	g = uint8(sinNorm(h*6.28+2.09) * 230)
+	b = uint8(sinNorm(h*6.28) * 255)
 	return r, g, b
 }
-

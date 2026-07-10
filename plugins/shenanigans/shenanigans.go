@@ -1,4 +1,4 @@
-//nolint:mnd,gosec,dupl // Visual effects plugin: magic numbers (colors, speeds, sizes) and weak random are by design.
+//nolint:gosec // Visual effects plugin: weak random is by design.
 package main
 
 import (
@@ -119,7 +119,7 @@ func (p *shenanigans) Shutdown(_ context.Context) {
 	p.stopped.Store(true)
 }
 
-func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) { //nolint:gocyclo
+func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 	p.lightMode = canvas.IsLightTheme()
 	effect := p.effect
 
@@ -139,65 +139,44 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) { //nolin
 
 	p.serviceProvider.GetLogger().Debug("Shenanigans activating", "effect", effect)
 
-	switch effect {
-	case effectMatrix:
-		p.startMatrixRain(canvas)
-	case effectFire:
-		p.startFire(canvas)
-	case effectSnow:
-		p.startSnow(canvas)
-	case effectPlasma:
-		p.startPlasma(canvas)
-	case effectStarfield:
-		p.startStarfield(canvas)
-	case effectAurora:
-		p.startAurora(canvas)
-	case effectGlitch:
-		p.startGlitch(canvas)
-	case effectPride:
-		p.startPride(canvas)
-	case effectFootball:
-		p.startFootball(canvas)
-	case effectFireworks:
-		p.startFireworks(canvas)
-	case effectPong:
-		p.startPong(canvas)
-	case effectLife:
-		p.startLife(canvas)
-	case effectInvaders:
-		p.startInvaders(canvas)
-	case effectSnake:
-		p.startSnake(canvas)
-	case effectRain:
-		p.startRain(canvas)
-	case effectBreakout:
-		p.startBreakout(canvas)
-	case effectDino:
-		p.startDino(canvas)
-	case effectAsteroids:
-		p.startAsteroids(canvas)
-	case effectPacman:
-		p.startPacman(canvas)
-	case effectTetris:
-		p.startTetris(canvas)
-	case effectFrogger:
-		p.startFrogger(canvas)
-	case effectMinesweeper:
-		p.startMinesweeper(canvas)
-	case effectFlappy:
-		p.startFlappy(canvas)
-	case effectLava:
-		p.startLava(canvas)
-	case effectSineScroll:
-		p.startSineScroll(canvas)
-	case effectFireflies:
-		p.startFireflies(canvas)
-	case effectBoids:
-		p.startBoids(canvas)
-	case effectRaycast:
-		p.startRaycast(canvas)
-	case effectPipes:
-		p.startPipes(canvas)
+	p.dispatchEffect(effect, canvas)
+}
+
+func (p *shenanigans) dispatchEffect(effect string, canvas linkquisition.PickerCanvas) {
+	dispatch := map[string]func(linkquisition.PickerCanvas){
+		effectMatrix:      p.startMatrixRain,
+		effectFire:        p.startFire,
+		effectSnow:        p.startSnow,
+		effectPlasma:      p.startPlasma,
+		effectStarfield:   p.startStarfield,
+		effectAurora:      p.startAurora,
+		effectGlitch:      p.startGlitch,
+		effectPride:       p.startPride,
+		effectFootball:    p.startFootball,
+		effectFireworks:   p.startFireworks,
+		effectPong:        p.startPong,
+		effectLife:        p.startLife,
+		effectInvaders:    p.startInvaders,
+		effectSnake:       p.startSnake,
+		effectRain:        p.startRain,
+		effectBreakout:    p.startBreakout,
+		effectDino:        p.startDino,
+		effectAsteroids:   p.startAsteroids,
+		effectPacman:      p.startPacman,
+		effectTetris:      p.startTetris,
+		effectFrogger:     p.startFrogger,
+		effectMinesweeper: p.startMinesweeper,
+		effectFlappy:      p.startFlappy,
+		effectLava:        p.startLava,
+		effectSineScroll:  p.startSineScroll,
+		effectFireflies:   p.startFireflies,
+		effectBoids:       p.startBoids,
+		effectRaycast:     p.startRaycast,
+		effectPipes:       p.startPipes,
+	}
+
+	if fn, ok := dispatch[effect]; ok {
+		fn(canvas)
 	}
 }
 

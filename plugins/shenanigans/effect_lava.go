@@ -163,7 +163,7 @@ func (s *lavaState) render() []uint8 {
 	return pixels
 }
 
-func (s *lavaState) lavaColor(intensity, fy float64) (uint8, uint8, uint8) {
+func (s *lavaState) lavaColor(intensity, fy float64) (rOut, gOut, bOut uint8) {
 	hue := s.hueShift + fy*0.3
 	h := hue - float64(int(hue))
 	var r, g, b float64
@@ -189,4 +189,3 @@ func (s *lavaState) lavaColor(intensity, fy float64) (uint8, uint8, uint8) {
 
 	return uint8(r * 255), uint8(g * 255), uint8(b * 255)
 }
-
