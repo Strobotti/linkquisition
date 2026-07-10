@@ -130,7 +130,8 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	w.SetFixedSize(true)
 
 	mainContent := container.NewVBox(widgets...)
-	w.SetContent(buildPickerContent(mainContent, w, picker.uiHooks))
+	lightMode := picker.settingsService.GetSettings().Ui.GetTheme() == linkquisition.ThemeLight
+	w.SetContent(buildPickerContent(mainContent, w, picker.uiHooks, lightMode))
 
 	w.CenterOnScreen()
 
