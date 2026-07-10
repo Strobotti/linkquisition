@@ -53,6 +53,6 @@ func NewApplication() *Application {
 		BrowserService:  browserService,
 		SettingsService: settingsService,
 		Logger:          logger,
-		plugins:         setupPlugins(settingsService, pluginServiceProvider, logger),
+		plugins:         setupPlugins(settingsService, pluginServiceProvider, logger, parsePluginOpts(pluginOpts)),
 	}
 }

@@ -58,6 +58,7 @@ func setupPlugins(
 	settingsService linkquisition.SettingsService,
 	pluginServiceProvider linkquisition.PluginServiceProvider,
 	logger *slog.Logger,
+	overrides map[string]map[string]string,
 ) []linkquisition.Plugin {
 	settings := settingsService.GetSettings()
 	var plugins []linkquisition.Plugin
@@ -89,7 +90,20 @@ func setupPlugins(
 			continue
 		}
 
-		if p, err := setupPlugin(plug, pluginSettings.Settings, pluginServiceProvider); err != nil {
+		// Apply runtime overrides from --plugin-opt flags
+		effectiveSettings := pluginSettings.Settings
+		pluginName := strings.TrimSuffix(filepath.Base(pluginSettings.Path), pluginExtension)
+		if opts, ok := overrides[pluginName]; ok {
+			if effectiveSettings == nil {
+				effectiveSettings = make(map[string]interface{})
+			}
+			for k, v := range opts {
+				effectiveSettings[k] = v
+				logger.Debug("Plugin setting overridden via --plugin-opt", "plugin", pluginName, "key", k, "value", v)
+			}
+		}
+
+		if p, err := setupPlugin(plug, effectiveSettings, pluginServiceProvider); err != nil {
 			logger.Error("Error setting up plugin", "plugin", pluginSettings.Path, "error", err.Error())
 		} else {
 			logger.Debug("Plugin loaded successfully", "plugin", pluginSettings.Path)
@@ -98,6 +112,36 @@ func setupPlugins(
 	}
 
 	return plugins
+}
+
+// parsePluginOpts parses --plugin-opt flag values ("plugin.key=value") into
+// a nested map: map[pluginName]map[settingKey]value.
+// Entries that don't match the expected format are silently ignored.
+func parsePluginOpts(opts []string) map[string]map[string]string {
+	result := make(map[string]map[string]string)
+	for _, opt := range opts {
+		// Split on first "=" to get "plugin.key" and "value"
+		eqIdx := strings.IndexByte(opt, '=')
+		if eqIdx < 0 {
+			continue
+		}
+		path := opt[:eqIdx]
+		value := opt[eqIdx+1:]
+
+		// Split path on first "." to get plugin name and key
+		dotIdx := strings.IndexByte(path, '.')
+		if dotIdx < 0 || dotIdx == 0 || dotIdx == len(path)-1 {
+			continue
+		}
+		pluginName := path[:dotIdx]
+		key := path[dotIdx+1:]
+
+		if result[pluginName] == nil {
+			result[pluginName] = make(map[string]string)
+		}
+		result[pluginName][key] = value
+	}
+	return result
 }
 
 // openPlugin wraps plugin.Open with panic recovery — Go plugin loading can panic

@@ -43,7 +43,7 @@ func runTestURL(_ *cobra.Command, args []string) error {
 		logger, settings, settingsService.GetConfigFolderPath(),
 	)
 
-	plugins := setupPlugins(settingsService, pluginServiceProvider, logger)
+	plugins := setupPlugins(settingsService, pluginServiceProvider, logger, parsePluginOpts(pluginOpts))
 
 	fmt.Printf("Input URL: %s\n", urlToOpen)
 	fmt.Printf("Plugins:   %d loaded\n\n", len(plugins))
