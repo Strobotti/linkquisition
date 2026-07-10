@@ -18,6 +18,9 @@ const (
 // Format: "pluginname.key=value" → map[pluginname]map[key]value
 var pluginOpts []string
 
+// noPlugins disables all plugin loading for debugging.
+var noPlugins bool
+
 var rootCmd = &cobra.Command{
 	Use:   "linkquisition [url]",
 	Short: "A fast, configurable browser-picker",
@@ -74,6 +77,8 @@ func initRootCmd() {
 
 	rootCmd.Flags().StringArrayVar(&pluginOpts, "plugin-opt", nil,
 		`override plugin settings at runtime (format: plugin.key=value, e.g. shenanigans.effect=matrix)`)
+	rootCmd.Flags().BoolVar(&noPlugins, "no-plugins", false,
+		`disable all plugin loading (for debugging)`)
 
 	initConfigCmd()
 	initPluginCmd()
