@@ -212,6 +212,9 @@
   "config.browsers_rules_count": {
     "other": "{{.Count}} sääntö(ä)"
   },
+  "config.browsers_visibility_legend": {
+    "other": "Piilotettujen selainten säännöt toimivat normaalisti — ne eivät vain näy valintaikkunassa."
+  },
   "config.no_browsers_warning": {
     "other": "⚠ Selaimia ei ole määritetty. Siirry Selaimet-välilehdelle hakeaksesi asennetut selaimet."
   },

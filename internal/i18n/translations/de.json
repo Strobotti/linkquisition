@@ -212,6 +212,9 @@
   "config.browsers_rules_count": {
     "other": "{{.Count}} Regel(n)"
   },
+  "config.browsers_visibility_legend": {
+    "other": "Ausgeblendete Browser werden bei der Regelauswertung berücksichtigt — sie erscheinen nur nicht im Auswahlfenster."
+  },
   "config.no_browsers_warning": {
     "other": "⚠ Keine Browser konfiguriert. Gehe zum Browser-Tab, um installierte Browser zu suchen."
   },
