@@ -60,42 +60,16 @@ type froggerState struct {
 }
 
 func (p *shenanigans) startFrogger(pc linkquisition.PickerCanvas) {
-	state := &froggerState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.init()
-
-	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.init()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &froggerState{},
+		opacity:       0.6,
+		frameInterval: froggerFrameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(froggerFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *froggerState) init() {
+func (s *froggerState) init(width, height int) {
+	s.width = width
+	s.height = height
 	// Layout: lanes fill the window vertically
 	totalLanes := froggerLanes + 2 // +2 for start and goal safe zones
 	s.laneHeight = s.height / totalLanes
@@ -438,4 +412,3 @@ func (s *froggerState) drawLaneRect(pixels []uint8, x, y, rw, rh int, r, g, b, a
 		}
 	}
 }
-

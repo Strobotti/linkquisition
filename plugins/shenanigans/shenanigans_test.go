@@ -145,8 +145,8 @@ func TestShenanigans_OnPickerShown_Snow(t *testing.T) {
 }
 
 func TestSnowState_Update(t *testing.T) {
-	state := &snowState{width: 600, height: 400}
-	state.init()
+	state := &snowState{}
+	state.init(600, 400)
 
 	assert.Len(t, state.flakes, snowFlakeCount)
 
@@ -207,8 +207,8 @@ func TestShenanigans_OnPickerShown_Starfield(t *testing.T) {
 }
 
 func TestStarfieldState_Update(t *testing.T) {
-	state := &starfieldState{width: 400, height: 300}
-	state.init()
+	state := &starfieldState{}
+	state.init(400, 300)
 
 	assert.Len(t, state.stars, starCount)
 

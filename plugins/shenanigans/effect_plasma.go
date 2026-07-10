@@ -2,8 +2,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/strobotti/linkquisition"
 )
 
@@ -15,24 +13,15 @@ type plasmaState struct {
 }
 
 func (p *shenanigans) startPlasma(pc linkquisition.PickerCanvas) {
-	state := &plasmaState{}
-
-	pc.AddRasterOverlay(0.5, func(w, h int) []uint8 {
-		return state.render(w, h)
+	p.startSimpleEffect(pc, simpleEffectConfig{
+		state:         &plasmaState{},
+		opacity:       0.5,
+		frameInterval: frameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.time += 0.06
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *plasmaState) update() {
+	s.time += 0.06
 }
 
 func (s *plasmaState) render(w, h int) []uint8 {

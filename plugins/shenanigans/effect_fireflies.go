@@ -32,42 +32,16 @@ type firefliesState struct {
 }
 
 func (p *shenanigans) startFireflies(pc linkquisition.PickerCanvas) {
-	state := &firefliesState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.init()
-
-	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.init()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &firefliesState{},
+		opacity:       0.6,
+		frameInterval: fireflyFrameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(fireflyFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *firefliesState) init() {
+func (s *firefliesState) init(width, height int) {
+	s.width = width
+	s.height = height
 	s.flies = make([]firefly, fireflyCount)
 	for i := range s.flies {
 		s.flies[i] = firefly{

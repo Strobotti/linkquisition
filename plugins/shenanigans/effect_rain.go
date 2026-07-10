@@ -3,7 +3,6 @@ package main
 
 import (
 	"math/rand/v2"
-	"time"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -28,46 +27,19 @@ type raindrop struct {
 type rainState struct {
 	width, height int
 	drops         []raindrop
-	initialized   bool
 }
 
 func (p *shenanigans) startRain(pc linkquisition.PickerCanvas) {
-	state := &rainState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-
-	pc.AddRasterOverlay(0.5, func(w, h int) []uint8 {
-		if !state.initialized || w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.init()
-			state.initialized = true
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &rainState{},
+		opacity:       0.5,
+		frameInterval: frameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *rainState) init() {
+func (s *rainState) init(width, height int) {
+	s.width = width
+	s.height = height
 	s.drops = make([]raindrop, rainDropCount)
 	for i := range s.drops {
 		s.drops[i] = s.newDrop(true)
@@ -170,4 +142,3 @@ func (s *rainState) drawDrop(pixels []uint8, d raindrop) { //nolint:gocyclo
 		}
 	}
 }
-

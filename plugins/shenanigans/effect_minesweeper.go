@@ -51,42 +51,16 @@ type msPoint struct {
 }
 
 func (p *shenanigans) startMinesweeper(pc linkquisition.PickerCanvas) {
-	state := &minesweeperState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.init()
-
-	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.init()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &minesweeperState{},
+		opacity:       0.6,
+		frameInterval: minesweeperFrameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(minesweeperFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *minesweeperState) init() {
+func (s *minesweeperState) init(width, height int) {
+	s.width = width
+	s.height = height
 	s.cellSize = s.width / minesweeperTargetCols
 	if s.cellSize < 8 {
 		s.cellSize = 8
@@ -384,15 +358,15 @@ func (s *minesweeperState) drawMSNumber(pixels []uint8, px, py, num int) {
 	// Draw a simple representation of the number using a small centered block pattern
 	// Each digit is a 3x5 bitmap
 	digitBitmaps := [9][5]uint8{
-		{},                                // 0 (unused)
-		{0x4, 0x4, 0x4, 0x4, 0x4},        // 1: center column
-		{0x7, 0x1, 0x7, 0x4, 0x7},        // 2
-		{0x7, 0x1, 0x7, 0x1, 0x7},        // 3
-		{0x5, 0x5, 0x7, 0x1, 0x1},        // 4
-		{0x7, 0x4, 0x7, 0x1, 0x7},        // 5
-		{0x7, 0x4, 0x7, 0x5, 0x7},        // 6
-		{0x7, 0x1, 0x1, 0x1, 0x1},        // 7
-		{0x7, 0x5, 0x7, 0x5, 0x7},        // 8
+		{},                        // 0 (unused)
+		{0x4, 0x4, 0x4, 0x4, 0x4}, // 1: center column
+		{0x7, 0x1, 0x7, 0x4, 0x7}, // 2
+		{0x7, 0x1, 0x7, 0x1, 0x7}, // 3
+		{0x5, 0x5, 0x7, 0x1, 0x1}, // 4
+		{0x7, 0x4, 0x7, 0x1, 0x7}, // 5
+		{0x7, 0x4, 0x7, 0x5, 0x7}, // 6
+		{0x7, 0x1, 0x1, 0x1, 0x1}, // 7
+		{0x7, 0x5, 0x7, 0x5, 0x7}, // 8
 	}
 
 	bitmap := digitBitmaps[num]
@@ -472,4 +446,3 @@ func (s *minesweeperState) drawMSMine(pixels []uint8, px, py int) {
 		}
 	}
 }
-

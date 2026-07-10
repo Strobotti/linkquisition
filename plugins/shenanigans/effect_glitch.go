@@ -3,7 +3,6 @@ package main
 
 import (
 	"math/rand/v2"
-	"time"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -26,24 +25,11 @@ type glitchSlice struct {
 }
 
 func (p *shenanigans) startGlitch(pc linkquisition.PickerCanvas) {
-	state := &glitchState{}
-
-	pc.AddRasterOverlay(0.0, func(w, h int) []uint8 {
-		return state.render(w, h)
+	p.startSimpleEffect(pc, simpleEffectConfig{
+		state:         &glitchState{},
+		opacity:       0.0,
+		frameInterval: frameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
 func (s *glitchState) update() {
@@ -153,4 +139,3 @@ func (s *glitchState) addNoise(pixels []uint8, w, h int) {
 		pixels[offset+3] = uint8(rand.IntN(100))
 	}
 }
-

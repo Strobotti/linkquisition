@@ -110,40 +110,18 @@ type tetrisState struct {
 }
 
 func (p *shenanigans) startTetris(pc linkquisition.PickerCanvas) {
-	state := &tetrisState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.computeLayout()
-	state.spawnPiece()
-
-	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.computeLayout()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &tetrisState{},
+		opacity:       0.6,
+		frameInterval: tetrisFrameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(tetrisFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *tetrisState) init(width, height int) {
+	s.width = width
+	s.height = height
+	s.computeLayout()
+	s.spawnPiece()
 }
 
 func (s *tetrisState) computeLayout() {

@@ -3,7 +3,6 @@ package main
 
 import (
 	"math/rand/v2"
-	"time"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -56,39 +55,17 @@ type asteroidsState struct {
 }
 
 func (p *shenanigans) startAsteroids(pc linkquisition.PickerCanvas) {
-	state := &asteroidsState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.reset()
-
-	pc.AddRasterOverlay(0.45, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.reset()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &asteroidsState{},
+		opacity:       0.45,
+		frameInterval: frameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *asteroidsState) init(width, height int) {
+	s.width = width
+	s.height = height
+	s.reset()
 }
 
 func (s *asteroidsState) reset() {

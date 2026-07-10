@@ -2,8 +2,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/strobotti/linkquisition"
 )
 
@@ -11,36 +9,22 @@ import (
 // --- Football Effect ---
 
 type footballState struct {
-	time   float64
-	width  int
-	height int
+	time float64
 }
 
 func (p *shenanigans) startFootball(pc linkquisition.PickerCanvas) {
-	state := &footballState{}
-
-	pc.AddRasterOverlay(0.4, func(w, h int) []uint8 {
-		state.width = w
-		state.height = h
-		return state.render()
+	p.startSimpleEffect(pc, simpleEffectConfig{
+		state:         &footballState{},
+		opacity:       0.4,
+		frameInterval: frameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.time += 0.03
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *footballState) render() []uint8 {
-	w, h := s.width, s.height
+func (s *footballState) update() {
+	s.time += 0.03
+}
+
+func (s *footballState) render(w, h int) []uint8 {
 	if w == 0 || h == 0 {
 		return make([]uint8, rgbaChannels)
 	}

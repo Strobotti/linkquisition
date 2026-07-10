@@ -56,39 +56,17 @@ type pacmanState struct {
 }
 
 func (p *shenanigans) startPacman(pc linkquisition.PickerCanvas) {
-	state := &pacmanState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.reset()
-
-	pc.AddRasterOverlay(0.45, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.reset()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &pacmanState{},
+		opacity:       0.45,
+		frameInterval: pacFrameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(pacFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *pacmanState) init(width, height int) {
+	s.width = width
+	s.height = height
+	s.reset()
 }
 
 func (s *pacmanState) reset() {
@@ -398,4 +376,3 @@ func (s *pacmanState) drawPacRect(pixels []uint8, x, y, rw, rh int, r, g, b, a u
 		}
 	}
 }
-

@@ -49,39 +49,17 @@ type flappyState struct {
 }
 
 func (p *shenanigans) startFlappy(pc linkquisition.PickerCanvas) {
-	state := &flappyState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.reset()
-
-	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.reset()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &flappyState{},
+		opacity:       0.6,
+		frameInterval: flappyFrameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(flappyFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *flappyState) init(width, height int) {
+	s.width = width
+	s.height = height
+	s.reset()
 }
 
 func (s *flappyState) reset() {
@@ -367,4 +345,3 @@ func (s *flappyState) drawBird(pixels []uint8) {
 		}
 	}
 }
-

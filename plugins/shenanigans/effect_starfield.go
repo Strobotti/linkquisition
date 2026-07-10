@@ -3,7 +3,6 @@ package main
 
 import (
 	"math/rand/v2"
-	"time"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -24,36 +23,16 @@ type starfieldState struct {
 }
 
 func (p *shenanigans) startStarfield(pc linkquisition.PickerCanvas) {
-	state := &starfieldState{}
-
-	pc.AddRasterOverlay(0.2, func(w, h int) []uint8 {
-		if !state.isInitialized() || w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.init()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &starfieldState{},
+		opacity:       0.2,
+		frameInterval: frameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *starfieldState) isInitialized() bool {
-	return len(s.stars) > 0
-}
-
-func (s *starfieldState) init() {
+func (s *starfieldState) init(width, height int) {
+	s.width = width
+	s.height = height
 	s.stars = make([]star, starCount)
 	for i := range s.stars {
 		s.stars[i] = s.newStar(true)
@@ -145,4 +124,3 @@ func (s *starfieldState) drawStar(pixels []uint8, screenX, screenY, size int, br
 		}
 	}
 }
-

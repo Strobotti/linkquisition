@@ -35,41 +35,17 @@ type lavaState struct {
 }
 
 func (p *shenanigans) startLava(pc linkquisition.PickerCanvas) {
-	state := &lavaState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.init()
-
-	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-		}
-		return state.render()
+	p.startEffect(pc, effectConfig{
+		state:         &lavaState{},
+		opacity:       0.6,
+		frameInterval: lavaFrameInterval,
+		skipInvert:    true,
 	})
-
-	go func() {
-		ticker := time.NewTicker(lavaFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *lavaState) init() {
+func (s *lavaState) init(width, height int) {
+	s.width = width
+	s.height = height
 	s.blobs = make([]lavaBlob, lavaBlobCount)
 	for i := range s.blobs {
 		s.blobs[i] = lavaBlob{

@@ -29,43 +29,23 @@ type lifeState struct {
 }
 
 func (p *shenanigans) startLife(pc linkquisition.PickerCanvas) {
-	state := &lifeState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.cols = state.width / lifeCellSize
-	state.rows = state.height / lifeCellSize
-	state.randomize()
-
-	pc.AddRasterOverlay(0.5, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.cols = w / lifeCellSize
-			state.rows = h / lifeCellSize
-			state.randomize()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &lifeState{},
+		opacity:       0.5,
+		frameInterval: lifeFrameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(lifeFrameInterval)
-		defer ticker.Stop()
+func (s *lifeState) init(width, height int) {
+	s.width = width
+	s.height = height
+	s.cols = s.width / lifeCellSize
+	s.rows = s.height / lifeCellSize
+	s.randomize()
+}
 
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.step()
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *lifeState) update() {
+	s.step()
 }
 
 func (s *lifeState) randomize() {
@@ -206,4 +186,3 @@ func (s *lifeState) drawCell(pixels []uint8, col, row int, alpha uint8) {
 		}
 	}
 }
-

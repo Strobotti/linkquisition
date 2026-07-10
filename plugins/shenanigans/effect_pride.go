@@ -1,9 +1,7 @@
-//nolint:mnd,gosec // Visual effects plugin: magic numbers and weak random are by design.
+//nolint:mnd // Visual effects plugin: magic numbers are by design.
 package main
 
 import (
-	"time"
-
 	"github.com/strobotti/linkquisition"
 )
 
@@ -25,24 +23,15 @@ var prideColors = [][3]uint8{
 }
 
 func (p *shenanigans) startPride(pc linkquisition.PickerCanvas) {
-	state := &prideState{}
-
-	pc.AddRasterOverlay(0.45, func(w, h int) []uint8 {
-		return state.render(w, h)
+	p.startSimpleEffect(pc, simpleEffectConfig{
+		state:         &prideState{},
+		opacity:       0.45,
+		frameInterval: frameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.time += 0.04
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *prideState) update() {
+	s.time += 0.04
 }
 
 func (s *prideState) render(w, h int) []uint8 {
@@ -110,4 +99,3 @@ func (s *prideState) render(w, h int) []uint8 {
 
 	return pixels
 }
-

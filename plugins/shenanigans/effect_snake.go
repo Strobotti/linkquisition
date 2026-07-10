@@ -43,41 +43,18 @@ type snakeState struct {
 }
 
 func (p *shenanigans) startSnake(pc linkquisition.PickerCanvas) {
-	state := &snakeState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-	state.computeGrid()
-	state.reset()
-
-	pc.AddRasterOverlay(0.5, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.computeGrid()
-			state.reset()
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &snakeState{},
+		opacity:       0.5,
+		frameInterval: snakeFrameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(snakeFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *snakeState) init(width, height int) {
+	s.width = width
+	s.height = height
+	s.computeGrid()
+	s.reset()
 }
 
 func (s *snakeState) computeGrid() {
@@ -293,4 +270,3 @@ func (s *snakeState) drawSnakeCell(pixels []uint8, cx, cy int, r, g, b, a uint8)
 		}
 	}
 }
-

@@ -3,7 +3,6 @@ package main
 
 import (
 	"math/rand/v2"
-	"time"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -26,49 +25,22 @@ type snowflake struct {
 }
 
 type snowState struct {
-	flakes      []snowflake
-	width       int
-	height      int
-	initialized bool
+	flakes []snowflake
+	width  int
+	height int
 }
 
 func (p *shenanigans) startSnow(pc linkquisition.PickerCanvas) {
-	state := &snowState{
-		width:  pc.Width(),
-		height: pc.Height(),
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-
-	pc.AddRasterOverlay(0.3, func(w, h int) []uint8 {
-		if !state.initialized || w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-			state.init()
-			state.initialized = true
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state:         &snowState{},
+		opacity:       0.3,
+		frameInterval: frameInterval,
 	})
-
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
 }
 
-func (s *snowState) init() {
+func (s *snowState) init(width, height int) {
+	s.width = width
+	s.height = height
 	s.flakes = make([]snowflake, snowFlakeCount)
 	for i := range s.flakes {
 		// Start most flakes above the window so they drift in gradually.
@@ -170,4 +142,3 @@ func (s *snowState) drawFlake(pixels []uint8, f snowflake) {
 		}
 	}
 }
-

@@ -52,41 +52,21 @@ type raycastState struct {
 }
 
 func (p *shenanigans) startRaycast(pc linkquisition.PickerCanvas) {
-	state := &raycastState{
-		width:  pc.Width(),
-		height: pc.Height(),
-		posX:   4.5,
-		posY:   1.5,
-		dirX:   1.0,
-		dirY:   0.0,
-	}
-	if state.width == 0 {
-		state.width = 600
-	}
-	if state.height == 0 {
-		state.height = 400
-	}
-
-	pc.AddRasterOverlay(0.6, func(w, h int) []uint8 {
-		if w != state.width || h != state.height {
-			state.width = w
-			state.height = h
-		}
-		return p.invertForLight(state.render())
+	p.startEffect(pc, effectConfig{
+		state: &raycastState{
+			posX: 4.5,
+			posY: 1.5,
+			dirX: 1.0,
+			dirY: 0.0,
+		},
+		opacity:       0.6,
+		frameInterval: raycastFrameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(raycastFrameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *raycastState) init(width, height int) {
+	s.width = width
+	s.height = height
 }
 
 func (s *raycastState) update() {

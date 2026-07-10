@@ -2,8 +2,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/strobotti/linkquisition"
 )
 
@@ -17,24 +15,15 @@ type auroraState struct {
 }
 
 func (p *shenanigans) startAurora(pc linkquisition.PickerCanvas) {
-	state := &auroraState{}
-
-	pc.AddRasterOverlay(0.4, func(w, h int) []uint8 {
-		return state.render(w, h)
+	p.startSimpleEffect(pc, simpleEffectConfig{
+		state:         &auroraState{},
+		opacity:       0.4,
+		frameInterval: frameInterval,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.time += 0.03
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *auroraState) update() {
+	s.time += 0.03
 }
 
 func (s *auroraState) render(w, h int) []uint8 {

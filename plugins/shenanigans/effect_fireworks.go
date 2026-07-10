@@ -3,7 +3,6 @@ package main
 
 import (
 	"math/rand/v2"
-	"time"
 
 	"github.com/strobotti/linkquisition"
 )
@@ -51,26 +50,18 @@ var fireworksColors = [][3]uint8{
 }
 
 func (p *shenanigans) startFireworks(pc linkquisition.PickerCanvas) {
-	state := &fireworksState{}
-
-	pc.AddRasterOverlay(0.2, func(w, h int) []uint8 {
-		state.width = w
-		state.height = h
-		return state.render()
+	p.startEffect(pc, effectConfig{
+		state:         &fireworksState{},
+		opacity:       0.2,
+		frameInterval: frameInterval,
+		skipInvert:    true,
 	})
+}
 
-	go func() {
-		ticker := time.NewTicker(frameInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if p.stopped.Load() {
-				return
-			}
-			state.update()
-			pc.ScheduleRefresh()
-		}
-	}()
+func (s *fireworksState) init(width, height int) {
+	s.width = width
+	s.height = height
+	s.rockets = nil
 }
 
 func (s *fireworksState) update() {
@@ -203,4 +194,3 @@ func (s *fireworksState) drawDot(pixels []uint8, cx, cy, radius int, r, g, b, a 
 		}
 	}
 }
-
