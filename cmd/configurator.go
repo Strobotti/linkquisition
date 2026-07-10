@@ -211,6 +211,41 @@ func (c *Configurator) buildLogLevelSection() fyne.CanvasObject {
 func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	settings := c.settingsService.GetSettings()
 
+	// Theme selector
+	themeOptions := []string{
+		i18n.T("config.theme_system"),
+		i18n.T("config.theme_dark"),
+		i18n.T("config.theme_light"),
+	}
+
+	currentTheme := settings.Ui.GetTheme()
+	selectedTheme := themeOptions[0]
+	switch currentTheme {
+	case linkquisition.ThemeDark:
+		selectedTheme = themeOptions[1]
+	case linkquisition.ThemeLight:
+		selectedTheme = themeOptions[2]
+	}
+
+	themeSelect := widget.NewSelect(themeOptions, func(selected string) {
+		s := c.settingsService.GetSettings()
+		switch selected {
+		case themeOptions[1]:
+			s.Ui.Theme = linkquisition.ThemeDark
+		case themeOptions[2]:
+			s.Ui.Theme = linkquisition.ThemeLight
+		default:
+			s.Ui.Theme = linkquisition.ThemeSystem
+		}
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving theme setting", "error", err)
+		}
+	})
+	themeSelect.Selected = selectedTheme
+
+	themeRestartNote := widget.NewLabel(i18n.T("config.theme_restart_note"))
+	themeRestartNote.TextStyle = fyne.TextStyle{Italic: true}
+
 	hideGuideCheck := widget.NewCheck(i18n.T("config.hide_keyboard_guide"), func(checked bool) {
 		s := c.settingsService.GetSettings()
 		s.Ui.HideKeyboardGuideLabel = checked
@@ -286,6 +321,13 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 	layoutSelect.Selected = selectedLayout
 
 	return container.NewVBox(
+		container.NewBorder(
+			nil, nil,
+			widget.NewLabel(i18n.T("config.theme_label")), nil,
+			themeSelect,
+		),
+		themeRestartNote,
+		widget.NewSeparator(),
 		hideGuideCheck,
 		widget.NewSeparator(),
 		container.NewBorder(

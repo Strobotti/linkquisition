@@ -1002,3 +1002,43 @@ func TestUiSettings_GetMaxItemsPerRow(t *testing.T) {
 		)
 	}
 }
+
+func TestUiSettings_GetTheme(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		ui       UiSettings
+		expected string
+	}{
+		{
+			name:     "defaults to system when empty",
+			ui:       UiSettings{},
+			expected: ThemeSystem,
+		},
+		{
+			name:     "returns dark when set",
+			ui:       UiSettings{Theme: ThemeDark},
+			expected: ThemeDark,
+		},
+		{
+			name:     "returns light when set",
+			ui:       UiSettings{Theme: ThemeLight},
+			expected: ThemeLight,
+		},
+		{
+			name:     "returns system when explicitly set",
+			ui:       UiSettings{Theme: ThemeSystem},
+			expected: ThemeSystem,
+		},
+		{
+			name:     "defaults to system for unknown value",
+			ui:       UiSettings{Theme: "sepia"},
+			expected: ThemeSystem,
+		},
+	} {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				assert.Equal(t, tt.expected, tt.ui.GetTheme())
+			},
+		)
+	}
+}

@@ -50,7 +50,7 @@ View or modify the configuration.
 *config path*
 	Print the path to the configuration file.
 
-Available keys: _locale_, _logLevel_.
+Available keys: _locale_, _logLevel_, _ui.theme_.
 
 ## plugin
 

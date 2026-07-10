@@ -256,5 +256,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Max per rad:"
+  },
+  "config.theme_label": {
+    "other": "Tema:"
+  },
+  "config.theme_system": {
+    "other": "System (automatiskt)"
+  },
+  "config.theme_dark": {
+    "other": "Mörkt"
+  },
+  "config.theme_light": {
+    "other": "Ljust"
+  },
+  "config.theme_restart_note": {
+    "other": "Temaändring träder i kraft vid nästa start."
   }
 }

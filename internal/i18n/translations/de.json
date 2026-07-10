@@ -256,5 +256,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Maximale Elemente pro Zeile:"
+  },
+  "config.theme_label": {
+    "other": "Design:"
+  },
+  "config.theme_system": {
+    "other": "System (automatisch)"
+  },
+  "config.theme_dark": {
+    "other": "Dunkel"
+  },
+  "config.theme_light": {
+    "other": "Hell"
+  },
+  "config.theme_restart_note": {
+    "other": "Designänderung wird beim nächsten Start wirksam."
   }
 }

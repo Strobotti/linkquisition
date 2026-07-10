@@ -97,6 +97,10 @@ and *rule* subcommands).
 	Maximum number of browser buttons per row in _horizontal_ layout.
 	Default: _5_. Browsers exceeding this number wrap to additional rows.
 
+*theme* (string, optional)
+	UI color theme. One of: _system_ (default, follows the operating system
+	preference), _dark_, or _light_. Changes take effect on next launch.
+
 # EXAMPLE
 
 ```
@@ -124,6 +128,7 @@ and *rule* subcommands).
     }
   ],
   "ui": {
+    "theme": "system",
     "pickerLayout": "horizontal",
     "maxItemsPerRow": 5
   }

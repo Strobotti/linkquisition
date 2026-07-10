@@ -256,5 +256,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Максимум елементів у рядку:"
+  },
+  "config.theme_label": {
+    "other": "Тема:"
+  },
+  "config.theme_system": {
+    "other": "Системна (автоматично)"
+  },
+  "config.theme_dark": {
+    "other": "Темна"
+  },
+  "config.theme_light": {
+    "other": "Світла"
+  },
+  "config.theme_restart_note": {
+    "other": "Зміна теми набуде чинності при наступному запуску."
   }
 }

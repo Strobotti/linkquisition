@@ -256,5 +256,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Enimmäismäärä per rivi:"
+  },
+  "config.theme_label": {
+    "other": "Teema:"
+  },
+  "config.theme_system": {
+    "other": "Järjestelmä (auto)"
+  },
+  "config.theme_dark": {
+    "other": "Tumma"
+  },
+  "config.theme_light": {
+    "other": "Vaalea"
+  },
+  "config.theme_restart_note": {
+    "other": "Teeman vaihto tulee voimaan seuraavalla käynnistyksellä."
   }
 }

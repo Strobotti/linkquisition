@@ -25,6 +25,10 @@ const (
 	PickerLayoutVertical   = "vertical"
 	PickerLayoutHorizontal = "horizontal"
 
+	ThemeSystem = "system"
+	ThemeDark   = "dark"
+	ThemeLight  = "light"
+
 	DefaultMaxItemsPerRow = 5
 )
 
@@ -113,6 +117,7 @@ type UiSettings struct {
 	HideKeyboardGuideLabel bool   `json:"hideKeyboardGuideLabel,omitempty"`
 	PickerLayout           string `json:"pickerLayout,omitempty"`
 	MaxItemsPerRow         int    `json:"maxItemsPerRow,omitempty"`
+	Theme                  string `json:"theme,omitempty"`
 }
 
 // GetPickerLayout returns the effective picker layout, defaulting to vertical.
@@ -129,6 +134,16 @@ func (u *UiSettings) GetMaxItemsPerRow() int {
 		return u.MaxItemsPerRow
 	}
 	return DefaultMaxItemsPerRow
+}
+
+// GetTheme returns the effective theme, defaulting to system.
+func (u *UiSettings) GetTheme() string {
+	switch u.Theme {
+	case ThemeDark, ThemeLight:
+		return u.Theme
+	default:
+		return ThemeSystem
+	}
 }
 
 type Settings struct {

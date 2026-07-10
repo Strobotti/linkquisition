@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -36,6 +37,21 @@ type Application struct {
 
 	Logger  *slog.Logger
 	plugins []linkquisition.Plugin
+}
+
+// applyTheme configures the Fyne app theme based on the user's ui.theme setting.
+// "system" (or empty) uses the OS default; "dark" and "light" force the variant.
+func applyTheme(fapp fyne.App, settingsService linkquisition.SettingsService) {
+	settings := settingsService.GetSettings()
+
+	switch settings.Ui.GetTheme() {
+	case linkquisition.ThemeDark:
+		fapp.Settings().SetTheme(theme.DarkTheme())
+	case linkquisition.ThemeLight:
+		fapp.Settings().SetTheme(theme.LightTheme())
+	case linkquisition.ThemeSystem:
+		// Fyne follows the OS by default — no action needed.
+	}
 }
 
 func setupPlugins(

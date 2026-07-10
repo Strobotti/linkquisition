@@ -256,5 +256,20 @@
   },
   "config.picker_max_per_row_label": {
     "other": "Máximo de itens por linha:"
+  },
+  "config.theme_label": {
+    "other": "Tema:"
+  },
+  "config.theme_system": {
+    "other": "Sistema (automático)"
+  },
+  "config.theme_dark": {
+    "other": "Escuro"
+  },
+  "config.theme_light": {
+    "other": "Claro"
+  },
+  "config.theme_restart_note": {
+    "other": "A alteração do tema terá efeito na próxima inicialização."
   }
 }
