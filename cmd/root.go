@@ -21,6 +21,9 @@ var pluginOpts []string
 // noPlugins disables all plugin loading for debugging.
 var noPlugins bool
 
+// logLevelOverride temporarily overrides the log level from config (not persisted).
+var logLevelOverride string
+
 var rootCmd = &cobra.Command{
 	Use:   "linkquisition [url]",
 	Short: "A fast, configurable browser-picker",
@@ -79,6 +82,8 @@ func initRootCmd() {
 		`override plugin settings at runtime (format: plugin.key=value, e.g. shenanigans.effect=matrix)`)
 	rootCmd.Flags().BoolVar(&noPlugins, "no-plugins", false,
 		`disable all plugin loading (for debugging)`)
+	rootCmd.Flags().StringVar(&logLevelOverride, "log-level", "",
+		`override log level for this run without changing config (debug, info, warn, error)`)
 
 	initConfigCmd()
 	initPluginCmd()
