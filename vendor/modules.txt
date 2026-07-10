@@ -92,7 +92,7 @@ github.com/go-gl/gl/v2.1/gl
 github.com/go-gl/gl/v2.1/gl/KHR
 github.com/go-gl/gl/v3.1/gles2
 github.com/go-gl/gl/v3.1/gles2/KHR
-# github.com/go-gl/glfw/v3.3/glfw v0.0.0-20260628091122-0bd588dc30cf
+# github.com/go-gl/glfw/v3.3/glfw v0.0.0-20260707082822-2a407d02d01a
 ## explicit; go 1.19
 github.com/go-gl/glfw/v3.3/glfw
 github.com/go-gl/glfw/v3.3/glfw/glfw/deps
@@ -187,7 +187,7 @@ github.com/rymdport/portal/settings/appearance
 # github.com/spf13/cobra v1.10.2
 ## explicit; go 1.15
 github.com/spf13/cobra
-# github.com/spf13/pflag v1.0.9
+# github.com/spf13/pflag v1.0.10
 ## explicit; go 1.12
 github.com/spf13/pflag
 # github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
@@ -210,7 +210,7 @@ github.com/yuin/goldmark/renderer
 github.com/yuin/goldmark/renderer/html
 github.com/yuin/goldmark/text
 github.com/yuin/goldmark/util
-# golang.org/x/image v0.43.0
+# golang.org/x/image v0.44.0
 ## explicit; go 1.25.0
 golang.org/x/image/ccitt
 golang.org/x/image/colornames
@@ -221,18 +221,18 @@ golang.org/x/image/math/fixed
 golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw
 golang.org/x/image/vector
-# golang.org/x/net v0.56.0
+# golang.org/x/net v0.57.0
 ## explicit; go 1.25.0
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.46.0
+# golang.org/x/sys v0.47.0
 ## explicit; go 1.25.0
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
-# golang.org/x/text v0.38.0
+# golang.org/x/text v0.40.0
 ## explicit; go 1.25.0
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
