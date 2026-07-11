@@ -116,7 +116,7 @@ func (f *Fetcher) fetchParsed(ctx context.Context, parsed *url.URL) ([]byte, err
 	// First try to parse the HTML for a link icon
 	pageURL := fmt.Sprintf("%s://%s/", parsed.Scheme, parsed.Host)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, pageURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, pageURL, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
@@ -139,7 +139,8 @@ func (f *Fetcher) fetchParsed(ctx context.Context, parsed *url.URL) ([]byte, err
 	}
 
 	matches := linkIconRegex.FindSubmatch(body)
-	if len(matches) < 2 {
+	const minRegexGroups = 2
+	if len(matches) < minRegexGroups {
 		// No icon link found, fall back to /favicon.ico
 		return f.fetchDirect(ctx, parsed)
 	}
@@ -168,7 +169,7 @@ func (f *Fetcher) fetchGoogle(ctx context.Context, rawURL string) ([]byte, error
 
 // download performs the actual HTTP GET and returns the body bytes.
 func (f *Fetcher) download(ctx context.Context, fetchURL string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fetchURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fetchURL, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
