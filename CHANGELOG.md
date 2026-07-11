@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.12.0](https://github.com/Strobotti/linkquisition/compare/v2.11.0...v2.12.0) (2026-07-11)
+
+
+### Features
+
+* favicon display in browser picker ([#133](https://github.com/Strobotti/linkquisition/issues/133)) ([f78c987](https://github.com/Strobotti/linkquisition/commit/f78c9877d7ef8fbad23897427ecc888849d9f07d))
+
+
+### Bug Fixes
+
+* **ci:** use explicit version for ossf/scorecard-action ([f19512f](https://github.com/Strobotti/linkquisition/commit/f19512fb6ad13252a45413d5d771d1bda927f690))
+
 ## [2.11.0](https://github.com/Strobotti/linkquisition/compare/v2.10.0...v2.11.0) (2026-07-10)
 
 
