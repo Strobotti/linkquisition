@@ -101,6 +101,22 @@ and *rule* subcommands).
 	UI color theme. One of: _system_ (default, follows the operating system
 	preference), _dark_, or _light_. Changes take effect on next launch.
 
+*showFavicon* (boolean, optional)
+	If _true_, the browser picker displays the website's favicon next to the
+	URL. The icon is fetched lazily (does not block startup) and a placeholder
+	is shown until loading completes. Default: _false_.
+
+*faviconStrategy* (string, optional)
+	How to retrieve the favicon. Only relevant when _showFavicon_ is _true_.
+	One of:
+	- *direct* (default) — fetches _/favicon.ico_ from the host. Fast and
+	  privacy-friendly.
+	- *parsed* — downloads the site's HTML root page and parses the
+	  _<link rel="icon">_ tag. More accurate (finds custom icon paths) but
+	  requires two HTTP requests and may be slower.
+	- *google* — uses Google's favicon service. Reliable and fast, but the
+	  URL is sent to Google (privacy concern).
+
 # EXAMPLE
 
 ```
@@ -130,7 +146,9 @@ and *rule* subcommands).
   "ui": {
     "theme": "system",
     "pickerLayout": "horizontal",
-    "maxItemsPerRow": 5
+    "maxItemsPerRow": 5,
+    "showFavicon": true,
+    "faviconStrategy": "direct"
   }
 }
 ```

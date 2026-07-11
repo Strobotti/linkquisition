@@ -35,6 +35,7 @@ Motivation behind this project is:
     - `Enter` to open the URL in the default browser
     - `Ctrl+C` to just copy the URL to clipboard and close the window
     - Number keys (1-9) to select a browser
+- Optional favicon display next to the URL in the picker (lazy-loaded, no startup delay)
 
 ## Installation
 

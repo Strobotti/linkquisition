@@ -280,5 +280,38 @@
   },
   "config.theme_restart_note": {
     "other": "A alteração do tema terá efeito na próxima inicialização."
+  },
+  "config.favicon_label": {
+    "other": "Mostrar favicon do site ao lado da URL"
+  },
+  "config.favicon_strategy_label": {
+    "other": "Método de obtenção do favicon:"
+  },
+  "config.favicon_strategy_direct": {
+    "other": "Direto (/favicon.ico)"
+  },
+  "config.favicon_strategy_parsed": {
+    "other": "Analisado (tag HTML link)"
+  },
+  "config.favicon_strategy_google": {
+    "other": "Google (serviço externo)"
+  },
+  "config.favicon_strategy_direct_desc": {
+    "other": "Obtém /favicon.ico diretamente do site. Rápido e privado."
+  },
+  "config.favicon_strategy_parsed_desc": {
+    "other": "Analisa o HTML do site para encontrar o ícone. Mais preciso, mas pode ser mais lento."
+  },
+  "config.favicon_strategy_google_desc": {
+    "other": "Usa o serviço de favicon do Google. Confiável, mas a URL é enviada ao Google (preocupação com privacidade)."
+  },
+  "config.favicon_clear_cache": {
+    "other": "Limpar cache de favicons"
+  },
+  "config.favicon_clear_cache_done": {
+    "other": "✓ Cache limpo"
+  },
+  "config.favicon_clear_cache_error": {
+    "other": "✗ Erro ao limpar o cache"
   }
 }

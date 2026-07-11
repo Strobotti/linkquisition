@@ -280,5 +280,38 @@
   },
   "config.theme_restart_note": {
     "other": "Зміна теми набуде чинності при наступному запуску."
+  },
+  "config.favicon_label": {
+    "other": "Показувати favicon сайту поруч з URL"
+  },
+  "config.favicon_strategy_label": {
+    "other": "Спосіб отримання favicon:"
+  },
+  "config.favicon_strategy_direct": {
+    "other": "Прямий (/favicon.ico)"
+  },
+  "config.favicon_strategy_parsed": {
+    "other": "Розібраний (HTML тег link)"
+  },
+  "config.favicon_strategy_google": {
+    "other": "Google (зовнішній сервіс)"
+  },
+  "config.favicon_strategy_direct_desc": {
+    "other": "Завантажує /favicon.ico безпосередньо з сайту. Швидко та конфіденційно."
+  },
+  "config.favicon_strategy_parsed_desc": {
+    "other": "Аналізує HTML сайту для пошуку іконки. Точніше, але може бути повільніше."
+  },
+  "config.favicon_strategy_google_desc": {
+    "other": "Використовує сервіс favicon від Google. Надійно, але URL надсилається до Google (проблема конфіденційності)."
+  },
+  "config.favicon_clear_cache": {
+    "other": "Очистити кеш favicon"
+  },
+  "config.favicon_clear_cache_done": {
+    "other": "✓ Кеш очищено"
+  },
+  "config.favicon_clear_cache_error": {
+    "other": "✗ Помилка очищення кешу"
   }
 }

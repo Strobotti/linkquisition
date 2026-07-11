@@ -280,5 +280,38 @@
   },
   "config.theme_restart_note": {
     "other": "Teeman vaihto tulee voimaan seuraavalla käynnistyksellä."
+  },
+  "config.favicon_label": {
+    "other": "Näytä sivuston favicon URL:n vieressä"
+  },
+  "config.favicon_strategy_label": {
+    "other": "Faviconin hakutapa:"
+  },
+  "config.favicon_strategy_direct": {
+    "other": "Suora (/favicon.ico)"
+  },
+  "config.favicon_strategy_parsed": {
+    "other": "Jäsennetty (HTML link-tagi)"
+  },
+  "config.favicon_strategy_google": {
+    "other": "Google (ulkoinen palvelu)"
+  },
+  "config.favicon_strategy_direct_desc": {
+    "other": "Hakee /favicon.ico suoraan sivustolta. Nopea ja yksityinen."
+  },
+  "config.favicon_strategy_parsed_desc": {
+    "other": "Jäsentää sivuston HTML:n kuvakkeen löytämiseksi. Tarkempi, mutta saattaa olla hitaampi."
+  },
+  "config.favicon_strategy_google_desc": {
+    "other": "Käyttää Googlen favicon-palvelua. Luotettava, mutta URL lähetetään Googlelle (tietosuojariski)."
+  },
+  "config.favicon_clear_cache": {
+    "other": "Tyhjennä favicon-välimuisti"
+  },
+  "config.favicon_clear_cache_done": {
+    "other": "✓ Välimuisti tyhjennetty"
+  },
+  "config.favicon_clear_cache_error": {
+    "other": "✗ Virhe välimuistin tyhjentämisessä"
   }
 }
