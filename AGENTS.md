@@ -203,6 +203,14 @@ The app has two UI modes, both in `cmd/`:
 - The `locale` config key overrides system detection
 - Plugins do NOT currently have access to the i18n system
 
+### When adding or changing i18n keys
+
+- [ ] Add the new key to `en.json` first (this is the fallback/source of truth)
+- [ ] Add translated values to ALL other locale files (`de`, `es`, `fi`, `fr`, `hu`, `pt`, `pt-BR`, `sv`, `uk`)
+- [ ] Keep the key ordering consistent across all files (append new keys at the end)
+- [ ] If a translation is uncertain, use the English text as a placeholder — it's better
+  than a missing key (which causes the raw key string to appear in the UI)
+
 ## Linux packaging
 
 The project produces `.deb`, `.rpm`, and AppImage packages.
