@@ -205,6 +205,8 @@ func cacheKey(host string) string {
 }
 
 // readCache reads a cached favicon if it exists and is not expired.
+// TODO: there is no proactive eviction of old cache entries — expired entries are only
+// removed lazily when accessed. A startup pruner or max cache size could be added if needed.
 func (f *Fetcher) readCache(host string) ([]byte, error) {
 	path := filepath.Join(f.cacheDir, cacheKey(host))
 
