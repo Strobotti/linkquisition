@@ -280,5 +280,29 @@
   },
   "config.theme_restart_note": {
     "other": "Theme change takes effect on next launch."
+  },
+  "config.favicon_label": {
+    "other": "Show site favicon next to URL"
+  },
+  "config.favicon_strategy_label": {
+    "other": "Favicon retrieval method:"
+  },
+  "config.favicon_strategy_direct": {
+    "other": "Direct (/favicon.ico)"
+  },
+  "config.favicon_strategy_parsed": {
+    "other": "Parsed (HTML link tag)"
+  },
+  "config.favicon_strategy_google": {
+    "other": "Google (external service)"
+  },
+  "config.favicon_strategy_direct_desc": {
+    "other": "Fetches /favicon.ico directly from the site. Fast and private."
+  },
+  "config.favicon_strategy_parsed_desc": {
+    "other": "Parses the site's HTML to find the icon. More accurate but may be slower."
+  },
+  "config.favicon_strategy_google_desc": {
+    "other": "Uses Google's favicon service. Reliable but sends the URL to Google (privacy concern)."
   }
 }
