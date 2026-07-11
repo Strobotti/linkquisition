@@ -224,6 +224,8 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 
 	layoutRow, maxItemsRow := c.buildPickerLayoutSelector(settings)
 
+	faviconSection := c.buildFaviconSection(settings)
+
 	return container.NewVBox(
 		themeRow,
 		themeNote,
@@ -232,6 +234,8 @@ func (c *Configurator) buildUiSection() fyne.CanvasObject {
 		widget.NewSeparator(),
 		layoutRow,
 		maxItemsRow,
+		widget.NewSeparator(),
+		faviconSection,
 	)
 }
 
@@ -351,6 +355,92 @@ func (c *Configurator) buildPickerLayoutSelector(settings *linkquisition.Setting
 	)
 
 	return layoutRow, maxItemsRow
+}
+
+func (c *Configurator) buildFaviconSection(settings *linkquisition.Settings) fyne.CanvasObject {
+	strategyOptions := []string{
+		i18n.T("config.favicon_strategy_direct"),
+		i18n.T("config.favicon_strategy_parsed"),
+		i18n.T("config.favicon_strategy_google"),
+	}
+
+	currentStrategy := settings.Ui.GetFaviconStrategy()
+	selectedStrategy := strategyOptions[0]
+	switch currentStrategy {
+	case linkquisition.FaviconStrategyParsed:
+		selectedStrategy = strategyOptions[1]
+	case linkquisition.FaviconStrategyGoogle:
+		selectedStrategy = strategyOptions[2]
+	}
+
+	strategyDesc := widget.NewLabel(i18n.T("config.favicon_strategy_direct_desc"))
+	strategyDesc.TextStyle = fyne.TextStyle{Italic: true}
+	strategyDesc.Wrapping = fyne.TextWrapWord
+
+	updateDescription := func(strategy string) {
+		switch strategy {
+		case linkquisition.FaviconStrategyParsed:
+			strategyDesc.SetText(i18n.T("config.favicon_strategy_parsed_desc"))
+		case linkquisition.FaviconStrategyGoogle:
+			strategyDesc.SetText(i18n.T("config.favicon_strategy_google_desc"))
+		default:
+			strategyDesc.SetText(i18n.T("config.favicon_strategy_direct_desc"))
+		}
+	}
+	updateDescription(currentStrategy)
+
+	strategySelect := widget.NewSelect(strategyOptions, func(selected string) {
+		s := c.settingsService.GetSettings()
+		switch selected {
+		case strategyOptions[1]:
+			s.Ui.FaviconStrategy = linkquisition.FaviconStrategyParsed
+			updateDescription(linkquisition.FaviconStrategyParsed)
+		case strategyOptions[2]:
+			s.Ui.FaviconStrategy = linkquisition.FaviconStrategyGoogle
+			updateDescription(linkquisition.FaviconStrategyGoogle)
+		default:
+			s.Ui.FaviconStrategy = linkquisition.FaviconStrategyDirect
+			updateDescription(linkquisition.FaviconStrategyDirect)
+		}
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving favicon strategy setting", "error", err)
+		}
+	})
+	strategySelect.Selected = selectedStrategy
+
+	strategyRow := container.NewBorder(
+		nil, nil,
+		widget.NewLabel(i18n.T("config.favicon_strategy_label")), nil,
+		strategySelect,
+	)
+
+	// Show strategy options only when favicon is enabled
+	updateStrategyVisible := func(enabled bool) {
+		if enabled {
+			strategyRow.Show()
+			strategyDesc.Show()
+		} else {
+			strategyRow.Hide()
+			strategyDesc.Hide()
+		}
+	}
+	updateStrategyVisible(settings.Ui.ShowFavicon)
+
+	faviconCheck := widget.NewCheck(i18n.T("config.favicon_label"), func(checked bool) {
+		s := c.settingsService.GetSettings()
+		s.Ui.ShowFavicon = checked
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Error saving favicon setting", "error", err)
+		}
+		updateStrategyVisible(checked)
+	})
+	faviconCheck.Checked = settings.Ui.ShowFavicon
+
+	return container.NewVBox(
+		faviconCheck,
+		strategyRow,
+		strategyDesc,
+	)
 }
 
 func (c *Configurator) getAboutTab() fyne.CanvasObject {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"image/color"
 	"log/slog"
+	"path/filepath"
 	"runtime"
 	"time"
 	"unicode/utf8"
@@ -18,6 +19,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/favicon"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/resources"
 )
@@ -28,6 +30,7 @@ const (
 	horizontalButtonHeight   = 148
 	verticalWindowWidth      = 600
 	verticalWindowMinHeight  = 50
+	faviconDisplaySize       = 16
 )
 
 type BrowserPicker struct {
@@ -208,13 +211,56 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 	})
 	copyButton.Importance = widget.LowImportance
 
-	return []fyne.CanvasObject{
-		container.NewHBox(
+	settings := picker.settingsService.GetSettings()
+
+	var urlRow *fyne.Container
+	if settings.Ui.ShowFavicon {
+		faviconImg := canvas.NewImageFromResource(theme.ComputerIcon())
+		faviconImg.FillMode = canvas.ImageFillContain
+		faviconImg.SetMinSize(fyne.NewSize(faviconDisplaySize, faviconDisplaySize))
+
+		urlRow = container.NewHBox(
+			copyButton,
+			widget.NewLabel(i18n.T("picker.open_label")),
+			faviconImg,
+			urlLabel,
+		)
+
+		// Fetch favicon lazily in a goroutine
+		go picker.fetchAndUpdateFavicon(urlToOpen, faviconImg, settings)
+	} else {
+		urlRow = container.NewHBox(
 			copyButton,
 			widget.NewLabel(i18n.T("picker.open_label")),
 			urlLabel,
-		),
+		)
 	}
+
+	return []fyne.CanvasObject{urlRow}
+}
+
+// fetchAndUpdateFavicon fetches the favicon in the background and updates the image widget.
+// This runs in a goroutine to avoid blocking the UI startup.
+func (picker *BrowserPicker) fetchAndUpdateFavicon(
+	urlToOpen string, img *canvas.Image, settings *linkquisition.Settings,
+) {
+	strategy := settings.Ui.GetFaviconStrategy()
+	cacheDir := filepath.Join(picker.settingsService.GetConfigFolderPath(), "favicons")
+
+	fetcher := favicon.NewFetcher(strategy, cacheDir)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) //nolint:mnd
+	defer cancel()
+
+	data, err := fetcher.Fetch(ctx, urlToOpen)
+	if err != nil {
+		picker.logger.Debug("Failed to fetch favicon", "url", urlToOpen, "error", err)
+		return
+	}
+
+	res := fyne.NewStaticResource("favicon.png", data)
+	img.Resource = res
+	img.Refresh()
 }
 
 func (picker *BrowserPicker) buildRememberCheck(urlToOpen string, remember binding.Bool) []fyne.CanvasObject {
