@@ -304,5 +304,14 @@
   },
   "config.favicon_strategy_google_desc": {
     "other": "Використовує сервіс favicon від Google. Надійно, але URL надсилається до Google (проблема конфіденційності)."
+  },
+  "config.favicon_clear_cache": {
+    "other": "Очистити кеш favicon"
+  },
+  "config.favicon_clear_cache_done": {
+    "other": "✓ Кеш очищено"
+  },
+  "config.favicon_clear_cache_error": {
+    "other": "✗ Помилка очищення кешу"
   }
 }

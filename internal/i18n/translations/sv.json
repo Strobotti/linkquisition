@@ -304,5 +304,14 @@
   },
   "config.favicon_strategy_google_desc": {
     "other": "Använder Googles favicon-tjänst. Pålitligt, men URL:en skickas till Google (integritetsproblem)."
+  },
+  "config.favicon_clear_cache": {
+    "other": "Rensa favicon-cache"
+  },
+  "config.favicon_clear_cache_done": {
+    "other": "✓ Cache rensad"
+  },
+  "config.favicon_clear_cache_error": {
+    "other": "✗ Fel vid rensning av cache"
   }
 }

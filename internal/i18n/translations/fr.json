@@ -304,5 +304,14 @@
   },
   "config.favicon_strategy_google_desc": {
     "other": "Utilise le service de favicon de Google. Fiable, mais l'URL est envoyée à Google (problème de confidentialité)."
+  },
+  "config.favicon_clear_cache": {
+    "other": "Vider le cache des favicons"
+  },
+  "config.favicon_clear_cache_done": {
+    "other": "✓ Cache vidé"
+  },
+  "config.favicon_clear_cache_error": {
+    "other": "✗ Erreur lors du vidage du cache"
   }
 }

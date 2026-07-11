@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"sort"
 
 	"fyne.io/fyne/v2"
@@ -414,14 +416,30 @@ func (c *Configurator) buildFaviconSection(settings *linkquisition.Settings) fyn
 		strategySelect,
 	)
 
-	// Show strategy options only when favicon is enabled
+	// Clear cache button
+	clearCacheButton := widget.NewButton(i18n.T("config.favicon_clear_cache"), func() {})
+	clearCacheButton.Importance = widget.LowImportance
+	clearCacheButton.OnTapped = func() {
+		cacheDir := filepath.Join(c.settingsService.GetConfigFolderPath(), "favicons")
+		if err := os.RemoveAll(cacheDir); err != nil {
+			c.logger.Error("Error clearing favicon cache", "error", err)
+			clearCacheButton.SetText(i18n.T("config.favicon_clear_cache_error"))
+		} else {
+			clearCacheButton.SetText(i18n.T("config.favicon_clear_cache_done"))
+			clearCacheButton.Disable()
+		}
+	}
+
+	// Show strategy options and clear cache only when favicon is enabled
 	updateStrategyVisible := func(enabled bool) {
 		if enabled {
 			strategyRow.Show()
 			strategyDesc.Show()
+			clearCacheButton.Show()
 		} else {
 			strategyRow.Hide()
 			strategyDesc.Hide()
+			clearCacheButton.Hide()
 		}
 	}
 	updateStrategyVisible(settings.Ui.ShowFavicon)
@@ -440,6 +458,7 @@ func (c *Configurator) buildFaviconSection(settings *linkquisition.Settings) fyn
 		faviconCheck,
 		strategyRow,
 		strategyDesc,
+		clearCacheButton,
 	)
 }
 

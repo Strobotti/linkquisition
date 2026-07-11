@@ -304,5 +304,14 @@
   },
   "config.favicon_strategy_google_desc": {
     "other": "A Google favicon szolgáltatását használja. Megbízható, de az URL-t elküldi a Google-nek (adatvédelmi aggály)."
+  },
+  "config.favicon_clear_cache": {
+    "other": "Favicon gyorsítótár törlése"
+  },
+  "config.favicon_clear_cache_done": {
+    "other": "✓ Gyorsítótár törölve"
+  },
+  "config.favicon_clear_cache_error": {
+    "other": "✗ Hiba a gyorsítótár törlésekor"
   }
 }

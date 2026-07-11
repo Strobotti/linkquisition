@@ -304,5 +304,14 @@
   },
   "config.favicon_strategy_google_desc": {
     "other": "Käyttää Googlen favicon-palvelua. Luotettava, mutta URL lähetetään Googlelle (tietosuojariski)."
+  },
+  "config.favicon_clear_cache": {
+    "other": "Tyhjennä favicon-välimuisti"
+  },
+  "config.favicon_clear_cache_done": {
+    "other": "✓ Välimuisti tyhjennetty"
+  },
+  "config.favicon_clear_cache_error": {
+    "other": "✗ Virhe välimuistin tyhjentämisessä"
   }
 }
