@@ -29,6 +29,10 @@ const (
 	ThemeDark   = "dark"
 	ThemeLight  = "light"
 
+	FaviconStrategyDirect = "direct"
+	FaviconStrategyParsed = "parsed"
+	FaviconStrategyGoogle = "google"
+
 	DefaultMaxItemsPerRow = 5
 )
 
@@ -118,6 +122,8 @@ type UiSettings struct {
 	PickerLayout           string `json:"pickerLayout,omitempty"`
 	MaxItemsPerRow         int    `json:"maxItemsPerRow,omitempty"`
 	Theme                  string `json:"theme,omitempty"`
+	ShowFavicon            bool   `json:"showFavicon,omitempty"`
+	FaviconStrategy        string `json:"faviconStrategy,omitempty"`
 }
 
 // GetPickerLayout returns the effective picker layout, defaulting to horizontal.
@@ -143,6 +149,16 @@ func (u *UiSettings) GetTheme() string {
 		return u.Theme
 	default:
 		return ThemeSystem
+	}
+}
+
+// GetFaviconStrategy returns the effective favicon retrieval strategy, defaulting to direct.
+func (u *UiSettings) GetFaviconStrategy() string {
+	switch u.FaviconStrategy {
+	case FaviconStrategyParsed, FaviconStrategyGoogle:
+		return u.FaviconStrategy
+	default:
+		return FaviconStrategyDirect
 	}
 }
 

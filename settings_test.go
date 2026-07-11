@@ -1042,3 +1042,43 @@ func TestUiSettings_GetTheme(t *testing.T) {
 		)
 	}
 }
+
+func TestUiSettings_GetFaviconStrategy(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		ui       UiSettings
+		expected string
+	}{
+		{
+			name:     "defaults to direct when empty",
+			ui:       UiSettings{},
+			expected: FaviconStrategyDirect,
+		},
+		{
+			name:     "returns direct when explicitly set",
+			ui:       UiSettings{FaviconStrategy: FaviconStrategyDirect},
+			expected: FaviconStrategyDirect,
+		},
+		{
+			name:     "returns parsed when set",
+			ui:       UiSettings{FaviconStrategy: FaviconStrategyParsed},
+			expected: FaviconStrategyParsed,
+		},
+		{
+			name:     "returns google when set",
+			ui:       UiSettings{FaviconStrategy: FaviconStrategyGoogle},
+			expected: FaviconStrategyGoogle,
+		},
+		{
+			name:     "defaults to direct for unknown value",
+			ui:       UiSettings{FaviconStrategy: "unknown"},
+			expected: FaviconStrategyDirect,
+		},
+	} {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				assert.Equal(t, tt.expected, tt.ui.GetFaviconStrategy())
+			},
+		)
+	}
+}
