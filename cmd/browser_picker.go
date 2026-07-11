@@ -221,7 +221,6 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 
 		urlRow = container.NewHBox(
 			copyButton,
-			widget.NewLabel(i18n.T("picker.open_label")),
 			faviconImg,
 			urlLabel,
 		)
@@ -231,7 +230,6 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 	} else {
 		urlRow = container.NewHBox(
 			copyButton,
-			widget.NewLabel(i18n.T("picker.open_label")),
 			urlLabel,
 		)
 	}
