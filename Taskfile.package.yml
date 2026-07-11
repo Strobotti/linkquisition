@@ -64,7 +64,7 @@ tasks:
       - rm -rf dist/Linkquisition.app
       - mkdir -p dist/Linkquisition.app/Contents/MacOS
       - mkdir -p dist/Linkquisition.app/Contents/Resources
-      - go build -tags release -ldflags '-s -w -X main.version={{.VERSION}}' -o dist/Linkquisition.app/Contents/MacOS/linkquisition ./cmd/
+      - go build -trimpath -tags release -ldflags '-s -w -X main.version={{.VERSION}}' -o dist/Linkquisition.app/Contents/MacOS/linkquisition ./cmd/
       - task build:plugins-darwin
       - sed 's/${VERSION}/{{.VERSION}}/g' package/darwin/Info.plist > dist/Linkquisition.app/Contents/Info.plist
       - sips -s format icns Icon.png --out dist/Linkquisition.app/Contents/Resources/Icon.icns 2>/dev/null || cp Icon.png dist/Linkquisition.app/Contents/Resources/Icon.icns

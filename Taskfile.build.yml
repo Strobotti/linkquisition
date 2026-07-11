@@ -15,7 +15,7 @@ tasks:
         sh: echo ${VERSION:-v0.0.0}
       OPTIONS: '{{default "" .DEVOPTIONS}}'
     cmds:
-      - CGO_ENABLED=1 GOOS={{.TARGET}} {{if .ARCH}}GOARCH={{.ARCH}}{{end}} go build -tags release -ldflags '-s -w -X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} ./cmd/
+      - CGO_ENABLED=1 GOOS={{.TARGET}} {{if .ARCH}}GOARCH={{.ARCH}}{{end}} go build -trimpath -tags release -ldflags '-s -w -X main.version={{.VERSION}} -X main.BuildTimestamp={{now | unixEpoch}}' {{.OPTIONS}} -o bin/{{.OUTPUT}}{{exeExt}} ./cmd/
       - echo "bin/{{.OUTPUT}}{{exeExt}} created successfully"
     sources:
       - ./**/*.go
@@ -75,7 +75,7 @@ tasks:
     cmds:
       - mkdir -p {{.OUTPUT_DIR}}
       - for: { var: PLUGINS }
-        cmd: go build -tags release -buildmode=plugin -o {{.OUTPUT_DIR}}/{{.ITEM}}.so ./plugins/{{.ITEM}}/
+        cmd: go build -trimpath -tags release -buildmode=plugin -o {{.OUTPUT_DIR}}/{{.ITEM}}.so ./plugins/{{.ITEM}}/
 
   clean:
     cmds:
