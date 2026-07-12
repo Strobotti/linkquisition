@@ -353,6 +353,15 @@
   "picker.whois_nameservers": {
     "other": "DNS-сервери:"
   },
+  "picker.whois_age": {
+    "other": "Вік:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Статус:"
+  },
   "picker.whois_close": {
     "other": "Закрити"
   },

@@ -356,18 +356,37 @@ func (picker *BrowserPicker) showWhoisWindow(urlToOpen string) {
 func (picker *BrowserPicker) buildWhoisContent(
 	info *internalwhois.DomainInfo, w fyne.Window,
 ) fyne.CanvasObject {
+	dnssecText := "✗"
+	dnssecColor := color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+	if info.DNSSec {
+		dnssecText = "✓"
+		dnssecColor = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+	}
+
+	dnssecLabel := canvas.NewText(dnssecText, dnssecColor)
+	dnssecLabel.TextStyle = fyne.TextStyle{Bold: true}
+	dnssecLabel.TextSize = theme.TextSize()
+
 	grid := container.New(layout.NewFormLayout(),
 		picker.whoisLabel(i18n.T("picker.whois_domain")), picker.whoisValue(info.Domain),
 		picker.whoisLabel(i18n.T("picker.whois_registrar")), picker.whoisValue(info.Registrar),
 		picker.whoisLabel(i18n.T("picker.whois_created")), picker.whoisValue(info.CreatedDate),
 		picker.whoisLabel(i18n.T("picker.whois_expires")), picker.whoisValue(info.ExpiryDate),
 		picker.whoisLabel(i18n.T("picker.whois_updated")), picker.whoisValue(info.UpdatedDate),
+		picker.whoisLabel(i18n.T("picker.whois_age")), picker.whoisValue(info.DomainAge),
+		picker.whoisLabel(i18n.T("picker.whois_dnssec")), dnssecLabel,
 	)
 
 	if len(info.NameServers) > 0 {
 		nsText := strings.Join(info.NameServers, ", ")
 		grid.Add(picker.whoisLabel(i18n.T("picker.whois_nameservers")))
 		grid.Add(picker.whoisValue(nsText))
+	}
+
+	if len(info.Status) > 0 {
+		statusText := strings.Join(info.Status, ", ")
+		grid.Add(picker.whoisLabel(i18n.T("picker.whois_status")))
+		grid.Add(picker.whoisValue(statusText))
 	}
 
 	closeButton := widget.NewButtonWithIcon(

@@ -353,6 +353,15 @@
   "picker.whois_nameservers": {
     "other": "Name servers:"
   },
+  "picker.whois_age": {
+    "other": "Age:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Status:"
+  },
   "picker.whois_close": {
     "other": "Close"
   },

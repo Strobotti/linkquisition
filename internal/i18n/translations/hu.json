@@ -353,6 +353,15 @@
   "picker.whois_nameservers": {
     "other": "Névszerverek:"
   },
+  "picker.whois_age": {
+    "other": "Kor:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Állapot:"
+  },
   "picker.whois_close": {
     "other": "Bezárás"
   },

@@ -353,6 +353,15 @@
   "picker.whois_nameservers": {
     "other": "Nimipalvelimet:"
   },
+  "picker.whois_age": {
+    "other": "Ikä:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Tila:"
+  },
   "picker.whois_close": {
     "other": "Sulje"
   },
