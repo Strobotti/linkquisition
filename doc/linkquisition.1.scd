@@ -163,6 +163,24 @@ Plugin locations:
 - Linux: _/usr/lib/linkquisition/plugins/_
 - macOS: _Linkquisition.app/Contents/Resources/plugins/_
 
+# URL SAFETY CHECKING
+
+When enabled in the configuration (see *linkquisition*(5)), the picker shows a
+color-coded indicator next to the URL:
+
+- *Green* — URL is considered safe
+- *Yellow* — check failed or URL is suspicious
+- *Red* — URL is flagged as malicious
+
+Clicking the indicator opens a popup with the provider name, threat level, and
+a link to view the full report on the provider's website.
+
+Supported providers:
+- *Google Safe Browsing* — checks against Google's threat lists
+- *VirusTotal* — aggregates results from multiple antivirus engines
+
+The check runs asynchronously and does not block the picker from opening.
+
 # SEE ALSO
 
 *linkquisition*(5), *xdg-settings*(1)

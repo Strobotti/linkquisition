@@ -36,6 +36,9 @@ Motivation behind this project is:
     - `Ctrl+C` to just copy the URL to clipboard and close the window
     - Number keys (1-9) to select a browser
 - Optional favicon display next to the URL in the picker (lazy-loaded, no startup delay)
+- URL safety checking via [Google Safe Browsing](https://safebrowsing.google.com/) or
+  [VirusTotal](https://www.virustotal.com/) — shows a color-coded indicator in the picker
+  with a clickable link to the full provider report
 
 ## Installation
 
@@ -143,7 +146,12 @@ it will be treated as a different browser and might be removed if not safe-guard
         }
       ]
     }
-  ]
+  ],
+  "security": {
+    "enabled": true,
+    "provider": "google_safe_browsing",
+    "apiKey": "YOUR_API_KEY"
+  }
 }
 ```
 

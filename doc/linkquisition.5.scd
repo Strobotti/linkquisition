@@ -37,6 +37,9 @@ and *rule* subcommands).
 *ui* (object, optional)
 	UI settings. See *UI OBJECT* below.
 
+*security* (object, optional)
+	URL safety checking settings. See *SECURITY OBJECT* below.
+
 # BROWSER OBJECT
 
 *name* (string)
@@ -117,6 +120,25 @@ and *rule* subcommands).
 	- *google* — uses Google's favicon service. Reliable and fast, but the
 	  URL is sent to Google (privacy concern).
 
+# SECURITY OBJECT
+
+*enabled* (boolean, optional)
+	If _true_, URL safety checking is active. The picker shows a color-coded
+	dot indicating the safety status of the URL being opened. Default: _false_.
+
+*provider* (string, optional)
+	The safety checking provider. One of:
+	- *google_safe_browsing* (default) — uses Google Safe Browsing Lookup API
+	  v4. Checks against Google's threat lists (malware, social engineering,
+	  unwanted software, potentially harmful applications).
+	- *virustotal* — uses the VirusTotal URL analysis API. Aggregates results
+	  from multiple antivirus engines and URL scanners.
+
+*apiKey* (string, required when enabled)
+	API key for the selected provider. Obtain from:
+	- Google Safe Browsing: _https://console.cloud.google.com/apis/credentials_
+	- VirusTotal: _https://www.virustotal.com/gui/my-apikey_
+
 # EXAMPLE
 
 ```
@@ -149,6 +171,11 @@ and *rule* subcommands).
     "maxItemsPerRow": 5,
     "showFavicon": true,
     "faviconStrategy": "direct"
+  },
+  "security": {
+    "enabled": true,
+    "provider": "google_safe_browsing",
+    "apiKey": "YOUR_API_KEY"
   }
 }
 ```

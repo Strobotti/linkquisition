@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	virusTotalBaseURL = "https://www.virustotal.com/api/v3"
+	virusTotalBaseURL   = "https://www.virustotal.com/api/v3"
+	virusTotalReportURL = "https://www.virustotal.com/gui/url/"
 )
 
 type virusTotal struct {
@@ -54,6 +55,7 @@ func (v *virusTotal) TestCredentials(ctx context.Context) error {
 func (v *virusTotal) Check(ctx context.Context, targetURL string) (*CheckResult, error) {
 	// VirusTotal URL lookup uses base64-encoded URL (without padding) as identifier
 	urlID := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(targetURL))
+	reportURL := virusTotalReportURL + urlID
 	apiURL := virusTotalBaseURL + "/urls/" + urlID
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, http.NoBody)
@@ -75,6 +77,7 @@ func (v *virusTotal) Check(ctx context.Context, targetURL string) (*CheckResult,
 			Level:     ThreatLevelSafe,
 			Provider:  v.Name(),
 			Details:   []string{"URL not previously scanned"},
+			ReportURL: reportURL,
 			CheckedAt: time.Now(),
 		}, nil
 	}
@@ -89,14 +92,15 @@ func (v *virusTotal) Check(ctx context.Context, targetURL string) (*CheckResult,
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	return v.interpretResult(&result), nil
+	return v.interpretResult(&result, reportURL), nil
 }
 
-func (v *virusTotal) interpretResult(result *vtResponse) *CheckResult {
+func (v *virusTotal) interpretResult(result *vtResponse, reportURL string) *CheckResult {
 	stats := result.Data.Attributes.LastAnalysisStats
 	checkResult := &CheckResult{
 		Level:     ThreatLevelSafe,
 		Provider:  v.Name(),
+		ReportURL: reportURL,
 		CheckedAt: time.Now(),
 	}
 

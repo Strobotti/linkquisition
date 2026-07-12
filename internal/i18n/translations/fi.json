@@ -421,5 +421,8 @@
   },
   "picker.safety_close": {
     "other": "Sulje"
+  },
+  "picker.safety_view_report": {
+    "other": "Näytä täysi raportti"
   }
 }
