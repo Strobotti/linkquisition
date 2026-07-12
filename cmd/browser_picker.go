@@ -345,10 +345,25 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 	if result.ReportURL != "" {
 		parsedURL, _ := url.Parse(result.ReportURL)
 		if parsedURL != nil {
-			reportLink = widget.NewHyperlink(
+			hyperlink := widget.NewHyperlink(
 				i18n.T("picker.safety_view_report"),
 				parsedURL,
 			)
+
+			copyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), nil)
+			copyButton.Importance = widget.LowImportance
+			copyButton.OnTapped = func() {
+				w.Clipboard().SetContent(result.ReportURL)
+				copyButton.SetIcon(theme.ConfirmIcon())
+				go func() {
+					time.Sleep(1 * time.Second)
+					fyne.Do(func() {
+						copyButton.SetIcon(theme.ContentCopyIcon())
+					})
+				}()
+			}
+
+			reportLink = container.NewHBox(hyperlink, copyButton)
 		}
 	}
 
