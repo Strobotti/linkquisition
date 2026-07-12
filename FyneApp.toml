@@ -1,0 +1,6 @@
+[Details]
+ID = "com.strobotti.linkquisition"
+Name = "Linkquisition"
+
+[Migrations]
+fyneDo = true

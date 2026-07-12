@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 
 	"github.com/strobotti/linkquisition"
@@ -38,7 +39,13 @@ func getURLFromPlatformEvent() string {
 }
 
 func NewApplication() *Application {
-	fapp := app.New()
+	app.SetMetadata(fyne.AppMetadata{
+		ID:         "com.strobotti.linkquisition",
+		Name:       "Linkquisition",
+		Migrations: map[string]bool{"fyneDo": true},
+	})
+
+	fapp := app.NewWithID("com.strobotti.linkquisition")
 	browserService, settingsService := newPlatformServices()
 
 	applyTheme(fapp, settingsService)
