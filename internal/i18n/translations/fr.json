@@ -313,5 +313,20 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Erreur lors du vidage du cache"
+  },
+  "picker.menu_copy": {
+    "other": "Copier l'URL"
+  },
+  "picker.menu_qr": {
+    "other": "Afficher le code QR"
+  },
+  "picker.menu_whois": {
+    "other": "Afficher Whois"
+  },
+  "picker.qr_copy_image": {
+    "other": "Copier l'image"
+  },
+  "picker.qr_close": {
+    "other": "Fermer"
   }
 }

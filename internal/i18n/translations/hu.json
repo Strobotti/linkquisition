@@ -313,5 +313,20 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Hiba a gyorsítótár törlésekor"
+  },
+  "picker.menu_copy": {
+    "other": "URL másolása"
+  },
+  "picker.menu_qr": {
+    "other": "QR-kód megjelenítése"
+  },
+  "picker.menu_whois": {
+    "other": "Whois megjelenítése"
+  },
+  "picker.qr_copy_image": {
+    "other": "Kép másolása"
+  },
+  "picker.qr_close": {
+    "other": "Bezárás"
   }
 }

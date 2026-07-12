@@ -313,5 +313,20 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Virhe välimuistin tyhjentämisessä"
+  },
+  "picker.menu_copy": {
+    "other": "Kopioi URL"
+  },
+  "picker.menu_qr": {
+    "other": "Näytä QR-koodi"
+  },
+  "picker.menu_whois": {
+    "other": "Näytä Whois-tiedot"
+  },
+  "picker.qr_copy_image": {
+    "other": "Kopioi kuva"
+  },
+  "picker.qr_close": {
+    "other": "Sulje"
   }
 }

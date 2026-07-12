@@ -313,5 +313,20 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Fel vid rensning av cache"
+  },
+  "picker.menu_copy": {
+    "other": "Kopiera URL"
+  },
+  "picker.menu_qr": {
+    "other": "Visa QR-kod"
+  },
+  "picker.menu_whois": {
+    "other": "Visa Whois"
+  },
+  "picker.qr_copy_image": {
+    "other": "Kopiera bild"
+  },
+  "picker.qr_close": {
+    "other": "Stäng"
   }
 }

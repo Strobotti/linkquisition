@@ -313,5 +313,20 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Помилка очищення кешу"
+  },
+  "picker.menu_copy": {
+    "other": "Копіювати URL"
+  },
+  "picker.menu_qr": {
+    "other": "Показати QR-код"
+  },
+  "picker.menu_whois": {
+    "other": "Показати Whois"
+  },
+  "picker.qr_copy_image": {
+    "other": "Копіювати зображення"
+  },
+  "picker.qr_close": {
+    "other": "Закрити"
   }
 }

@@ -313,5 +313,20 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Error clearing cache"
+  },
+  "picker.menu_copy": {
+    "other": "Copy URL"
+  },
+  "picker.menu_qr": {
+    "other": "Show QR code"
+  },
+  "picker.menu_whois": {
+    "other": "Show Whois"
+  },
+  "picker.qr_copy_image": {
+    "other": "Copy image"
+  },
+  "picker.qr_close": {
+    "other": "Close"
   }
 }

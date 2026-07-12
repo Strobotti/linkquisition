@@ -21,6 +21,7 @@ import (
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/favicon"
 	"github.com/strobotti/linkquisition/internal/i18n"
+	"github.com/strobotti/linkquisition/internal/qrcode"
 	"github.com/strobotti/linkquisition/resources"
 )
 
@@ -206,10 +207,7 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 	urlLabel := widget.NewLabel(text)
 	urlLabel.TextStyle = fyne.TextStyle{Monospace: true}
 
-	copyButton := widget.NewButtonWithIcon(i18n.T("picker.copy_button"), theme.ContentCopyIcon(), func() {
-		w.Clipboard().SetContent(urlToOpen)
-	})
-	copyButton.Importance = widget.LowImportance
+	menuButton := picker.buildMenuButton(urlToOpen, w)
 
 	settings := picker.settingsService.GetSettings()
 
@@ -220,7 +218,7 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 		faviconImg.SetMinSize(fyne.NewSize(faviconDisplaySize, faviconDisplaySize))
 
 		urlRow = container.NewHBox(
-			copyButton,
+			menuButton,
 			faviconImg,
 			urlLabel,
 		)
@@ -229,12 +227,69 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 		go picker.fetchAndUpdateFavicon(urlToOpen, faviconImg, settings)
 	} else {
 		urlRow = container.NewHBox(
-			copyButton,
+			menuButton,
 			urlLabel,
 		)
 	}
 
 	return []fyne.CanvasObject{urlRow}
+}
+
+func (picker *BrowserPicker) buildMenuButton(urlToOpen string, w fyne.Window) fyne.CanvasObject {
+	menuButton := widget.NewButtonWithIcon("", theme.MoreHorizontalIcon(), nil)
+	menuButton.Importance = widget.LowImportance
+	menuButton.OnTapped = func() {
+		menu := fyne.NewMenu("",
+			fyne.NewMenuItem(i18n.T("picker.menu_copy"), func() {
+				w.Clipboard().SetContent(urlToOpen)
+			}),
+			fyne.NewMenuItem(i18n.T("picker.menu_qr"), func() {
+				picker.showQRCodePopup(urlToOpen, w)
+			}),
+			fyne.NewMenuItem(i18n.T("picker.menu_whois"), func() {
+				// TODO: implement whois lookup
+			}),
+		)
+
+		pos := fyne.CurrentApp().Driver().AbsolutePositionForObject(menuButton)
+		pos.Y += menuButton.Size().Height
+		widget.ShowPopUpMenuAtPosition(menu, w.Canvas(), pos)
+	}
+
+	return menuButton
+}
+
+func (picker *BrowserPicker) showQRCodePopup(urlToOpen string, w fyne.Window) {
+	const qrSize = 256
+
+	png, err := qrcode.Generate(urlToOpen, qrSize)
+	if err != nil {
+		picker.logger.Error("Failed to generate QR code", "url", urlToOpen, "error", err)
+		return
+	}
+
+	qrResource := fyne.NewStaticResource("qrcode.png", png)
+	qrImage := canvas.NewImageFromResource(qrResource)
+	qrImage.FillMode = canvas.ImageFillContain
+	qrImage.SetMinSize(fyne.NewSize(qrSize, qrSize))
+
+	var popup *widget.PopUp
+
+	closeButton := widget.NewButtonWithIcon(
+		i18n.T("picker.qr_close"),
+		theme.CancelIcon(),
+		func() {
+			popup.Hide()
+		},
+	)
+
+	content := container.NewVBox(
+		container.NewCenter(qrImage),
+		container.NewCenter(closeButton),
+	)
+
+	popup = widget.NewModalPopUp(content, w.Canvas())
+	popup.Show()
 }
 
 // fetchAndUpdateFavicon fetches the favicon in the background and updates the image widget.
