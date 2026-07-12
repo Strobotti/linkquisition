@@ -19,7 +19,7 @@ jobs:
       - name: Install build dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev
+          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev
           version: 1.0
 
       - uses: arduino/setup-task@v3
@@ -57,7 +57,7 @@ jobs:
         if: runner.os == 'Linux'
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev scdoc
+          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev scdoc
           version: 1.0
 
       - uses: arduino/setup-task@v3
@@ -129,7 +129,7 @@ jobs:
       - name: Install build dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev scdoc
+          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev scdoc
           version: 1.0
 
       - name: Install syft
