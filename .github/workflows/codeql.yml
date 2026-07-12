@@ -36,7 +36,7 @@ jobs:
       - name: Build
         run: |
           # Build main binary and internal packages (exclude plugins — they require -buildmode=plugin)
-          go build $(go list ./... | grep -v '/plugins/')
+          go build -tags x11 $(go list ./... | grep -v '/plugins/')
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4

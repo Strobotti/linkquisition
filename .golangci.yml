@@ -145,6 +145,7 @@ formatters:
 run:
   build-tags:
     - gingonic
+    - x11
 
 output:
   formats:
