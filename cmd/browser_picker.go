@@ -295,8 +295,11 @@ func (picker *BrowserPicker) showQRCodePopup(urlToOpen string, w fyne.Window) {
 }
 
 const (
-	whoisWindowWidth = 450
-	whoisTimeout     = 10 * time.Second
+	whoisWindowWidth          = 450
+	whoisTimeout              = 10 * time.Second
+	whoisLoadingHeight        = 100
+	whoisErrorHeight          = 150
+	whoisContentHeightPadding = 20
 )
 
 func (picker *BrowserPicker) showWhoisWindow(urlToOpen string) {
@@ -316,7 +319,7 @@ func (picker *BrowserPicker) showWhoisWindow(urlToOpen string) {
 		loadingLabel,
 		loading,
 	))
-	whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, 100))
+	whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, whoisLoadingHeight))
 	whoisWindow.SetFixedSize(true)
 	whoisWindow.CenterOnScreen()
 
@@ -335,14 +338,14 @@ func (picker *BrowserPicker) showWhoisWindow(urlToOpen string) {
 				picker.logger.Error("WHOIS lookup failed", "url", urlToOpen, "error", err)
 				whoisWindow.SetContent(picker.buildWhoisError(err, whoisWindow))
 				whoisWindow.SetFixedSize(false)
-				whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, 150))
+				whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, whoisErrorHeight))
 				whoisWindow.SetFixedSize(true)
 				return
 			}
 			content := picker.buildWhoisContent(info, whoisWindow)
 			whoisWindow.SetContent(content)
 			whoisWindow.SetFixedSize(false)
-			whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, content.MinSize().Height+20))
+			whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, content.MinSize().Height+whoisContentHeightPadding))
 			whoisWindow.SetFixedSize(true)
 		})
 	}()
