@@ -10,15 +10,16 @@ import (
 	"runtime"
 	"syscall"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/driver/software"
 	"fyne.io/fyne/v2/internal/painter"
 	"fyne.io/fyne/v2/internal/svg"
 	"fyne.io/fyne/v2/lang"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/systray"
 
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/theme"
+	"github.com/go-gl/glfw/v3.4/glfw"
 )
 
 const systrayIconSize = 64
@@ -27,6 +28,23 @@ var (
 	systrayIcon    fyne.Resource
 	systrayRunning bool
 )
+
+func (d *gLDriver) HasSecondaryDisplay() bool {
+	monitors := glfw.GetMonitors()
+	if len(monitors) == 1 {
+		return false
+	}
+
+	primaryTop, primaryLeft := monitors[0].GetPos()
+	for _, m := range monitors[1:] {
+		top, left := m.GetPos()
+		if top != primaryTop || left != primaryLeft {
+			return true
+		}
+	}
+
+	return false // all the monitors had same origin, thus mirroring
+}
 
 func (d *gLDriver) SetSystemTrayMenu(m *fyne.Menu) {
 	if !systrayRunning {
@@ -208,9 +226,9 @@ func (d *gLDriver) SetSystemTrayWindow(w fyne.Window) {
 	w.SetCloseIntercept(w.Hide)
 	glw := w.(*window)
 	if glw.decorate {
-		systray.SetOnTapped(glw.Show)
+		systray.SetOnTapped(func() { fyne.Do(glw.Show) })
 	} else {
-		systray.SetOnTapped(glw.toggleVisible)
+		systray.SetOnTapped(func() { fyne.Do(glw.toggleVisible) })
 	}
 }
 

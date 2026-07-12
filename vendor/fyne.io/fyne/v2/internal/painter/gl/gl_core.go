@@ -4,6 +4,7 @@ package gl
 
 import (
 	"strings"
+	"unsafe"
 
 	"github.com/go-gl/gl/v2.1/gl"
 
@@ -21,16 +22,21 @@ const (
 	float                 = gl.FLOAT
 	fragmentShader        = gl.FRAGMENT_SHADER
 	front                 = gl.FRONT
+	back                  = gl.BACK
 	glFalse               = gl.FALSE
 	linkStatus            = gl.LINK_STATUS
+	maxTextureSizeParam   = gl.MAX_TEXTURE_SIZE
 	one                   = gl.ONE
+	zero                  = gl.ZERO
 	oneMinusConstantAlpha = gl.ONE_MINUS_CONSTANT_ALPHA
 	oneMinusSrcAlpha      = gl.ONE_MINUS_SRC_ALPHA
 	scissorTest           = gl.SCISSOR_TEST
 	srcAlpha              = gl.SRC_ALPHA
 	staticDraw            = gl.STATIC_DRAW
 	texture0              = gl.TEXTURE0
+	texture1              = gl.TEXTURE1
 	texture2D             = gl.TEXTURE_2D
+	textureNearest        = gl.NEAREST
 	textureMinFilter      = gl.TEXTURE_MIN_FILTER
 	textureMagFilter      = gl.TEXTURE_MAG_FILTER
 	textureWrapS          = gl.TEXTURE_WRAP_S
@@ -42,13 +48,14 @@ const (
 )
 
 const (
-	noBuffer = Buffer(0)
-	noShader = Shader(0)
+	noBuffer  = Buffer(0)
+	noProgram = Program(0)
+	noShader  = Shader(0)
 )
 
 type (
 	// Attribute represents a GL attribute
-	Attribute int32
+	Attribute uint32
 	// Buffer represents a GL buffer
 	Buffer uint32
 	// Program represents a compiled GL program
@@ -68,100 +75,79 @@ func (p *painter) Init() {
 		fyne.LogError("failed to initialise OpenGL", err)
 		return
 	}
+	p.maxTextureSize = p.ctx.GetInteger(maxTextureSizeParam)
 
 	gl.Disable(gl.DEPTH_TEST)
 	gl.Enable(gl.BLEND)
 	p.logError()
-	p.program = ProgramState{
+	p.program = programState{
 		ref:        p.createProgram("simple"),
 		buff:       p.createBuffer(20),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(p.program, "text", "alpha", "cornerRadius", "size", "inset")
-	p.enableAttribArrays(p.program, "vert", "vertTexCoord")
 
-	p.lineProgram = ProgramState{
+	p.blurProgram = programState{
+		ref:        p.createProgram("blur"),
+		buff:       p.createBuffer(20),
+		uniforms:   make(map[string]*uniformState),
+		attributes: make(map[string]Attribute),
+	}
+
+	p.lineProgram = programState{
 		ref:        p.createProgram("line"),
-		buff:       p.createBuffer(24),
-		uniforms:   make(map[string]*UniformState),
+		buff:       p.createBuffer(16),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(p.lineProgram, "feather", "color", "lineWidth")
-	p.enableAttribArrays(p.lineProgram, "vert", "normal")
 
-	p.rectangleProgram = ProgramState{
+	p.rectangleProgram = programState{
 		ref:        p.createProgram("rectangle"),
 		buff:       p.createBuffer(16),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(
-		p.rectangleProgram,
-		"frame_size", "rect_coords", "stroke_width", "fill_color", "stroke_color",
-	)
-	p.enableAttribArrays(p.rectangleProgram, "vert", "normal")
 
-	p.roundRectangleProgram = ProgramState{
+	p.roundRectangleProgram = programState{
 		ref:        p.createProgram("round_rectangle"),
 		buff:       p.createBuffer(16),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(
-		p.roundRectangleProgram,
-		"frame_size", "rect_coords",
-		"stroke_width_half", "rect_size_half",
-		"radius", "edge_softness",
-		"fill_color", "stroke_color",
-	)
-	p.enableAttribArrays(p.roundRectangleProgram, "vert", "normal")
 
-	p.polygonProgram = ProgramState{
+	p.polygonProgram = programState{
 		ref:        p.createProgram("polygon"),
 		buff:       p.createBuffer(16),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(
-		p.polygonProgram,
-		"frame_size", "rect_coords", "edge_softness",
-		"outer_radius", "angle", "sides",
-		"fill_color", "corner_radius",
-		"stroke_width", "stroke_color",
-	)
-	p.enableAttribArrays(p.polygonProgram, "vert", "normal")
 
-	p.arcProgram = ProgramState{
+	p.arcProgram = programState{
 		ref:        p.createProgram("arc"),
 		buff:       p.createBuffer(16),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(
-		p.arcProgram,
-		"frame_size", "rect_coords",
-		"inner_radius", "outer_radius",
-		"start_angle", "end_angle",
-		"edge_softness", "corner_radius",
-		"stroke_width", "stroke_color",
-		"fill_color",
-	)
-	p.enableAttribArrays(p.arcProgram, "vert", "normal")
-}
 
-func (p *painter) getUniformLocations(pState ProgramState, names ...string) {
-	for _, name := range names {
-		u := p.ctx.GetUniformLocation(pState.ref, name)
-		pState.uniforms[name] = &UniformState{ref: u}
+	p.bezierCurveProgram = programState{
+		ref:        p.createProgram("bezier_curve"),
+		buff:       p.createBuffer(16),
+		uniforms:   make(map[string]*uniformState),
+		attributes: make(map[string]Attribute),
 	}
-}
 
-func (p *painter) enableAttribArrays(pState ProgramState, names ...string) {
-	for _, name := range names {
-		a := p.ctx.GetAttribLocation(pState.ref, name)
-		p.ctx.EnableVertexAttribArray(a)
-		pState.attributes[name] = a
+	p.arbitraryPolygonProgram = programState{
+		ref:        p.createProgram("arbitrary_polygon"),
+		buff:       p.createBuffer(16),
+		uniforms:   make(map[string]*uniformState),
+		attributes: make(map[string]Attribute),
+	}
+
+	p.ellipseProgram = programState{
+		ref:        p.createProgram("ellipse"),
+		buff:       p.createBuffer(16),
+		uniforms:   make(map[string]*uniformState),
+		attributes: make(map[string]Attribute),
 	}
 }
 
@@ -237,6 +223,10 @@ func (c *coreContext) DeleteBuffer(buffer Buffer) {
 	gl.DeleteBuffers(1, (*uint32)(&buffer))
 }
 
+func (c *coreContext) DeleteProgram(program Program) {
+	gl.DeleteProgram(uint32(program))
+}
+
 func (c *coreContext) DeleteTexture(texture Texture) {
 	tex := uint32(texture)
 	gl.DeleteTextures(1, &tex)
@@ -247,7 +237,11 @@ func (c *coreContext) Disable(capability uint32) {
 }
 
 func (c *coreContext) DrawArrays(mode uint32, first, count int) {
-	gl.DrawArrays(mode, int32(first), int32(count))
+	gl.DrawArrays(
+		mode,
+		int32(first), //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(count), //gosec:disable G115 -- we are definitely fine with limiting the value range here
+	)
 }
 
 func (c *coreContext) Enable(capability uint32) {
@@ -259,11 +253,17 @@ func (c *coreContext) EnableVertexAttribArray(attribute Attribute) {
 }
 
 func (c *coreContext) GetAttribLocation(program Program, name string) Attribute {
-	return Attribute(gl.GetAttribLocation(uint32(program), gl.Str(name+"\x00")))
+	return Attribute(gl.GetAttribLocation(uint32(program), gl.Str(name+"\x00"))) //gosec:disable G115 -- the attribute location is a pointer, so unsigned is fine
 }
 
 func (c *coreContext) GetError() uint32 {
 	return gl.GetError()
+}
+
+func (c *coreContext) GetInteger(pname uint32) int {
+	var value int32
+	gl.GetIntegerv(pname, &value)
+	return int(value)
 }
 
 func (c *coreContext) GetProgrami(program Program, param uint32) int {
@@ -302,12 +302,33 @@ func (c *coreContext) LinkProgram(program Program) {
 	gl.LinkProgram(uint32(program))
 }
 
+func (c *coreContext) CopyTexSubImage2D(target uint32, level, xoffset, yoffset, x, y, width, height int) {
+	gl.CopyTexSubImage2D(
+		target,
+		int32(level),   //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(xoffset), //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(yoffset), //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(x),       //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(y),       //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(width),   //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(height),  //gosec:disable G115 -- we are definitely fine with limiting the value range here
+	)
+}
+
 func (c *coreContext) ReadBuffer(src uint32) {
 	gl.ReadBuffer(src)
 }
 
 func (c *coreContext) ReadPixels(x, y, width, height int, colorFormat, typ uint32, pixels []uint8) {
-	gl.ReadPixels(int32(x), int32(y), int32(width), int32(height), colorFormat, typ, gl.Ptr(pixels))
+	gl.ReadPixels(
+		int32(x),      //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(y),      //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(width),  //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(height), //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		colorFormat,
+		typ,
+		gl.Ptr(pixels),
+	)
 }
 
 func (c *coreContext) Scissor(x, y, w, h int32) {
@@ -321,16 +342,20 @@ func (c *coreContext) ShaderSource(shader Shader, source string) {
 }
 
 func (c *coreContext) TexImage2D(target uint32, level, width, height int, colorFormat, typ uint32, data []uint8) {
+	var ptr unsafe.Pointer
+	if len(data) > 0 {
+		ptr = gl.Ptr(data)
+	}
 	gl.TexImage2D(
 		target,
-		int32(level),
-		int32(colorFormat),
-		int32(width),
-		int32(height),
+		int32(level),       //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(colorFormat), //gosec:disable G115 -- colorFormat is an enum behind the scenes while the internal format is an int
+		int32(width),       //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(height),      //gosec:disable G115 -- we are definitely fine with limiting the value range here
 		0,
 		colorFormat,
 		typ,
-		gl.Ptr(data),
+		ptr,
 	)
 }
 
@@ -342,8 +367,28 @@ func (c *coreContext) Uniform1f(uniform Uniform, v float32) {
 	gl.Uniform1f(int32(uniform), v)
 }
 
+func (c *coreContext) Uniform1fv(uniform Uniform, v []float32) {
+	gl.Uniform1fv(
+		int32(uniform),
+		int32(len(v)), //gosec:disable G115 -- v should definitely not contain more than two billion values
+		&v[0],
+	)
+}
+
+func (c *coreContext) Uniform1i(uniform Uniform, v int32) {
+	gl.Uniform1i(int32(uniform), v)
+}
+
 func (c *coreContext) Uniform2f(uniform Uniform, v0, v1 float32) {
 	gl.Uniform2f(int32(uniform), v0, v1)
+}
+
+func (c *coreContext) Uniform2fv(uniform Uniform, v []float32) {
+	gl.Uniform2fv(
+		int32(uniform),
+		int32(len(v)/2), //gosec:disable G115 -- v should definitely not contain more than two billion values
+		&v[0],
+	)
 }
 
 func (c *coreContext) Uniform4f(uniform Uniform, v0, v1, v2, v3 float32) {
@@ -355,9 +400,21 @@ func (c *coreContext) UseProgram(program Program) {
 }
 
 func (c *coreContext) VertexAttribPointerWithOffset(attribute Attribute, size int, typ uint32, normalized bool, stride, offset int) {
-	gl.VertexAttribPointerWithOffset(uint32(attribute), int32(size), typ, normalized, int32(stride), uintptr(offset))
+	gl.VertexAttribPointerWithOffset(
+		uint32(attribute),
+		int32(size), //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		typ,
+		normalized,
+		int32(stride), //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		uintptr(offset),
+	)
 }
 
 func (c *coreContext) Viewport(x, y, width, height int) {
-	gl.Viewport(int32(x), int32(y), int32(width), int32(height))
+	gl.Viewport(
+		int32(x),      //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(y),      //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(width),  //gosec:disable G115 -- we are definitely fine with limiting the value range here
+		int32(height), //gosec:disable G115 -- we are definitely fine with limiting the value range here
+	)
 }

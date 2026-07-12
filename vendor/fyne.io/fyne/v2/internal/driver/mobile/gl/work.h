@@ -76,13 +76,19 @@ typedef enum {
 	glfnShaderSource,
 	glfnTexImage2D,
 	glfnTexParameteri,
+	glfnUniform1i,
 	glfnUniform1f,
+	glfnUniform1fv,
 	glfnUniform2f,
+	glfnUniform2fv,
 	glfnUniform4f,
 	glfnUniform4fv,
 	glfnUseProgram,
 	glfnVertexAttribPointer,
 	glfnViewport,
+	glfnCopyTexSubImage2D,
+	glfnDeleteProgram,
+	glfnGetIntegerv,
 } glfn;
 
 // TODO: generate this type from fn.go.
@@ -97,8 +103,6 @@ struct fnargs {
 	uintptr_t a5;
 	uintptr_t a6;
 	uintptr_t a7;
-	uintptr_t a8;
-	uintptr_t a9;
 };
 
 extern uintptr_t processFn(struct fnargs* args, char* parg);

@@ -107,13 +107,14 @@ func (t *builtinTheme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.C
 	}
 
 	primary := fyne.CurrentApp().Settings().PrimaryColor()
-	if n == ColorNamePrimary || n == ColorNameHyperlink {
+	switch n {
+	case ColorNamePrimary, ColorNameHyperlink:
 		return internaltheme.PrimaryColorNamed(primary)
-	} else if n == ColorNameForegroundOnPrimary {
+	case ColorNameForegroundOnPrimary:
 		return internaltheme.ForegroundOnPrimaryColorNamed(primary)
-	} else if n == ColorNameFocus {
+	case ColorNameFocus:
 		return focusColorNamed(primary)
-	} else if n == ColorNameSelection {
+	case ColorNameSelection:
 		return selectionColorNamed(primary)
 	}
 
@@ -206,6 +207,10 @@ func darkPaletteColorNamed(name fyne.ThemeColorName) color.Color {
 		return colorDarkHover
 	case ColorNameHeaderBackground:
 		return colorDarkHeaderBackground
+	case ColorNameInnerWindowBorder:
+		return colorDarkInnerWindowBorder
+	case ColorNameInnerWindowBorderInactive:
+		return colorDarkInnerWindowBorderInactive
 	case ColorNameInputBackground:
 		return colorDarkInputBackground
 	case ColorNameInputBorder:
@@ -282,6 +287,10 @@ func lightPaletteColorNamed(name fyne.ThemeColorName) color.Color {
 		return colorLightHover
 	case ColorNameHeaderBackground:
 		return colorLightHeaderBackground
+	case ColorNameInnerWindowBorder:
+		return colorLightInnerWindowBorder
+	case ColorNameInnerWindowBorderInactive:
+		return colorLightInnerWindowBorderInactive
 	case ColorNameInputBackground:
 		return colorLightInputBackground
 	case ColorNameInputBorder:

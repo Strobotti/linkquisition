@@ -10,18 +10,23 @@ import (
 )
 
 func sliceToBytes[T comparable](s []T) []byte {
-	size := 0
-	if len(s) > 0 {
-		size = int(unsafe.Sizeof(s[0]))
+	if len(s) == 0 {
+		return nil
 	}
+	size := int(unsafe.Sizeof(s[0]))
 	return unsafe.Slice((*byte)(unsafe.Pointer(&s[0])), len(s)*size)
 }
 
 func sliceToJSArray[T comparable](arrayType string, s []T) js.Value {
-	a := js.Global().Get(arrayType).New(len(s))
-	js.CopyBytesToJS(a, sliceToBytes(s))
+	bytes := sliceToBytes(s)
+	// CopyBytesToJS requires a Uint8Array or Uint8ClampedArray destination.
+	// Copy bytes into a Uint8Array first, then return a typed-array view of
+	// the same ArrayBuffer so the caller gets the correct element type.
+	a := js.Global().Get("Uint8Array").New(len(bytes))
+	js.CopyBytesToJS(a, bytes)
 	runtime.KeepAlive(s)
-	return a
+	buf := a.Get("buffer")
+	return js.Global().Get(arrayType).New(buf, a.Get("byteOffset"), len(s))
 }
 
 func int8ToJSArray(s []int8) js.Value {

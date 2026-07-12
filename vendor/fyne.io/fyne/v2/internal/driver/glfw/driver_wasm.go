@@ -10,6 +10,10 @@ import (
 
 const webDefaultDoubleTapDelay = 300 * time.Millisecond
 
+func (d *gLDriver) HasSecondaryDisplay() bool {
+	return false
+}
+
 func (d *gLDriver) SetSystemTrayMenu(m *fyne.Menu) {
 	// no-op for wasm apps using this driver
 }

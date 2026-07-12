@@ -1,5 +1,5 @@
-# fyne.io/fyne/v2 v2.7.4
-## explicit; go 1.19
+# fyne.io/fyne/v2 v2.8.0
+## explicit; go 1.22.0
 fyne.io/fyne/v2
 fyne.io/fyne/v2/app
 fyne.io/fyne/v2/canvas
@@ -39,6 +39,7 @@ fyne.io/fyne/v2/internal/painter/software
 fyne.io/fyne/v2/internal/repository
 fyne.io/fyne/v2/internal/repository/mime
 fyne.io/fyne/v2/internal/scale
+fyne.io/fyne/v2/internal/scheduler
 fyne.io/fyne/v2/internal/svg
 fyne.io/fyne/v2/internal/test
 fyne.io/fyne/v2/internal/theme
@@ -59,8 +60,17 @@ fyne.io/systray/internal/generated/notifier
 ## explicit; go 1.18
 github.com/BurntSushi/toml
 github.com/BurntSushi/toml/internal
+# github.com/FyshOS/fancyfs v0.0.1
+## explicit; go 1.19
+github.com/FyshOS/fancyfs
 # github.com/alessio/shellescape v1.4.2
 ## explicit; go 1.14
+# github.com/anthonynsimon/bild v0.14.0
+## explicit; go 1.21
+github.com/anthonynsimon/bild/blur
+github.com/anthonynsimon/bild/clone
+github.com/anthonynsimon/bild/convolution
+github.com/anthonynsimon/bild/parallel
 # github.com/clipperhouse/uax29/v2 v2.7.0
 ## explicit; go 1.18
 github.com/clipperhouse/uax29/v2/graphemes
@@ -74,7 +84,7 @@ github.com/fredbi/uri
 ## explicit; go 1.23
 github.com/fsnotify/fsnotify
 github.com/fsnotify/fsnotify/internal
-# github.com/fyne-io/gl-js v0.2.0
+# github.com/fyne-io/gl-js v0.2.1-0.20260315212741-029c47fd27e8
 ## explicit; go 1.19
 github.com/fyne-io/gl-js
 # github.com/fyne-io/glfw-js v0.4.0
@@ -92,16 +102,7 @@ github.com/go-gl/gl/v2.1/gl
 github.com/go-gl/gl/v2.1/gl/KHR
 github.com/go-gl/gl/v3.1/gles2
 github.com/go-gl/gl/v3.1/gles2/KHR
-# github.com/go-gl/glfw/v3.3/glfw v0.0.0-20260707082822-2a407d02d01a
-## explicit; go 1.19
-github.com/go-gl/glfw/v3.3/glfw
-github.com/go-gl/glfw/v3.3/glfw/glfw/deps
-github.com/go-gl/glfw/v3.3/glfw/glfw/deps/glad
-github.com/go-gl/glfw/v3.3/glfw/glfw/deps/mingw
-github.com/go-gl/glfw/v3.3/glfw/glfw/deps/vs2008
-github.com/go-gl/glfw/v3.3/glfw/glfw/include/GLFW
-github.com/go-gl/glfw/v3.3/glfw/glfw/src
-# github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.1
+# github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.1.0.20260707082822-2a407d02d01a
 ## explicit; go 1.19
 github.com/go-gl/glfw/v3.4/glfw
 github.com/go-gl/glfw/v3.4/glfw/glfw/deps
@@ -153,8 +154,6 @@ github.com/jeandeaual/go-locale
 # github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25
 ## explicit
 github.com/jsummers/gobmp
-# github.com/kr/text v0.2.0
-## explicit
 # github.com/likexian/gokit v0.25.16
 ## explicit; go 1.24.0
 github.com/likexian/gokit/assert
@@ -221,6 +220,8 @@ github.com/stretchr/testify/require
 ## explicit; go 1.22
 github.com/yuin/goldmark
 github.com/yuin/goldmark/ast
+github.com/yuin/goldmark/extension
+github.com/yuin/goldmark/extension/ast
 github.com/yuin/goldmark/parser
 github.com/yuin/goldmark/renderer
 github.com/yuin/goldmark/renderer/html

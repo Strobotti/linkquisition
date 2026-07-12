@@ -73,6 +73,9 @@ uintptr_t processFn(struct fnargs* args, char* parg) {
 	case glfnDeleteTexture:
 		glDeleteTextures(1, (const GLuint*)(&args->a0));
 		break;
+	case glfnDeleteProgram:
+		glDeleteProgram((GLuint)args->a0);
+		break;
 	case glfnDisable:
 		glDisable((GLenum)args->a0);
 		break;
@@ -102,6 +105,9 @@ uintptr_t processFn(struct fnargs* args, char* parg) {
 		break;
 	case glfnGetError:
 		ret = glGetError();
+		break;
+	case glfnGetIntegerv:
+		glGetIntegerv((GLenum)args->a0, (GLint*)&ret);
 		break;
 	case glfnGetProgramiv:
 		glGetProgramiv((GLint)args->a0, (GLenum)args->a1, (GLint*)&ret);
@@ -158,8 +164,17 @@ uintptr_t processFn(struct fnargs* args, char* parg) {
 	case glfnUniform1f:
 		glUniform1f((GLint)args->a0, *(GLfloat*)&args->a1);
 		break;
+	case glfnUniform1i:
+		glUniform1i((GLint)args->a0, (GLint)args->a1);
+		break;
+	case glfnUniform1fv:
+		glUniform1fv((GLint)args->a0, (GLsizeiptr)args->a1, (GLvoid*)parg);
+		break;
 	case glfnUniform2f:
 		glUniform2f((GLint)args->a0, *(GLfloat*)&args->a1, *(GLfloat*)&args->a2);
+		break;
+	case glfnUniform2fv:
+		glUniform2fv((GLint)args->a0, (GLsizeiptr)args->a1, (GLvoid*)parg);
 		break;
 	case glfnUniform4f:
 		glUniform4f((GLint)args->a0, *(GLfloat*)&args->a1, *(GLfloat*)&args->a2, *(GLfloat*)&args->a3, *(GLfloat*)&args->a4);
@@ -175,6 +190,9 @@ uintptr_t processFn(struct fnargs* args, char* parg) {
 		break;
 	case glfnViewport:
 		glViewport((GLint)args->a0, (GLint)args->a1, (GLint)args->a2, (GLint)args->a3);
+		break;
+	case glfnCopyTexSubImage2D:
+		glCopyTexSubImage2D((GLenum)args->a0, (GLint)args->a1, (GLint)args->a2, (GLint)args->a3, (GLint)args->a4, (GLint)args->a5, (GLsizei)args->a6, (GLsizei)args->a7);
 		break;
 	}
 	return ret;

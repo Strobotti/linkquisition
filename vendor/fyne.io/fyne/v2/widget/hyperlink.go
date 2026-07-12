@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	_ fyne.Focusable = (*Hyperlink)(nil)
-	_ fyne.Widget    = (*Hyperlink)(nil)
+	_ fyne.Accessible = (*Hyperlink)(nil)
+	_ fyne.Focusable  = (*Hyperlink)(nil)
+	_ fyne.Widget     = (*Hyperlink)(nil)
 )
 
 // Hyperlink widget is a text component with appropriate padding and layout.
@@ -44,6 +45,8 @@ type Hyperlink struct {
 	textSize         fyne.Size // updated in syncSegments
 	focused, hovered bool
 	provider         RichText
+
+	siblings []*Hyperlink // other visual instances of the same HyperlinkSegment when wrapped in RichText
 }
 
 // NewHyperlink creates a new hyperlink widget with the set text content
@@ -61,6 +64,20 @@ func NewHyperlinkWithStyle(text string, url *url.URL, alignment fyne.TextAlign, 
 	}
 
 	return hl
+}
+
+// AccessibilityLabel for a hyperlink is the text for the link.
+//
+// Since: 2.8
+func (hl *Hyperlink) AccessibilityLabel() string {
+	return hl.Text
+}
+
+// AccessibilityRole for a hyperlink is fyne.AccessibleRoleLink.
+//
+// Since: 2.8
+func (hl *Hyperlink) AccessibilityRole() fyne.AccessibleRole {
+	return fyne.AccessibleRoleLink
 }
 
 // CreateRenderer is a private method to Fyne which links this widget to its renderer
@@ -111,6 +128,9 @@ func (hl *Hyperlink) MouseMoved(e *desktop.MouseEvent) {
 	hl.hovered = hl.isPosOverText(e.Position)
 	if hl.hovered != oldHovered {
 		hl.BaseWidget.Refresh()
+		for _, s := range hl.siblings {
+			s.setHovered(hl.hovered)
+		}
 	}
 }
 
@@ -120,7 +140,19 @@ func (hl *Hyperlink) MouseOut() {
 	hl.hovered = false
 	if changed {
 		hl.BaseWidget.Refresh()
+		for _, s := range hl.siblings {
+			s.setHovered(false)
+		}
 	}
+}
+
+// setHovered updates the hovered state without propagating to siblings, to avoid recursion.
+func (hl *Hyperlink) setHovered(hovered bool) {
+	if hl.hovered == hovered {
+		return
+	}
+	hl.hovered = hovered
+	hl.BaseWidget.Refresh()
 }
 
 func (hl *Hyperlink) focusWidth() float32 {

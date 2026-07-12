@@ -270,9 +270,10 @@ func (d *driver) Run() {
 						break // we are getting release/press on backspace during soft backspace
 					}
 
-					if e.Direction == key.DirPress {
+					switch e.Direction {
+					case key.DirPress:
 						d.typeDownCanvas(c, e.Rune, e.Code, e.Modifiers)
-					} else if e.Direction == key.DirRelease {
+					case key.DirRelease:
 						d.typeUpCanvas(c, e.Rune, e.Code, e.Modifiers)
 					}
 				}
@@ -351,6 +352,7 @@ func (d *driver) handlePaint(e paint.Event, w *window) {
 
 		d.paintWindow(w, newSize)
 		d.app.Publish()
+		w.updateAccessibility()
 	}
 	cache.Clean(canvasNeedRefresh)
 }
@@ -371,6 +373,8 @@ func (d *driver) onStop() {
 func (d *driver) paintWindow(window fyne.Window, size fyne.Size) {
 	clips := &internal.ClipStack{}
 	c := window.Canvas().(*canvas)
+
+	c.Painter().SetOutputSize(d.currentSize.WidthPx, d.currentSize.HeightPx)
 
 	r, g, b, a := theme.Color(theme.ColorNameBackground).RGBA()
 	max16bit := float32(255 * 255)
@@ -441,9 +445,27 @@ func (d *driver) tapMoveCanvas(w *window, x, y float32, tapID touch.Sequence) {
 	tapY := scale.ToFyneCoordinate(w.canvas, int(y))
 	pos := fyne.NewPos(tapX, tapY+tapYOffset)
 
-	w.canvas.tapMove(pos, int(tapID), func(wid fyne.Draggable, ev *fyne.DragEvent) {
-		wid.Dragged(ev)
+	co, posMovable, _ := w.canvas.findObjectAtPositionMatching(pos, func(object fyne.CanvasObject) bool {
+		if _, ok := object.(mobile.Movable); ok {
+			return true
+		}
+		return false
 	})
+
+	if co != nil {
+		co.(mobile.Movable).TouchMoved(&mobile.TouchEvent{
+			PointEvent: fyne.PointEvent{
+				Position: posMovable,
+			},
+			ID: int(tapID),
+		})
+	}
+
+	if tapID == 0 {
+		w.canvas.tapMove(pos, int(tapID), func(wid fyne.Draggable, ev *fyne.DragEvent) {
+			wid.Dragged(ev)
+		})
+	}
 }
 
 func (d *driver) tapUpCanvas(w *window, x, y float32, tapID touch.Sequence) {
