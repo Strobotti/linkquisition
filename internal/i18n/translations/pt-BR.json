@@ -401,11 +401,25 @@
   "config.security_test_success": {
     "other": "✓ Credenciais válidas"
   },
-  "picker.safety_level_safe": { "other": "Seguro" },
-  "picker.safety_level_suspicious": { "other": "Suspeito" },
-  "picker.safety_level_dangerous": { "other": "Perigoso" },
-  "picker.safety_provider": { "other": "Provedor:" },
-  "picker.safety_result": { "other": "Resultado:" },
-  "picker.safety_details": { "other": "Detalhes:" },
-  "picker.safety_close": { "other": "Fechar" }
+  "picker.safety_level_safe": {
+    "other": "Seguro"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Suspeito"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Perigoso"
+  },
+  "picker.safety_provider": {
+    "other": "Provedor:"
+  },
+  "picker.safety_result": {
+    "other": "Resultado:"
+  },
+  "picker.safety_details": {
+    "other": "Detalhes:"
+  },
+  "picker.safety_close": {
+    "other": "Fechar"
+  }
 }

@@ -35,7 +35,6 @@ const (
 	verticalWindowWidth      = 600
 	verticalWindowMinHeight  = 50
 	faviconDisplaySize       = 16
-	safetyIndicatorSize      = 12
 	safetyCheckTimeout       = 10 * time.Second
 )
 
@@ -219,6 +218,12 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 	var urlRowItems []fyne.CanvasObject
 	urlRowItems = append(urlRowItems, menuButton)
 
+	// Safety indicator (only if configured) — between menu and favicon
+	if settings.Security.IsConfigured() {
+		indicator := picker.buildSafetyIndicator(urlToOpen, w, settings)
+		urlRowItems = append(urlRowItems, indicator)
+	}
+
 	if settings.Ui.ShowFavicon {
 		faviconImg := canvas.NewImageFromResource(theme.ComputerIcon())
 		faviconImg.FillMode = canvas.ImageFillContain
@@ -231,12 +236,6 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 
 	urlRowItems = append(urlRowItems, urlLabel)
 
-	// Safety indicator (only if configured)
-	if settings.Security.IsConfigured() {
-		indicator := picker.buildSafetyIndicator(urlToOpen, w, settings)
-		urlRowItems = append(urlRowItems, layout.NewSpacer(), indicator)
-	}
-
 	urlRow := container.NewHBox(urlRowItems...)
 
 	return []fyne.CanvasObject{urlRow}
@@ -245,18 +244,31 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 func (picker *BrowserPicker) buildSafetyIndicator(
 	urlToOpen string, w fyne.Window, settings *linkquisition.Settings,
 ) fyne.CanvasObject {
-	// Gray circle initially
+	// Gray dot initially — sized to match the menu button
 	grayColor := color.NRGBA{R: 150, G: 150, B: 150, A: 255}
-	indicator := canvas.NewCircle(grayColor)
-	indicator.StrokeWidth = 0
-	indicatorContainer := container.New(
-		layout.NewCenterLayout(),
-		indicator,
-	)
-	indicatorContainer.Resize(fyne.NewSize(safetyIndicatorSize, safetyIndicatorSize))
+	indicator := canvas.NewText("●", grayColor)
+	indicator.TextSize = theme.TextSize() * 2 //nolint:mnd
+
+	// Create a dummy button to get its height, then use that for our container
+	refButton := widget.NewButton("", nil)
+	buttonSize := refButton.MinSize()
 
 	// Store the result for the tappable report
 	var checkResult *safety.CheckResult
+
+	// Fixed-size container matching the button dimensions
+	dotBox := container.New(layout.NewCenterLayout(), indicator)
+
+	indicatorButton := widget.NewButton("", func() {
+		if checkResult != nil {
+			picker.showSafetyReport(checkResult, w)
+		}
+	})
+	indicatorButton.Importance = widget.LowImportance
+
+	// Stack the dot on top of the button so we get button sizing + dot rendering
+	stacked := container.NewStack(indicatorButton, container.NewCenter(dotBox))
+	stacked.Resize(fyne.NewSize(buttonSize.Height, buttonSize.Height))
 
 	// Run check in background
 	go func() {
@@ -273,8 +285,7 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 		if err != nil {
 			picker.logger.Error("Safety check failed", "url", urlToOpen, "error", err)
 			fyne.Do(func() {
-				// Yellow for "could not determine"
-				indicator.FillColor = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+				indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
 				indicator.Refresh()
 			})
 			return
@@ -285,27 +296,17 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 		fyne.Do(func() {
 			switch result.Level {
 			case safety.ThreatLevelSafe:
-				indicator.FillColor = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+				indicator.Color = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
 			case safety.ThreatLevelSuspicious:
-				indicator.FillColor = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+				indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
 			case safety.ThreatLevelDangerous:
-				indicator.FillColor = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+				indicator.Color = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
 			}
 			indicator.Refresh()
 		})
 	}()
 
-	// Wrap in a tappable container for the report popup
-	tappable := newTappableContainer(
-		indicatorContainer,
-		func() {
-			if checkResult != nil {
-				picker.showSafetyReport(checkResult, w)
-			}
-		},
-	)
-
-	return tappable
+	return stacked
 }
 
 func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne.Window) {
@@ -345,7 +346,12 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 		nil,
 	)
 
+	// Force minimum width for the popup content
+	minWidthSpacer := canvas.NewRectangle(color.Transparent)
+	minWidthSpacer.SetMinSize(fyne.NewSize(350, 0)) //nolint:mnd
+
 	content := container.NewVBox(
+		minWidthSpacer,
 		grid,
 		container.NewCenter(closeButton),
 	)
