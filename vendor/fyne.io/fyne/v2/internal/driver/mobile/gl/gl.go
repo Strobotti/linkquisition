@@ -87,9 +87,9 @@ func (ctx *context) BlendFunc(sfactor, dfactor Enum) {
 }
 
 func (ctx *context) BufferData(target Enum, src []byte, usage Enum) {
-	parg := unsafe.Pointer(nil)
+	parg := unsafe.Pointer(nil) //gosec:disable G103
 	if len(src) > 0 {
-		parg = unsafe.Pointer(&src[0])
+		parg = unsafe.Pointer(&src[0]) //gosec:disable G103
 	}
 	ctx.enqueue(call{
 		args: fnargs{
@@ -103,9 +103,9 @@ func (ctx *context) BufferData(target Enum, src []byte, usage Enum) {
 }
 
 func (ctx *context) BufferSubData(target Enum, src []byte) {
-	parg := unsafe.Pointer(nil)
+	parg := unsafe.Pointer(nil) //gosec:disable G103
 	if len(src) > 0 {
-		parg = unsafe.Pointer(&src[0])
+		parg = unsafe.Pointer(&src[0]) //gosec:disable G103
 	}
 	ctx.enqueue(call{
 		args: fnargs{
@@ -149,7 +149,7 @@ func (ctx *context) CompileShader(s Shader) {
 }
 
 func (ctx *context) CreateBuffer() Buffer {
-	return Buffer{Value: uint32(ctx.enqueue(call{
+	return Buffer{Value: uint32(ctx.enqueue(call{ //gosec:disable G115 -- probably okay
 		args: fnargs{
 			fn: glfnGenBuffer,
 		},
@@ -160,7 +160,7 @@ func (ctx *context) CreateBuffer() Buffer {
 func (ctx *context) CreateProgram() Program {
 	return Program{
 		Init: true,
-		Value: uint32(ctx.enqueue(
+		Value: uint32(ctx.enqueue( //gosec:disable G115 -- probably okay
 			call{
 				args: fnargs{
 					fn: glfnCreateProgram,
@@ -172,7 +172,7 @@ func (ctx *context) CreateProgram() Program {
 }
 
 func (ctx *context) CreateShader(ty Enum) Shader {
-	return Shader{Value: uint32(ctx.enqueue(call{
+	return Shader{Value: uint32(ctx.enqueue(call{ //gosec:disable G115 -- probably okay
 		args: fnargs{
 			fn: glfnCreateShader,
 			a0: uintptr(ty),
@@ -182,7 +182,7 @@ func (ctx *context) CreateShader(ty Enum) Shader {
 }
 
 func (ctx *context) CreateTexture() Texture {
-	return Texture{Value: uint32(ctx.enqueue(call{
+	return Texture{Value: uint32(ctx.enqueue(call{ //gosec:disable G115 -- probably okay
 		args: fnargs{
 			fn: glfnGenTexture,
 		},
@@ -191,7 +191,7 @@ func (ctx *context) CreateTexture() Texture {
 }
 
 func (ctx *context) CreateVertexArray() VertexArray {
-	return VertexArray{Value: uint32(ctx.enqueue(call{
+	return VertexArray{Value: uint32(ctx.enqueue(call{ //gosec:disable G115 -- probably okay
 		args: fnargs{
 			fn: glfnGenVertexArray,
 		},
@@ -204,6 +204,15 @@ func (ctx *context) DeleteBuffer(v Buffer) {
 		args: fnargs{
 			fn: glfnDeleteBuffer,
 			a0: v.c(),
+		},
+	})
+}
+
+func (ctx *context) DeleteProgram(p Program) {
+	ctx.enqueue(call{
+		args: fnargs{
+			fn: glfnDeleteProgram,
+			a0: p.c(),
 		},
 	})
 }
@@ -278,9 +287,19 @@ func (ctx *context) GetAttribLocation(p Program, name string) Attrib {
 }
 
 func (ctx *context) GetError() Enum {
-	return Enum(ctx.enqueue(call{
+	return Enum(ctx.enqueue(call{ //gosec:disable G115 -- probably okay
 		args: fnargs{
 			fn: glfnGetError,
+		},
+		blocking: true,
+	}))
+}
+
+func (ctx *context) GetInteger(pname Enum) int {
+	return int(ctx.enqueue(call{
+		args: fnargs{
+			fn: glfnGetIntegerv,
+			a0: pname.c(),
 		},
 		blocking: true,
 	}))
@@ -310,7 +329,7 @@ func (ctx *context) GetProgramInfoLog(p Program) string {
 			a0: p.c(),
 			a1: uintptr(infoLen),
 		},
-		parg:     unsafe.Pointer(&buf[0]),
+		parg:     unsafe.Pointer(&buf[0]), //gosec:disable G103
 		blocking: true,
 	})
 
@@ -341,7 +360,7 @@ func (ctx *context) GetShaderInfoLog(s Shader) string {
 			a0: s.c(),
 			a1: uintptr(infoLen),
 		},
-		parg:     unsafe.Pointer(&buf[0]),
+		parg:     unsafe.Pointer(&buf[0]), //gosec:disable G103
 		blocking: true,
 	})
 
@@ -361,7 +380,7 @@ func (ctx *context) GetShaderSource(s Shader) string {
 			a0: s.c(),
 			a1: uintptr(sourceLen),
 		},
-		parg:     unsafe.Pointer(&buf[0]),
+		parg:     unsafe.Pointer(&buf[0]), //gosec:disable G103
 		blocking: true,
 	})
 
@@ -382,7 +401,7 @@ func (ctx *context) GetTexParameteriv(dst []int32, target, pname Enum) {
 func (ctx *context) GetUniformLocation(p Program, name string) Uniform {
 	s, free := ctx.cString(name)
 	defer free()
-	return Uniform{Value: int32(ctx.enqueue(call{
+	return Uniform{Value: uint32(ctx.enqueue(call{ //gosec:disable G115 -- probably okay
 		args: fnargs{
 			fn: glfnGetUniformLocation,
 			a0: p.c(),
@@ -401,6 +420,22 @@ func (ctx *context) LinkProgram(p Program) {
 	})
 }
 
+func (ctx *context) CopyTexSubImage2D(target Enum, level, xoffset, yoffset, x, y, width, height int) {
+	ctx.enqueue(call{
+		args: fnargs{
+			fn: glfnCopyTexSubImage2D,
+			a0: target.c(),
+			a1: uintptr(level),
+			a2: uintptr(xoffset),
+			a3: uintptr(yoffset),
+			a4: uintptr(x),
+			a5: uintptr(y),
+			a6: uintptr(width),
+			a7: uintptr(height),
+		},
+	})
+}
+
 func (ctx *context) ReadPixels(dst []byte, x, y, width, height int, format, ty Enum) {
 	ctx.enqueue(call{
 		args: fnargs{
@@ -413,7 +448,7 @@ func (ctx *context) ReadPixels(dst []byte, x, y, width, height int, format, ty E
 			a4: format.c(),
 			a5: ty.c(),
 		},
-		parg:     unsafe.Pointer(&dst[0]),
+		parg:     unsafe.Pointer(&dst[0]), //gosec:disable G103
 		blocking: true,
 	})
 }
@@ -422,10 +457,10 @@ func (ctx *context) Scissor(x, y, width, height int32) {
 	ctx.enqueue(call{
 		args: fnargs{
 			fn: glfnScissor,
-			a0: uintptr(x),
-			a1: uintptr(y),
-			a2: uintptr(width),
-			a3: uintptr(height),
+			a0: uintptr(x),      //gosec:disable G115 - that’s okay, there are no negative values
+			a1: uintptr(y),      //gosec:disable G115 - that’s okay, there are no negative values
+			a2: uintptr(width),  //gosec:disable G115 - that’s okay, there are no negative values
+			a3: uintptr(height), //gosec:disable G115 - that’s okay, there are no negative values
 		},
 	})
 }
@@ -448,9 +483,9 @@ func (ctx *context) TexImage2D(target Enum, level int, internalFormat int, width
 	// It is common to pass TexImage2D a nil data, indicating that a
 	// bound GL buffer is being used as the source. In that case, it
 	// is not necessary to block.
-	parg := unsafe.Pointer(nil)
+	parg := unsafe.Pointer(nil) //gosec:disable G103
 	if len(data) > 0 {
-		parg = unsafe.Pointer(&data[0])
+		parg = unsafe.Pointer(&data[0]) //gosec:disable G103
 	}
 
 	ctx.enqueue(call{
@@ -481,6 +516,16 @@ func (ctx *context) TexParameteri(target, pname Enum, param int) {
 	})
 }
 
+func (ctx *context) Uniform1i(dst Uniform, v int) {
+	ctx.enqueue(call{
+		args: fnargs{
+			fn: glfnUniform1i,
+			a0: dst.c(),
+			a1: uintptr(v),
+		},
+	})
+}
+
 func (ctx *context) Uniform1f(dst Uniform, v float32) {
 	ctx.enqueue(call{
 		args: fnargs{
@@ -488,6 +533,18 @@ func (ctx *context) Uniform1f(dst Uniform, v float32) {
 			a0: dst.c(),
 			a1: uintptr(math.Float32bits(v)),
 		},
+	})
+}
+
+func (ctx *context) Uniform1fv(dst Uniform, src []float32) {
+	ctx.enqueue(call{
+		args: fnargs{
+			fn: glfnUniform1fv,
+			a0: dst.c(),
+			a1: uintptr(len(src)),
+		},
+		parg:     unsafe.Pointer(&src[0]), //gosec:disable G103
+		blocking: true,
 	})
 }
 
@@ -499,6 +556,18 @@ func (ctx *context) Uniform2f(dst Uniform, v0, v1 float32) {
 			a1: uintptr(math.Float32bits(v0)),
 			a2: uintptr(math.Float32bits(v1)),
 		},
+	})
+}
+
+func (ctx *context) Uniform2fv(dst Uniform, src []float32) {
+	ctx.enqueue(call{
+		args: fnargs{
+			fn: glfnUniform2fv,
+			a0: dst.c(),
+			a1: uintptr(len(src) / 2),
+		},
+		parg:     unsafe.Pointer(&src[0]), //gosec:disable G103
+		blocking: true,
 	})
 }
 
@@ -522,7 +591,7 @@ func (ctx *context) Uniform4fv(dst Uniform, src []float32) {
 			a0: dst.c(),
 			a1: uintptr(len(src) / 4),
 		},
-		parg: unsafe.Pointer(&src[0]),
+		parg: unsafe.Pointer(&src[0]), //gosec:disable G103
 	})
 }
 

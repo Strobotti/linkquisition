@@ -21,6 +21,8 @@ type Cursor struct {
 	JSName string
 }
 
+type monitor = glfw.Monitor
+
 const defaultTitle = "Fyne Application"
 
 // Input modes.
@@ -44,6 +46,7 @@ var _ fyne.Window = (*window)(nil)
 
 type window struct {
 	viewport  *glfw.Window
+	frame     presentGate
 	created   bool
 	decorate  bool
 	closing   bool
@@ -56,23 +59,23 @@ type window struct {
 	icon     fyne.Resource
 	mainmenu *fyne.MainMenu
 
-	master     bool
-	fullScreen bool
-	centered   bool
-	visible    bool
-
-	mousePos             fyne.Position
-	mouseDragged         fyne.Draggable
-	mouseDraggedObjStart fyne.Position
-	mouseDraggedOffset   fyne.Position
-	mouseDragPos         fyne.Position
-	mouseDragStarted     bool
-	mouseButton          desktop.MouseButton
-	mouseOver            desktop.Hoverable
-	mouseLastClick       fyne.CanvasObject
-	mousePressed         fyne.CanvasObject
-	mouseClickCount      int
-	mouseCancelFunc      context.CancelFunc
+	master                          bool
+	fullScreen, fullScreenSecondary bool
+	centered, visible               bool
+	mousePosUpdateProcessed         bool
+	newMousePosX, newMousePosY      float64
+	mousePos                        fyne.Position
+	mouseDragged                    fyne.Draggable
+	mouseDraggedObjStart            fyne.Position
+	mouseDraggedOffset              fyne.Position
+	mouseDragPos                    fyne.Position
+	mouseDragStarted                bool
+	mouseButton                     desktop.MouseButton
+	mouseOver                       desktop.Hoverable
+	mouseLastClick                  fyne.CanvasObject
+	mousePressed                    fyne.CanvasObject
+	mouseClickCount                 int
+	mouseCancelFunc                 context.CancelFunc
 
 	onClosed           func()
 	onCloseIntercepted func()
@@ -125,7 +128,11 @@ func (w *window) fitContent() {
 	w.shouldWidth, w.shouldHeight = w.requestedWidth, w.requestedHeight
 }
 
-func (w *window) getMonitorForWindow() *glfw.Monitor {
+func (w *window) getMonitorForWindow() *monitor {
+	return glfw.GetPrimaryMonitor()
+}
+
+func (w *window) getSecondaryMonitor() *monitor {
 	return glfw.GetPrimaryMonitor()
 }
 
@@ -199,6 +206,10 @@ func fyneToNativeCursor(cursor desktop.Cursor) (*Cursor, bool) {
 		name = "ew-resize"
 	case desktop.VResizeCursor:
 		name = "ns-resize"
+	case desktop.NESWResizeCursor:
+		name = "nesw-resize"
+	case desktop.NWSEResizeCursor:
+		name = "nwse-resize"
 	case desktop.HiddenCursor:
 		name = "none"
 	}
@@ -214,9 +225,9 @@ func (w *window) setCustomCursor(rawCursor *Cursor, isCustomCursor bool) {
 }
 
 func (w *window) mouseMoved(_ *glfw.Window, xpos, ypos float64) {
-	runOnMain(func() {
-		w.processMouseMoved(w.scaleInput(xpos), w.scaleInput(ypos))
-	})
+	w.newMousePosX = w.scaleInput(xpos)
+	w.newMousePosY = w.scaleInput(ypos)
+	w.mousePosUpdateProcessed = false
 }
 
 func (w *window) mouseClicked(viewport *glfw.Window, btn glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {

@@ -13,7 +13,6 @@ import (
 	"fyne.io/fyne/v2/internal/driver"
 	"fyne.io/fyne/v2/internal/driver/common"
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 )
 
 // Declare conformity with Canvas interface
@@ -100,7 +99,12 @@ func (c *glCanvas) Resize(size fyne.Size) {
 	// This might not be the ideal solution, but it effectively avoid the first frame to be blurry due to the
 	// rounding of the size to the loower integer when scale == 1. It does not affect the other cases as far as we tested.
 	// This can easily be seen with fyne/cmd/hello and a scale == 1 as the text will happear blurry without the following line.
-	nearestSize := fyne.NewSize(float32(math.Ceil(float64(size.Width))), float32(math.Ceil(float64(size.Height))))
+	var nearestSize fyne.Size
+	if c.scale == 1 {
+		nearestSize = fyne.NewSize(float32(math.Ceil(float64(size.Width))), float32(math.Ceil(float64(size.Height))))
+	} else {
+		nearestSize = size
+	}
 
 	c.size = nearestSize
 
@@ -108,13 +112,7 @@ func (c *glCanvas) Resize(size fyne.Size) {
 		c.webExtraWindows.Resize(size)
 	}
 	for _, overlay := range c.Overlays().List() {
-		if p, ok := overlay.(*widget.PopUp); ok {
-			// TODO: remove this when #707 is being addressed.
-			// “Notifies” the PopUp of the canvas size change.
-			p.Refresh()
-		} else {
-			overlay.Resize(nearestSize)
-		}
+		overlay.Resize(nearestSize)
 	}
 
 	content := c.content
@@ -137,9 +135,6 @@ func (c *glCanvas) Scale() float32 {
 }
 
 func (c *glCanvas) SetContent(content fyne.CanvasObject) {
-	content.Resize(content.MinSize()) // give it the space it wants then calculate the real min
-
-	// the pass above makes some layouts wide enough to wrap, so we ask again what the true min is.
 	newSize := c.size.Max(c.canvasSize(content.MinSize()))
 
 	c.setContent(content)

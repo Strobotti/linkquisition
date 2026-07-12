@@ -19,7 +19,7 @@ func EqualURI(t1, t2 fyne.URI) bool {
 // NewFileURI creates a new URI from the given file path.
 // Relative paths will be converted to absolute using filepath.Abs if required.
 func NewFileURI(fpath string) fyne.URI {
-	if !(path.IsAbs(fpath) || runtime.GOOS == "windows" && filepath.IsAbs(fpath)) {
+	if isAbsolutePath := path.IsAbs(fpath) || runtime.GOOS == "windows" && filepath.IsAbs(fpath); !isAbsolutePath {
 		absolute, err := filepath.Abs(fpath)
 		if err == nil {
 			fpath = absolute

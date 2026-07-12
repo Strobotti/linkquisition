@@ -26,15 +26,15 @@ type colorWheel struct {
 	widget.BaseWidget
 	generator func(w, h int) image.Image
 	cache     draw.Image
-	onChange  func(int, int, int, int)
+	onChange  func(int, int, int, uint8)
 
 	Hue                   int // Range 0-360 (degrees)
 	Saturation, Lightness int // Range 0-100 (percent)
-	Alpha                 int // Range 0-255
+	Alpha                 uint8
 }
 
 // newColorWheel returns a new color area that triggers the given onChange callback when tapped.
-func newColorWheel(onChange func(int, int, int, int)) *colorWheel {
+func newColorWheel(onChange func(int, int, int, uint8)) *colorWheel {
 	a := &colorWheel{
 		onChange: onChange,
 	}
@@ -86,7 +86,7 @@ func (a *colorWheel) MinSize() fyne.Size {
 }
 
 // SetHSLA updates the selected color in the wheel.
-func (a *colorWheel) SetHSLA(hue, saturation, lightness, alpha int) {
+func (a *colorWheel) SetHSLA(hue, saturation, lightness int, alpha uint8) {
 	if a.Hue == hue && a.Saturation == saturation && a.Lightness == lightness && a.Alpha == alpha {
 		return
 	}
@@ -126,9 +126,9 @@ func (a *colorWheel) colorAt(x, y, w, h int) color.Color {
 	saturation := int(radius / limit * 100.0)
 	red, green, blue := hslToRgb(hue, saturation, a.Lightness)
 	return &color.NRGBA{
-		R: uint8(red),
-		G: uint8(green),
-		B: uint8(blue),
+		R: red,
+		G: green,
+		B: blue,
 		A: uint8(a.Alpha),
 	}
 }

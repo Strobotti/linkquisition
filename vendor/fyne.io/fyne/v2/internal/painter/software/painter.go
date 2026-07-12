@@ -44,14 +44,22 @@ func (*Painter) Paint(c fyne.Canvas) image.Image {
 			drawCircle(c, o, pos, base, clip)
 		case *canvas.Line:
 			drawLine(c, o, pos, base, clip)
-		case *canvas.Polygon:
+		case *canvas.RegularPolygon:
 			drawPolygon(c, o, pos, base, clip)
+		case *canvas.ArbitraryPolygon:
+			drawArbitraryPolygon(c, o, pos, base, clip)
 		case *canvas.Raster:
 			drawRaster(c, o, pos, base, clip)
 		case *canvas.Rectangle:
 			drawRectangle(c, o, pos, base, clip)
+		case *canvas.Blur:
+			drawBlur(c, o, pos, base, clip)
 		case *canvas.Arc:
 			drawArc(c, o, pos, base, clip)
+		case *canvas.BezierCurve:
+			drawBezierCurve(c, o, pos, base, clip)
+		case *canvas.Ellipse:
+			drawEllipse(c, o, pos, base, clip)
 		}
 
 		return false

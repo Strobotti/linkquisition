@@ -68,6 +68,9 @@ func (d *dialog) Hide() {
 //
 // Since: 2.1
 func (d *dialog) MinSize() fyne.Size {
+	if d.win == nil {
+		return fyne.NewSquareSize(1)
+	}
 	return d.win.MinSize()
 }
 
@@ -87,9 +90,9 @@ func (d *dialog) Refresh() {
 
 // Resize dialog, call this function after dialog show
 func (d *dialog) Resize(size fyne.Size) {
-	d.desiredSize = size
+	d.desiredSize = size.Max(d.MinSize())
 	if d.win != nil { // could be called before popup is created!
-		d.win.Resize(size)
+		d.win.Resize(size.Max(d.MinSize()))
 	}
 }
 
@@ -187,6 +190,7 @@ func newThemedBackground() *themedBackground {
 func (t *themedBackground) CreateRenderer() fyne.WidgetRenderer {
 	t.ExtendBaseWidget(t)
 	rect := canvas.NewRectangle(theme.Color(theme.ColorNameOverlayBackground))
+	rect.CornerRadius = theme.Size(theme.SizeNameDialogRadius)
 	return &themedBackgroundRenderer{rect, []fyne.CanvasObject{rect}}
 }
 
@@ -212,7 +216,7 @@ func (renderer *themedBackgroundRenderer) Objects() []fyne.CanvasObject {
 
 func (renderer *themedBackgroundRenderer) Refresh() {
 	r, g, b, _ := col.ToNRGBA(theme.Color(theme.ColorNameOverlayBackground))
-	bg := &color.NRGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: 230}
+	bg := &color.NRGBA{R: r, G: g, B: b, A: 230}
 	renderer.rect.FillColor = bg
 }
 

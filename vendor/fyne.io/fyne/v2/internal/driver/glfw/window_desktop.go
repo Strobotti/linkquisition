@@ -25,7 +25,7 @@ import (
 	"fyne.io/fyne/v2/internal/svg"
 	"fyne.io/fyne/v2/storage"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/glfw/v3.4/glfw"
 )
 
 const (
@@ -53,13 +53,15 @@ var cursors [desktop.HiddenCursor + 1]*glfw.Cursor
 
 func initCursors() {
 	cursors = [desktop.HiddenCursor + 1]*glfw.Cursor{
-		desktop.DefaultCursor:   glfw.CreateStandardCursor(glfw.ArrowCursor),
-		desktop.TextCursor:      glfw.CreateStandardCursor(glfw.IBeamCursor),
-		desktop.CrosshairCursor: glfw.CreateStandardCursor(glfw.CrosshairCursor),
-		desktop.PointerCursor:   glfw.CreateStandardCursor(glfw.HandCursor),
-		desktop.HResizeCursor:   glfw.CreateStandardCursor(glfw.HResizeCursor),
-		desktop.VResizeCursor:   glfw.CreateStandardCursor(glfw.VResizeCursor),
-		desktop.HiddenCursor:    nil,
+		desktop.DefaultCursor:    glfw.CreateStandardCursor(glfw.ArrowCursor),
+		desktop.TextCursor:       glfw.CreateStandardCursor(glfw.IBeamCursor),
+		desktop.CrosshairCursor:  glfw.CreateStandardCursor(glfw.CrosshairCursor),
+		desktop.PointerCursor:    glfw.CreateStandardCursor(glfw.HandCursor),
+		desktop.HResizeCursor:    glfw.CreateStandardCursor(glfw.HResizeCursor),
+		desktop.VResizeCursor:    glfw.CreateStandardCursor(glfw.VResizeCursor),
+		desktop.NESWResizeCursor: glfw.CreateStandardCursor(glfw.ResizeNESWCursor),
+		desktop.NWSEResizeCursor: glfw.CreateStandardCursor(glfw.ResizeNWSECursor),
+		desktop.HiddenCursor:     nil,
 	}
 }
 
@@ -68,6 +70,7 @@ var _ fyne.Window = (*window)(nil)
 
 type window struct {
 	viewport  *glfw.Window
+	frame     presentGate
 	created   bool
 	decorate  bool
 	closing   bool
@@ -81,23 +84,24 @@ type window struct {
 	icon         fyne.Resource
 	mainmenu     *fyne.MainMenu
 
-	master     bool
-	fullScreen bool
-	centered   bool
-	visible    bool
+	master                          bool
+	fullScreen, fullScreenSecondary bool
+	centered, visible, onTop        bool
 
-	mousePos             fyne.Position
-	mouseDragged         fyne.Draggable
-	mouseDraggedObjStart fyne.Position
-	mouseDraggedOffset   fyne.Position
-	mouseDragPos         fyne.Position
-	mouseDragStarted     bool
-	mouseButton          desktop.MouseButton
-	mouseOver            desktop.Hoverable
-	mouseLastClick       fyne.CanvasObject
-	mousePressed         fyne.CanvasObject
-	mouseClickCount      int
-	mouseCancelFunc      context.CancelFunc
+	mousePosUpdateProcessed    bool
+	newMousePosX, newMousePosY float64
+	mousePos                   fyne.Position
+	mouseDragged               fyne.Draggable
+	mouseDraggedObjStart       fyne.Position
+	mouseDraggedOffset         fyne.Position
+	mouseDragPos               fyne.Position
+	mouseDragStarted           bool
+	mouseButton                desktop.MouseButton
+	mouseOver                  desktop.Hoverable
+	mouseLastClick             fyne.CanvasObject
+	mousePressed               fyne.CanvasObject
+	mouseClickCount            int
+	mouseCancelFunc            context.CancelFunc
 
 	onClosed           func()
 	onCloseIntercepted func()
@@ -118,11 +122,36 @@ type window struct {
 
 func (w *window) SetFullScreen(full bool) {
 	w.fullScreen = full
+	w.fullScreenSecondary = false
 
 	if w.view() != nil {
 		async.EnsureMain(func() {
 			w.doSetFullScreen(full)
 		})
+	}
+}
+
+func (w *window) RequestAlwaysOnTop() {
+	w.onTop = true
+}
+
+func (w *window) RequestFullScreenSecondary() {
+	w.fullScreenSecondary = true
+	w.fullScreen = true
+
+	if w.view() != nil {
+		async.EnsureMain(func() {
+			w.doSetFullScreen2(true)
+		})
+	}
+}
+
+func (w *window) RequestPosition(x, y int) {
+	w.xpos = x
+	w.ypos = y
+
+	if w.view() != nil {
+		w.view().SetPos(x, y)
 	}
 }
 
@@ -313,6 +342,18 @@ func (w *window) getMonitorForWindow() *glfw.Monitor {
 	return monitor
 }
 
+// findSiblingMonitor returns the monitor of an already-visible window in this app, or nil.
+func (w *window) findSiblingMonitor() *glfw.Monitor {
+	for _, other := range w.driver.windowList() {
+		ow, ok := other.(*window)
+		if !ok || ow == w || !ow.visible || ow.viewport == nil {
+			continue
+		}
+		return ow.getMonitorForWindow()
+	}
+	return nil
+}
+
 func (w *window) detectScale() float32 {
 	if build.IsWayland { // Wayland controls scale through content scaling
 		return 1
@@ -399,7 +440,9 @@ func (w *window) setCustomCursor(rawCursor *glfw.Cursor, isCustomCursor bool) {
 }
 
 func (w *window) mouseMoved(_ *glfw.Window, xpos, ypos float64) {
-	w.processMouseMoved(xpos, ypos)
+	w.newMousePosX = xpos
+	w.newMousePosY = ypos
+	w.mousePosUpdateProcessed = false
 }
 
 func (w *window) mouseClicked(_ *glfw.Window, btn glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
@@ -745,6 +788,11 @@ func (w *window) create() {
 	} else {
 		glfw.WindowHint(glfw.Resizable, glfw.True)
 	}
+	if w.onTop {
+		glfw.WindowHint(glfw.Floating, glfw.True)
+	} else {
+		glfw.WindowHint(glfw.Floating, glfw.False)
+	}
 	glfw.WindowHint(glfw.AutoIconify, glfw.False)
 	initWindowHints()
 
@@ -769,10 +817,29 @@ func (w *window) create() {
 		return
 	}
 
+	// macOS 26 places new windows on a different screen than existing app windows;
+	// default new windows onto the same monitor as a visible sibling when no position was set.
+	if runtime.GOOS == "darwin" && !build.IsWayland && w.xpos == 0 && w.ypos == 0 {
+		if monitor := w.findSiblingMonitor(); monitor != nil {
+			monX, monY := monitor.GetPos()
+			monMode := monitor.GetVideoMode()
+			w.xpos = monX + (monMode.Width-pixWidth)/2
+			w.ypos = monY + (monMode.Height-pixHeight)/2
+		}
+	}
+
+	if (w.xpos != 0 || w.ypos != 0) && !build.IsWayland {
+		win.SetPos(w.xpos, w.ypos)
+	}
+
 	// run the GL init on the draw thread
 	w.RunWithContext(func() {
 		w.canvas.SetPainter(gl.NewPainter(w.canvas, w))
 		w.canvas.Painter().Init()
+
+		if build.IsWayland {
+			glfw.SwapInterval(0)
+		}
 	})
 
 	w.setDarkMode()
@@ -807,6 +874,9 @@ func (w *window) create() {
 	w.requestedWidth, w.requestedHeight = w.width, w.height
 	// order of operation matters so we do these last items in order
 	w.viewport.SetSize(w.shouldWidth, w.shouldHeight) // ensure we requested latest size
+
+	// Initialize accessibility support
+	w.initAccessibilityForWindow()
 }
 
 func (w *window) view() *glfw.Window {

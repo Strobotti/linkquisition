@@ -19,16 +19,21 @@ const (
 	float                 = gl.FLOAT
 	fragmentShader        = gl.FRAGMENT_SHADER
 	front                 = gl.FRONT
+	back                  = gl.BACK
 	glFalse               = gl.FALSE
 	linkStatus            = gl.LINK_STATUS
+	maxTextureSizeParam   = gl.MAX_TEXTURE_SIZE
 	one                   = gl.ONE
+	zero                  = gl.ZERO
 	oneMinusConstantAlpha = gl.ONE_MINUS_CONSTANT_ALPHA
 	oneMinusSrcAlpha      = gl.ONE_MINUS_SRC_ALPHA
 	scissorTest           = gl.SCISSOR_TEST
 	srcAlpha              = gl.SRC_ALPHA
 	staticDraw            = gl.STATIC_DRAW
 	texture0              = gl.TEXTURE0
+	texture1              = gl.TEXTURE1
 	texture2D             = gl.TEXTURE_2D
+	textureNearest        = gl.NEAREST
 	textureMinFilter      = gl.TEXTURE_MIN_FILTER
 	textureMagFilter      = gl.TEXTURE_MAG_FILTER
 	textureWrapS          = gl.TEXTURE_WRAP_S
@@ -54,105 +59,85 @@ type (
 
 var (
 	noBuffer          = Buffer(gl.NoBuffer)
+	noProgram         = Program(gl.NoProgram)
 	noShader          = Shader(gl.NoShader)
 	textureFilterToGL = [...]int32{gl.LINEAR, gl.NEAREST, gl.LINEAR}
 )
 
 func (p *painter) Init() {
 	p.ctx = &xjsContext{}
+	p.maxTextureSize = p.ctx.GetInteger(maxTextureSizeParam)
 	gl.Disable(gl.DEPTH_TEST)
 	gl.Enable(gl.BLEND)
 	p.logError()
-	p.program = ProgramState{
+	p.program = programState{
 		ref:        p.createProgram("simple_es"),
 		buff:       p.createBuffer(20),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(p.program, "text", "alpha", "cornerRadius", "size", "inset")
-	p.enableAttribArrays(p.program, "vert", "vertTexCoord")
 
-	p.lineProgram = ProgramState{
+	p.blurProgram = programState{
+		ref:        p.createProgram("blur_es"),
+		buff:       p.createBuffer(20),
+		uniforms:   make(map[string]*uniformState),
+		attributes: make(map[string]Attribute),
+	}
+
+	p.lineProgram = programState{
 		ref:        p.createProgram("line_es"),
 		buff:       p.createBuffer(24),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(p.lineProgram, "color", "feather", "lineWidth")
-	p.enableAttribArrays(p.lineProgram, "vert", "normal")
 
-	p.rectangleProgram = ProgramState{
+	p.rectangleProgram = programState{
 		ref:        p.createProgram("rectangle_es"),
 		buff:       p.createBuffer(16),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(
-		p.rectangleProgram,
-		"frame_size", "rect_coords", "stroke_width", "fill_color", "stroke_color",
-	)
-	p.enableAttribArrays(p.rectangleProgram, "vert", "normal")
 
-	p.roundRectangleProgram = ProgramState{
+	p.roundRectangleProgram = programState{
 		ref:        p.createProgram("round_rectangle_es"),
 		buff:       p.createBuffer(16),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(
-		p.roundRectangleProgram,
-		"frame_size", "rect_coords",
-		"stroke_width_half", "rect_size_half",
-		"radius", "edge_softness",
-		"fill_color", "stroke_color",
-	)
-	p.enableAttribArrays(p.roundRectangleProgram, "vert", "normal")
 
-	p.polygonProgram = ProgramState{
+	p.polygonProgram = programState{
 		ref:        p.createProgram("polygon_es"),
 		buff:       p.createBuffer(16),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(
-		p.polygonProgram,
-		"frame_size", "rect_coords", "edge_softness",
-		"outer_radius", "angle", "sides",
-		"fill_color", "corner_radius",
-		"stroke_width", "stroke_color",
-	)
-	p.enableAttribArrays(p.polygonProgram, "vert", "normal")
 
-	p.arcProgram = ProgramState{
+	p.arcProgram = programState{
 		ref:        p.createProgram("arc_es"),
 		buff:       p.createBuffer(16),
-		uniforms:   make(map[string]*UniformState),
+		uniforms:   make(map[string]*uniformState),
 		attributes: make(map[string]Attribute),
 	}
-	p.getUniformLocations(
-		p.arcProgram,
-		"frame_size", "rect_coords",
-		"inner_radius", "outer_radius",
-		"start_angle", "end_angle",
-		"edge_softness", "corner_radius",
-		"stroke_width", "stroke_color",
-		"fill_color",
-	)
-	p.enableAttribArrays(p.arcProgram, "vert", "normal")
-}
 
-func (p *painter) getUniformLocations(pState ProgramState, names ...string) {
-	for _, name := range names {
-		u := p.ctx.GetUniformLocation(pState.ref, name)
-		pState.uniforms[name] = &UniformState{ref: u}
+	p.bezierCurveProgram = programState{
+		ref:        p.createProgram("bezier_curve_es"),
+		buff:       p.createBuffer(16),
+		uniforms:   make(map[string]*uniformState),
+		attributes: make(map[string]Attribute),
 	}
-}
 
-func (p *painter) enableAttribArrays(pState ProgramState, names ...string) {
-	for _, name := range names {
-		a := p.ctx.GetAttribLocation(pState.ref, name)
-		p.ctx.EnableVertexAttribArray(a)
-		pState.attributes[name] = a
+	p.arbitraryPolygonProgram = programState{
+		ref:        p.createProgram("arbitrary_polygon_es"),
+		buff:       p.createBuffer(16),
+		uniforms:   make(map[string]*uniformState),
+		attributes: make(map[string]Attribute),
+	}
+
+	p.ellipseProgram = programState{
+		ref:        p.createProgram("ellipse_es"),
+		buff:       p.createBuffer(16),
+		uniforms:   make(map[string]*uniformState),
+		attributes: make(map[string]Attribute),
 	}
 }
 
@@ -225,6 +210,10 @@ func (c *xjsContext) DeleteBuffer(buffer Buffer) {
 	gl.DeleteBuffer(gl.Buffer(buffer))
 }
 
+func (c *xjsContext) DeleteProgram(program Program) {
+	gl.DeleteProgram(gl.Program(program))
+}
+
 func (c *xjsContext) DeleteTexture(texture Texture) {
 	gl.DeleteTexture(gl.Texture(texture))
 }
@@ -253,6 +242,10 @@ func (c *xjsContext) GetError() uint32 {
 	return uint32(gl.GetError())
 }
 
+func (c *xjsContext) GetInteger(pname uint32) int {
+	return gl.GetInteger(gl.Enum(pname))
+}
+
 func (c *xjsContext) GetProgrami(program Program, param uint32) int {
 	return gl.GetProgrami(gl.Program(program), gl.Enum(param))
 }
@@ -277,6 +270,10 @@ func (c *xjsContext) LinkProgram(program Program) {
 	gl.LinkProgram(gl.Program(program))
 }
 
+func (c *xjsContext) CopyTexSubImage2D(target uint32, level, xoffset, yoffset, x, y, width, height int) {
+	gl.CopyTexSubImage2D(gl.Enum(target), level, xoffset, yoffset, x, y, width, height)
+}
+
 func (c *xjsContext) ReadBuffer(_ uint32) {
 }
 
@@ -293,6 +290,10 @@ func (c *xjsContext) Scissor(x, y, w, h int32) {
 }
 
 func (c *xjsContext) TexImage2D(target uint32, level, width, height int, colorFormat, typ uint32, data []uint8) {
+	var jsData interface{}
+	if len(data) > 0 {
+		jsData = data
+	}
 	gl.TexImage2D(
 		gl.Enum(target),
 		level,
@@ -300,7 +301,7 @@ func (c *xjsContext) TexImage2D(target uint32, level, width, height int, colorFo
 		height,
 		gl.Enum(colorFormat),
 		gl.Enum(typ),
-		data,
+		jsData,
 	)
 }
 
@@ -312,8 +313,20 @@ func (c *xjsContext) Uniform1f(uniform Uniform, v float32) {
 	gl.Uniform1f(gl.Uniform(uniform), v)
 }
 
+func (c *xjsContext) Uniform1fv(uniform Uniform, v []float32) {
+	gl.Uniform1fv(gl.Uniform(uniform), v)
+}
+
+func (c *xjsContext) Uniform1i(uniform Uniform, v int32) {
+	gl.Uniform1i(gl.Uniform(uniform), int(v))
+}
+
 func (c *xjsContext) Uniform2f(uniform Uniform, v0, v1 float32) {
 	gl.Uniform2f(gl.Uniform(uniform), v0, v1)
+}
+
+func (c *xjsContext) Uniform2fv(uniform Uniform, v []float32) {
+	gl.Uniform2fv(gl.Uniform(uniform), v)
 }
 
 func (c *xjsContext) Uniform4f(uniform Uniform, v0, v1, v2, v3 float32) {

@@ -10,7 +10,6 @@ import (
 	"fyne.io/fyne/v2/driver/mobile"
 	"fyne.io/fyne/v2/driver/software"
 	"fyne.io/fyne/v2/internal/driver"
-	"fyne.io/fyne/v2/test"
 )
 
 const (
@@ -22,7 +21,7 @@ const (
 )
 
 type touchCanvas struct {
-	test.WindowlessCanvas
+	software.WindowlessCanvas
 
 	lastTapDown    map[int]time.Time
 	lastTapDownPos map[int]fyne.Position
@@ -66,6 +65,7 @@ func (c *touchCanvas) tapDown(pos fyne.Position, tapID int) {
 
 	if wid, ok := co.(mobile.Touchable); ok {
 		touchEv := &mobile.TouchEvent{}
+		touchEv.ID = tapID
 		touchEv.Position = objPos
 		touchEv.AbsolutePosition = pos
 		wid.TouchDown(touchEv)
@@ -106,6 +106,7 @@ func (c *touchCanvas) tapMove(pos fyne.Position, tapID int,
 	if c.touched[tapID] != nil {
 		if touch, ok := co.(mobile.Touchable); !ok || c.touched[tapID] != touch {
 			touchEv := &mobile.TouchEvent{}
+			touchEv.ID = tapID
 			touchEv.Position = objPos
 			touchEv.AbsolutePosition = pos
 			c.touched[tapID].TouchCancel(touchEv)
@@ -167,6 +168,7 @@ func (c *touchCanvas) tapUp(pos fyne.Position, tapID int,
 
 	if wid, ok := co.(mobile.Touchable); ok {
 		touchEv := &mobile.TouchEvent{}
+		touchEv.ID = tapID
 		touchEv.Position = objPos
 		touchEv.AbsolutePosition = pos
 		wid.TouchUp(touchEv)
