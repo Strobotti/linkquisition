@@ -313,5 +313,113 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Fehler beim Leeren des Cache"
+  },
+  "picker.menu_copy": {
+    "other": "URL kopieren"
+  },
+  "picker.menu_qr": {
+    "other": "QR-Code anzeigen"
+  },
+  "picker.menu_whois": {
+    "other": "Whois anzeigen"
+  },
+  "picker.qr_copy_image": {
+    "other": "Bild kopieren"
+  },
+  "picker.qr_close": {
+    "other": "Schließen"
+  },
+  "picker.whois_title": {
+    "other": "Whois-Informationen"
+  },
+  "picker.whois_loading": {
+    "other": "Domain-Informationen werden abgerufen…"
+  },
+  "picker.whois_domain": {
+    "other": "Domain:"
+  },
+  "picker.whois_registrar": {
+    "other": "Registrar:"
+  },
+  "picker.whois_created": {
+    "other": "Erstellt:"
+  },
+  "picker.whois_expires": {
+    "other": "Ablaufdatum:"
+  },
+  "picker.whois_updated": {
+    "other": "Aktualisiert:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Nameserver:"
+  },
+  "picker.whois_age": {
+    "other": "Alter:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Status:"
+  },
+  "picker.whois_close": {
+    "other": "Schließen"
+  },
+  "picker.whois_error": {
+    "other": "Domain-Informationen konnten nicht abgerufen werden:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Sicherheit"
+  },
+  "config.security_enabled": {
+    "other": "URL-Sicherheitsprüfung aktivieren"
+  },
+  "config.security_provider_label": {
+    "other": "Anbieter:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "API-Schlüssel:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "API-Schlüssel eingeben"
+  },
+  "config.security_get_key": {
+    "other": "API-Schlüssel erhalten →"
+  },
+  "config.security_test": {
+    "other": "Testen"
+  },
+  "config.security_testing": {
+    "other": "Teste…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Zugangsdaten gültig"
+  },
+  "picker.safety_level_safe": {
+    "other": "Sicher"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Verdächtig"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Gefährlich"
+  },
+  "picker.safety_provider": {
+    "other": "Anbieter:"
+  },
+  "picker.safety_result": {
+    "other": "Ergebnis:"
+  },
+  "picker.safety_details": {
+    "other": "Details:"
+  },
+  "picker.safety_close": {
+    "other": "Schließen"
   }
 }

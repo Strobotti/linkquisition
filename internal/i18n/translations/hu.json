@@ -313,5 +313,113 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Hiba a gyorsítótár törlésekor"
+  },
+  "picker.menu_copy": {
+    "other": "URL másolása"
+  },
+  "picker.menu_qr": {
+    "other": "QR-kód megjelenítése"
+  },
+  "picker.menu_whois": {
+    "other": "Whois megjelenítése"
+  },
+  "picker.qr_copy_image": {
+    "other": "Kép másolása"
+  },
+  "picker.qr_close": {
+    "other": "Bezárás"
+  },
+  "picker.whois_title": {
+    "other": "Whois információ"
+  },
+  "picker.whois_loading": {
+    "other": "Domain információk keresése…"
+  },
+  "picker.whois_domain": {
+    "other": "Domain:"
+  },
+  "picker.whois_registrar": {
+    "other": "Regisztrátor:"
+  },
+  "picker.whois_created": {
+    "other": "Létrehozva:"
+  },
+  "picker.whois_expires": {
+    "other": "Lejárat:"
+  },
+  "picker.whois_updated": {
+    "other": "Frissítve:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Névszerverek:"
+  },
+  "picker.whois_age": {
+    "other": "Kor:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Állapot:"
+  },
+  "picker.whois_close": {
+    "other": "Bezárás"
+  },
+  "picker.whois_error": {
+    "other": "Nem sikerült lekérdezni a domain információkat:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Biztonság"
+  },
+  "config.security_enabled": {
+    "other": "URL biztonsági ellenőrzés engedélyezése"
+  },
+  "config.security_provider_label": {
+    "other": "Szolgáltató:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "API kulcs:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Adja meg az API kulcsot"
+  },
+  "config.security_get_key": {
+    "other": "API kulcs beszerzése →"
+  },
+  "config.security_test": {
+    "other": "Teszt"
+  },
+  "config.security_testing": {
+    "other": "Tesztelés…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Hitelesítő adatok érvényesek"
+  },
+  "picker.safety_level_safe": {
+    "other": "Biztonságos"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Gyanús"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Veszélyes"
+  },
+  "picker.safety_provider": {
+    "other": "Szolgáltató:"
+  },
+  "picker.safety_result": {
+    "other": "Eredmény:"
+  },
+  "picker.safety_details": {
+    "other": "Részletek:"
+  },
+  "picker.safety_close": {
+    "other": "Bezárás"
   }
 }

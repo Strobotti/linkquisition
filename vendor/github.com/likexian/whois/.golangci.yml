@@ -1,0 +1,65 @@
+# .golangci.yml
+# Maintainer: https://www.likexian.com
+# Licensed under the Apache License 2.0
+
+version: "2"
+linters:
+  default: none
+  enable:
+    - cyclop
+    - durationcheck
+    - errcheck
+    - errname
+    - errorlint
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nilerr
+    - nolintlint
+    - prealloc
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - unconvert
+    - unused
+    - wastedassign
+  settings:
+    cyclop:
+      max-complexity: 20
+      package-average: 10
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+        path: _test\.go
+      - linters:
+          - lll
+        source: '^//go:generate '
+      - linters:
+          - cyclop
+        path: (.+)_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

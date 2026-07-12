@@ -155,6 +155,17 @@ github.com/jeandeaual/go-locale
 github.com/jsummers/gobmp
 # github.com/kr/text v0.2.0
 ## explicit
+# github.com/likexian/gokit v0.25.16
+## explicit; go 1.24.0
+github.com/likexian/gokit/assert
+github.com/likexian/gokit/xrand
+github.com/likexian/gokit/xslice
+# github.com/likexian/whois v1.15.7
+## explicit; go 1.24.0
+github.com/likexian/whois
+# github.com/likexian/whois-parser v1.24.21
+## explicit; go 1.24.0
+github.com/likexian/whois-parser
 # github.com/mattn/go-runewidth v0.0.24
 ## explicit; go 1.20
 github.com/mattn/go-runewidth
@@ -184,6 +195,11 @@ github.com/rymdport/portal/notification
 github.com/rymdport/portal/openuri
 github.com/rymdport/portal/settings
 github.com/rymdport/portal/settings/appearance
+# github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
+## explicit; go 1.13
+github.com/skip2/go-qrcode
+github.com/skip2/go-qrcode/bitset
+github.com/skip2/go-qrcode/reedsolomon
 # github.com/spf13/cobra v1.10.2
 ## explicit; go 1.15
 github.com/spf13/cobra
@@ -226,6 +242,9 @@ golang.org/x/image/vector
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
+golang.org/x/net/idna
+golang.org/x/net/internal/socks
+golang.org/x/net/proxy
 golang.org/x/net/publicsuffix
 # golang.org/x/sys v0.47.0
 ## explicit; go 1.25.0
@@ -250,8 +269,10 @@ golang.org/x/text/internal/tag
 golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
 golang.org/x/text/runes
+golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
+golang.org/x/text/unicode/norm
 # gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 ## explicit
 gopkg.in/alessio/shellescape.v1

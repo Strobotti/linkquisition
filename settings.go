@@ -33,6 +33,9 @@ const (
 	FaviconStrategyParsed = "parsed"
 	FaviconStrategyGoogle = "google"
 
+	SecurityProviderGoogleSafeBrowsing = "google_safe_browsing"
+	SecurityProviderVirusTotal         = "virustotal"
+
 	DefaultMaxItemsPerRow = 5
 )
 
@@ -162,12 +165,34 @@ func (u *UiSettings) GetFaviconStrategy() string {
 	}
 }
 
+// SecuritySettings holds configuration for URL safety checking.
+type SecuritySettings struct {
+	Enabled  bool   `json:"enabled,omitempty"`
+	Provider string `json:"provider,omitempty"`
+	APIKey   string `json:"apiKey,omitempty"`
+}
+
+// GetProvider returns the effective security provider, defaulting to Google Safe Browsing.
+func (s *SecuritySettings) GetProvider() string {
+	if s.Provider == SecurityProviderVirusTotal {
+		return SecurityProviderVirusTotal
+	}
+
+	return SecurityProviderGoogleSafeBrowsing
+}
+
+// IsConfigured returns true if security checking is enabled and an API key is set.
+func (s *SecuritySettings) IsConfigured() bool {
+	return s.Enabled && s.APIKey != ""
+}
+
 type Settings struct {
 	Locale   string            `json:"locale,omitempty"`
 	LogLevel string            `json:"logLevel,omitempty"`
 	Browsers []BrowserSettings `json:"browsers"`
 	Plugins  []PluginSettings  `json:"plugins,omitempty"`
 	Ui       UiSettings        `json:"ui,omitempty"`
+	Security SecuritySettings  `json:"security,omitempty"`
 }
 
 // NormalizeBrowsers moves hidden browsers to the end of the list

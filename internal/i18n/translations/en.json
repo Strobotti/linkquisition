@@ -313,5 +313,113 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Error clearing cache"
+  },
+  "picker.menu_copy": {
+    "other": "Copy URL"
+  },
+  "picker.menu_qr": {
+    "other": "Show QR code"
+  },
+  "picker.menu_whois": {
+    "other": "Show Whois"
+  },
+  "picker.qr_copy_image": {
+    "other": "Copy image"
+  },
+  "picker.qr_close": {
+    "other": "Close"
+  },
+  "picker.whois_title": {
+    "other": "Whois Information"
+  },
+  "picker.whois_loading": {
+    "other": "Looking up domain information…"
+  },
+  "picker.whois_domain": {
+    "other": "Domain:"
+  },
+  "picker.whois_registrar": {
+    "other": "Registrar:"
+  },
+  "picker.whois_created": {
+    "other": "Created:"
+  },
+  "picker.whois_expires": {
+    "other": "Expires:"
+  },
+  "picker.whois_updated": {
+    "other": "Updated:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Name servers:"
+  },
+  "picker.whois_age": {
+    "other": "Age:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Status:"
+  },
+  "picker.whois_close": {
+    "other": "Close"
+  },
+  "picker.whois_error": {
+    "other": "Failed to look up domain information:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Security"
+  },
+  "config.security_enabled": {
+    "other": "Enable URL safety checking"
+  },
+  "config.security_provider_label": {
+    "other": "Provider:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "API key:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Enter your API key"
+  },
+  "config.security_get_key": {
+    "other": "Get an API key →"
+  },
+  "config.security_test": {
+    "other": "Test"
+  },
+  "config.security_testing": {
+    "other": "Testing…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Credentials valid"
+  },
+  "picker.safety_level_safe": {
+    "other": "Safe"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Suspicious"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Dangerous"
+  },
+  "picker.safety_provider": {
+    "other": "Provider:"
+  },
+  "picker.safety_result": {
+    "other": "Result:"
+  },
+  "picker.safety_details": {
+    "other": "Details:"
+  },
+  "picker.safety_close": {
+    "other": "Close"
   }
 }

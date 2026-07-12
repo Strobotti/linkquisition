@@ -313,5 +313,113 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Virhe välimuistin tyhjentämisessä"
+  },
+  "picker.menu_copy": {
+    "other": "Kopioi URL"
+  },
+  "picker.menu_qr": {
+    "other": "Näytä QR-koodi"
+  },
+  "picker.menu_whois": {
+    "other": "Näytä Whois-tiedot"
+  },
+  "picker.qr_copy_image": {
+    "other": "Kopioi kuva"
+  },
+  "picker.qr_close": {
+    "other": "Sulje"
+  },
+  "picker.whois_title": {
+    "other": "Whois-tiedot"
+  },
+  "picker.whois_loading": {
+    "other": "Haetaan verkkotunnuksen tietoja…"
+  },
+  "picker.whois_domain": {
+    "other": "Verkkotunnus:"
+  },
+  "picker.whois_registrar": {
+    "other": "Rekisteröijä:"
+  },
+  "picker.whois_created": {
+    "other": "Luotu:"
+  },
+  "picker.whois_expires": {
+    "other": "Vanhenee:"
+  },
+  "picker.whois_updated": {
+    "other": "Päivitetty:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Nimipalvelimet:"
+  },
+  "picker.whois_age": {
+    "other": "Ikä:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Tila:"
+  },
+  "picker.whois_close": {
+    "other": "Sulje"
+  },
+  "picker.whois_error": {
+    "other": "Verkkotunnuksen tietojen haku epäonnistui:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Turvallisuus"
+  },
+  "config.security_enabled": {
+    "other": "Ota URL-turvatarkistus käyttöön"
+  },
+  "config.security_provider_label": {
+    "other": "Palveluntarjoaja:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "API-avain:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Syötä API-avain"
+  },
+  "config.security_get_key": {
+    "other": "Hanki API-avain →"
+  },
+  "config.security_test": {
+    "other": "Testaa"
+  },
+  "config.security_testing": {
+    "other": "Testataan…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Tunnisteet kelvolliset"
+  },
+  "picker.safety_level_safe": {
+    "other": "Turvallinen"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Epäilyttävä"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Vaarallinen"
+  },
+  "picker.safety_provider": {
+    "other": "Palveluntarjoaja:"
+  },
+  "picker.safety_result": {
+    "other": "Tulos:"
+  },
+  "picker.safety_details": {
+    "other": "Tiedot:"
+  },
+  "picker.safety_close": {
+    "other": "Sulje"
   }
 }

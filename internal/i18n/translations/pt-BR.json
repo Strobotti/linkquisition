@@ -313,5 +313,113 @@
   },
   "config.favicon_clear_cache_error": {
     "other": "✗ Erro ao limpar o cache"
+  },
+  "picker.menu_copy": {
+    "other": "Copiar URL"
+  },
+  "picker.menu_qr": {
+    "other": "Mostrar código QR"
+  },
+  "picker.menu_whois": {
+    "other": "Mostrar Whois"
+  },
+  "picker.qr_copy_image": {
+    "other": "Copiar imagem"
+  },
+  "picker.qr_close": {
+    "other": "Fechar"
+  },
+  "picker.whois_title": {
+    "other": "Informações Whois"
+  },
+  "picker.whois_loading": {
+    "other": "Consultando informações do domínio…"
+  },
+  "picker.whois_domain": {
+    "other": "Domínio:"
+  },
+  "picker.whois_registrar": {
+    "other": "Registrador:"
+  },
+  "picker.whois_created": {
+    "other": "Criado:"
+  },
+  "picker.whois_expires": {
+    "other": "Expira:"
+  },
+  "picker.whois_updated": {
+    "other": "Atualizado:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Servidores DNS:"
+  },
+  "picker.whois_age": {
+    "other": "Idade:"
+  },
+  "picker.whois_dnssec": {
+    "other": "DNSSEC:"
+  },
+  "picker.whois_status": {
+    "other": "Estado:"
+  },
+  "picker.whois_close": {
+    "other": "Fechar"
+  },
+  "picker.whois_error": {
+    "other": "Falha ao consultar informações do domínio:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Segurança"
+  },
+  "config.security_enabled": {
+    "other": "Ativar verificação de segurança de URL"
+  },
+  "config.security_provider_label": {
+    "other": "Provedor:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "Chave API:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Digite sua chave API"
+  },
+  "config.security_get_key": {
+    "other": "Obter chave API →"
+  },
+  "config.security_test": {
+    "other": "Testar"
+  },
+  "config.security_testing": {
+    "other": "Testando…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Credenciais válidas"
+  },
+  "picker.safety_level_safe": {
+    "other": "Seguro"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Suspeito"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Perigoso"
+  },
+  "picker.safety_provider": {
+    "other": "Provedor:"
+  },
+  "picker.safety_result": {
+    "other": "Resultado:"
+  },
+  "picker.safety_details": {
+    "other": "Detalhes:"
+  },
+  "picker.safety_close": {
+    "other": "Fechar"
   }
 }
