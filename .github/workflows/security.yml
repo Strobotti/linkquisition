@@ -24,7 +24,7 @@ jobs:
       - name: Install build dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: gcc libgl1-mesa-dev xorg-dev
+          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev
           version: 1.0
 
       - name: Install govulncheck
