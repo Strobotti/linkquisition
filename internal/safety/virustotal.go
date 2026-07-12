@@ -29,7 +29,7 @@ func (v *virusTotal) Name() string {
 func (v *virusTotal) TestCredentials(ctx context.Context) error {
 	url := virusTotalBaseURL + "/users/me"
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -56,7 +56,7 @@ func (v *virusTotal) Check(ctx context.Context, targetURL string) (*CheckResult,
 	urlID := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(targetURL))
 	apiURL := virusTotalBaseURL + "/urls/" + urlID
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

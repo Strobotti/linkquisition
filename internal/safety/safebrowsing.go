@@ -30,7 +30,7 @@ func (g *googleSafeBrowsing) Name() string {
 func (g *googleSafeBrowsing) TestCredentials(ctx context.Context) error {
 	url := safeBrowsingTestURL + "?key=" + g.apiKey
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}

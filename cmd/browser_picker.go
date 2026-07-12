@@ -18,12 +18,12 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/strobotti/linkquisition/internal/safety"
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/favicon"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/internal/qrcode"
+	"github.com/strobotti/linkquisition/internal/safety"
 	internalwhois "github.com/strobotti/linkquisition/internal/whois"
 	"github.com/strobotti/linkquisition/resources"
 )
@@ -247,7 +247,7 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 	// Gray dot initially — sized to match the menu button
 	grayColor := color.NRGBA{R: 150, G: 150, B: 150, A: 255}
 	indicator := canvas.NewText("●", grayColor)
-	indicator.TextSize = theme.TextSize() * 2 //nolint:mnd
+	indicator.TextSize = theme.TextSize() * 2
 
 	// Create a dummy button to get its height, then use that for our container
 	refButton := widget.NewButton("", nil)
