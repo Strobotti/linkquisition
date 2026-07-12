@@ -144,7 +144,7 @@ jobs:
         run: task package:linux
 
       - name: Run GoReleaser (build only)
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: '~> v2'
           args: release --clean --skip=publish
