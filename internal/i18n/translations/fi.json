@@ -328,5 +328,35 @@
   },
   "picker.qr_close": {
     "other": "Sulje"
+  },
+  "picker.whois_title": {
+    "other": "Whois-tiedot"
+  },
+  "picker.whois_loading": {
+    "other": "Haetaan verkkotunnuksen tietoja…"
+  },
+  "picker.whois_domain": {
+    "other": "Verkkotunnus:"
+  },
+  "picker.whois_registrar": {
+    "other": "Rekisteröijä:"
+  },
+  "picker.whois_created": {
+    "other": "Luotu:"
+  },
+  "picker.whois_expires": {
+    "other": "Vanhenee:"
+  },
+  "picker.whois_updated": {
+    "other": "Päivitetty:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Nimipalvelimet:"
+  },
+  "picker.whois_close": {
+    "other": "Sulje"
+  },
+  "picker.whois_error": {
+    "other": "Verkkotunnuksen tietojen haku epäonnistui:\n{{.Error}}"
   }
 }

@@ -328,5 +328,35 @@
   },
   "picker.qr_close": {
     "other": "Stäng"
+  },
+  "picker.whois_title": {
+    "other": "Whois-information"
+  },
+  "picker.whois_loading": {
+    "other": "Hämtar domäninformation…"
+  },
+  "picker.whois_domain": {
+    "other": "Domän:"
+  },
+  "picker.whois_registrar": {
+    "other": "Registrar:"
+  },
+  "picker.whois_created": {
+    "other": "Skapad:"
+  },
+  "picker.whois_expires": {
+    "other": "Upphör:"
+  },
+  "picker.whois_updated": {
+    "other": "Uppdaterad:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Namnservrar:"
+  },
+  "picker.whois_close": {
+    "other": "Stäng"
+  },
+  "picker.whois_error": {
+    "other": "Kunde inte hämta domäninformation:\n{{.Error}}"
   }
 }

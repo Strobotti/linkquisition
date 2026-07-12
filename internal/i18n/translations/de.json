@@ -328,5 +328,35 @@
   },
   "picker.qr_close": {
     "other": "Schließen"
+  },
+  "picker.whois_title": {
+    "other": "Whois-Informationen"
+  },
+  "picker.whois_loading": {
+    "other": "Domain-Informationen werden abgerufen…"
+  },
+  "picker.whois_domain": {
+    "other": "Domain:"
+  },
+  "picker.whois_registrar": {
+    "other": "Registrar:"
+  },
+  "picker.whois_created": {
+    "other": "Erstellt:"
+  },
+  "picker.whois_expires": {
+    "other": "Ablaufdatum:"
+  },
+  "picker.whois_updated": {
+    "other": "Aktualisiert:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Nameserver:"
+  },
+  "picker.whois_close": {
+    "other": "Schließen"
+  },
+  "picker.whois_error": {
+    "other": "Domain-Informationen konnten nicht abgerufen werden:\n{{.Error}}"
   }
 }

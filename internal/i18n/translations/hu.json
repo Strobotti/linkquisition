@@ -328,5 +328,35 @@
   },
   "picker.qr_close": {
     "other": "Bezárás"
+  },
+  "picker.whois_title": {
+    "other": "Whois információ"
+  },
+  "picker.whois_loading": {
+    "other": "Domain információk keresése…"
+  },
+  "picker.whois_domain": {
+    "other": "Domain:"
+  },
+  "picker.whois_registrar": {
+    "other": "Regisztrátor:"
+  },
+  "picker.whois_created": {
+    "other": "Létrehozva:"
+  },
+  "picker.whois_expires": {
+    "other": "Lejárat:"
+  },
+  "picker.whois_updated": {
+    "other": "Frissítve:"
+  },
+  "picker.whois_nameservers": {
+    "other": "Névszerverek:"
+  },
+  "picker.whois_close": {
+    "other": "Bezárás"
+  },
+  "picker.whois_error": {
+    "other": "Nem sikerült lekérdezni a domain információkat:\n{{.Error}}"
   }
 }

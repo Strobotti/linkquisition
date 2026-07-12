@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/strobotti/linkquisition/internal/favicon"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/internal/qrcode"
+	internalwhois "github.com/strobotti/linkquisition/internal/whois"
 	"github.com/strobotti/linkquisition/resources"
 )
 
@@ -247,7 +249,7 @@ func (picker *BrowserPicker) buildMenuButton(urlToOpen string, w fyne.Window) fy
 				picker.showQRCodePopup(urlToOpen, w)
 			}),
 			fyne.NewMenuItem(i18n.T("picker.menu_whois"), func() {
-				// TODO: implement whois lookup
+				picker.showWhoisWindow(urlToOpen)
 			}),
 		)
 
@@ -290,6 +292,127 @@ func (picker *BrowserPicker) showQRCodePopup(urlToOpen string, w fyne.Window) {
 
 	popup = widget.NewModalPopUp(content, w.Canvas())
 	popup.Show()
+}
+
+const (
+	whoisWindowWidth = 450
+	whoisTimeout     = 10 * time.Second
+)
+
+func (picker *BrowserPicker) showWhoisWindow(urlToOpen string) {
+	whoisWindow := picker.fapp.NewWindow(i18n.T("picker.whois_title"))
+
+	whoisWindow.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
+		if keyEvent.Name == fyne.KeyEscape {
+			whoisWindow.Close()
+		}
+	})
+
+	// Show loading state
+	loading := widget.NewProgressBarInfinite()
+	loadingLabel := widget.NewLabel(i18n.T("picker.whois_loading"))
+	loadingLabel.Alignment = fyne.TextAlignCenter
+	whoisWindow.SetContent(container.NewVBox(
+		loadingLabel,
+		loading,
+	))
+	whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, 100))
+	whoisWindow.SetFixedSize(true)
+	whoisWindow.CenterOnScreen()
+
+	// Perform lookup in background
+	ctx, cancel := context.WithTimeout(context.Background(), whoisTimeout)
+
+	whoisWindow.SetOnClosed(func() {
+		cancel()
+	})
+
+	go func() {
+		info, err := internalwhois.Lookup(ctx, urlToOpen)
+
+		fyne.Do(func() {
+			if err != nil {
+				picker.logger.Error("WHOIS lookup failed", "url", urlToOpen, "error", err)
+				whoisWindow.SetContent(picker.buildWhoisError(err, whoisWindow))
+				whoisWindow.SetFixedSize(false)
+				whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, 150))
+				whoisWindow.SetFixedSize(true)
+				return
+			}
+			content := picker.buildWhoisContent(info, whoisWindow)
+			whoisWindow.SetContent(content)
+			whoisWindow.SetFixedSize(false)
+			whoisWindow.Resize(fyne.NewSize(whoisWindowWidth, content.MinSize().Height+20))
+			whoisWindow.SetFixedSize(true)
+		})
+	}()
+
+	whoisWindow.Show()
+}
+
+func (picker *BrowserPicker) buildWhoisContent(
+	info *internalwhois.DomainInfo, w fyne.Window,
+) fyne.CanvasObject {
+	grid := container.New(layout.NewFormLayout(),
+		picker.whoisLabel(i18n.T("picker.whois_domain")), picker.whoisValue(info.Domain),
+		picker.whoisLabel(i18n.T("picker.whois_registrar")), picker.whoisValue(info.Registrar),
+		picker.whoisLabel(i18n.T("picker.whois_created")), picker.whoisValue(info.CreatedDate),
+		picker.whoisLabel(i18n.T("picker.whois_expires")), picker.whoisValue(info.ExpiryDate),
+		picker.whoisLabel(i18n.T("picker.whois_updated")), picker.whoisValue(info.UpdatedDate),
+	)
+
+	if len(info.NameServers) > 0 {
+		nsText := strings.Join(info.NameServers, ", ")
+		grid.Add(picker.whoisLabel(i18n.T("picker.whois_nameservers")))
+		grid.Add(picker.whoisValue(nsText))
+	}
+
+	closeButton := widget.NewButtonWithIcon(
+		i18n.T("picker.whois_close"),
+		theme.CancelIcon(),
+		func() { w.Close() },
+	)
+
+	return container.NewVBox(
+		grid,
+		container.NewCenter(closeButton),
+	)
+}
+
+func (picker *BrowserPicker) buildWhoisError(err error, w fyne.Window) fyne.CanvasObject {
+	errLabel := widget.NewLabel(i18n.T("picker.whois_error", map[string]interface{}{
+		"Error": err.Error(),
+	}))
+	errLabel.Wrapping = fyne.TextWrapWord
+
+	closeButton := widget.NewButtonWithIcon(
+		i18n.T("picker.whois_close"),
+		theme.CancelIcon(),
+		func() { w.Close() },
+	)
+
+	return container.NewVBox(
+		container.NewCenter(errLabel),
+		container.NewCenter(closeButton),
+	)
+}
+
+func (picker *BrowserPicker) whoisValue(value string) *widget.Label {
+	if value == "" {
+		value = "—"
+	}
+
+	v := widget.NewLabel(value)
+	v.Wrapping = fyne.TextWrapWord
+
+	return v
+}
+
+func (picker *BrowserPicker) whoisLabel(text string) *widget.Label {
+	l := widget.NewLabel(text)
+	l.TextStyle = fyne.TextStyle{Bold: true}
+
+	return l
 }
 
 // fetchAndUpdateFavicon fetches the favicon in the background and updates the image widget.

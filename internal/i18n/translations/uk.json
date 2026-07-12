@@ -328,5 +328,35 @@
   },
   "picker.qr_close": {
     "other": "Закрити"
+  },
+  "picker.whois_title": {
+    "other": "Інформація Whois"
+  },
+  "picker.whois_loading": {
+    "other": "Пошук інформації про домен…"
+  },
+  "picker.whois_domain": {
+    "other": "Домен:"
+  },
+  "picker.whois_registrar": {
+    "other": "Реєстратор:"
+  },
+  "picker.whois_created": {
+    "other": "Створено:"
+  },
+  "picker.whois_expires": {
+    "other": "Закінчується:"
+  },
+  "picker.whois_updated": {
+    "other": "Оновлено:"
+  },
+  "picker.whois_nameservers": {
+    "other": "DNS-сервери:"
+  },
+  "picker.whois_close": {
+    "other": "Закрити"
+  },
+  "picker.whois_error": {
+    "other": "Не вдалося отримати інформацію про домен:\n{{.Error}}"
   }
 }
