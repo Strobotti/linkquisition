@@ -29,7 +29,7 @@ jobs:
           version: 1.0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: go
 
@@ -39,4 +39,4 @@ jobs:
           go build $(go list ./... | grep -v '/plugins/')
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
