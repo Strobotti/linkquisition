@@ -400,5 +400,26 @@
   },
   "config.security_test_success": {
     "other": "✓ Hitelesítő adatok érvényesek"
+  },
+  "picker.safety_level_safe": {
+    "other": "Biztonságos"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Gyanús"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Veszélyes"
+  },
+  "picker.safety_provider": {
+    "other": "Szolgáltató:"
+  },
+  "picker.safety_result": {
+    "other": "Eredmény:"
+  },
+  "picker.safety_details": {
+    "other": "Részletek:"
+  },
+  "picker.safety_close": {
+    "other": "Bezárás"
   }
 }

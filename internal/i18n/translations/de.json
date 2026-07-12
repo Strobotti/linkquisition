@@ -400,5 +400,26 @@
   },
   "config.security_test_success": {
     "other": "✓ Zugangsdaten gültig"
+  },
+  "picker.safety_level_safe": {
+    "other": "Sicher"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Verdächtig"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Gefährlich"
+  },
+  "picker.safety_provider": {
+    "other": "Anbieter:"
+  },
+  "picker.safety_result": {
+    "other": "Ergebnis:"
+  },
+  "picker.safety_details": {
+    "other": "Details:"
+  },
+  "picker.safety_close": {
+    "other": "Schließen"
   }
 }

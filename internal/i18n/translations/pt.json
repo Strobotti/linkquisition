@@ -368,15 +368,44 @@
   "picker.whois_error": {
     "other": "Falha ao consultar informações do domínio:\n{{.Error}}"
   },
-  "config.tab_security": { "other": "Segurança" },
-  "config.security_enabled": { "other": "Ativar verificação de segurança de URL" },
-  "config.security_provider_label": { "other": "Fornecedor:" },
-  "config.security_provider_google": { "other": "Google Safe Browsing" },
-  "config.security_provider_virustotal": { "other": "VirusTotal" },
-  "config.security_api_key_label": { "other": "Chave API:" },
-  "config.security_api_key_placeholder": { "other": "Introduza a sua chave API" },
-  "config.security_get_key": { "other": "Obter chave API →" },
-  "config.security_test": { "other": "Testar" },
-  "config.security_testing": { "other": "A testar…" },
-  "config.security_test_success": { "other": "✓ Credenciais válidas" }
+  "config.tab_security": {
+    "other": "Segurança"
+  },
+  "config.security_enabled": {
+    "other": "Ativar verificação de segurança de URL"
+  },
+  "config.security_provider_label": {
+    "other": "Fornecedor:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "Chave API:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Introduza a sua chave API"
+  },
+  "config.security_get_key": {
+    "other": "Obter chave API →"
+  },
+  "config.security_test": {
+    "other": "Testar"
+  },
+  "config.security_testing": {
+    "other": "A testar…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Credenciais válidas"
+  },
+  "picker.safety_level_safe": { "other": "Seguro" },
+  "picker.safety_level_suspicious": { "other": "Suspeito" },
+  "picker.safety_level_dangerous": { "other": "Perigoso" },
+  "picker.safety_provider": { "other": "Fornecedor:" },
+  "picker.safety_result": { "other": "Resultado:" },
+  "picker.safety_details": { "other": "Detalhes:" },
+  "picker.safety_close": { "other": "Fechar" }
 }

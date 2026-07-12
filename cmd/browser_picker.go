@@ -18,6 +18,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/strobotti/linkquisition/internal/safety"
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/favicon"
@@ -34,6 +35,8 @@ const (
 	verticalWindowWidth      = 600
 	verticalWindowMinHeight  = 50
 	faviconDisplaySize       = 16
+	safetyIndicatorSize      = 12
+	safetyCheckTimeout       = 10 * time.Second
 )
 
 type BrowserPicker struct {
@@ -213,28 +216,143 @@ func (picker *BrowserPicker) buildURLDisplay(urlToOpen string, w fyne.Window) []
 
 	settings := picker.settingsService.GetSettings()
 
-	var urlRow *fyne.Container
+	var urlRowItems []fyne.CanvasObject
+	urlRowItems = append(urlRowItems, menuButton)
+
 	if settings.Ui.ShowFavicon {
 		faviconImg := canvas.NewImageFromResource(theme.ComputerIcon())
 		faviconImg.FillMode = canvas.ImageFillContain
 		faviconImg.SetMinSize(fyne.NewSize(faviconDisplaySize, faviconDisplaySize))
-
-		urlRow = container.NewHBox(
-			menuButton,
-			faviconImg,
-			urlLabel,
-		)
+		urlRowItems = append(urlRowItems, faviconImg)
 
 		// Fetch favicon lazily in a goroutine
 		go picker.fetchAndUpdateFavicon(urlToOpen, faviconImg, settings)
-	} else {
-		urlRow = container.NewHBox(
-			menuButton,
-			urlLabel,
-		)
 	}
 
+	urlRowItems = append(urlRowItems, urlLabel)
+
+	// Safety indicator (only if configured)
+	if settings.Security.IsConfigured() {
+		indicator := picker.buildSafetyIndicator(urlToOpen, w, settings)
+		urlRowItems = append(urlRowItems, layout.NewSpacer(), indicator)
+	}
+
+	urlRow := container.NewHBox(urlRowItems...)
+
 	return []fyne.CanvasObject{urlRow}
+}
+
+func (picker *BrowserPicker) buildSafetyIndicator(
+	urlToOpen string, w fyne.Window, settings *linkquisition.Settings,
+) fyne.CanvasObject {
+	// Gray circle initially
+	grayColor := color.NRGBA{R: 150, G: 150, B: 150, A: 255}
+	indicator := canvas.NewCircle(grayColor)
+	indicator.StrokeWidth = 0
+	indicatorContainer := container.New(
+		layout.NewCenterLayout(),
+		indicator,
+	)
+	indicatorContainer.Resize(fyne.NewSize(safetyIndicatorSize, safetyIndicatorSize))
+
+	// Store the result for the tappable report
+	var checkResult *safety.CheckResult
+
+	// Run check in background
+	go func() {
+		checker, err := safety.NewChecker(settings.Security.GetProvider(), settings.Security.APIKey)
+		if err != nil {
+			picker.logger.Error("Failed to create safety checker", "error", err)
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), safetyCheckTimeout)
+		defer cancel()
+
+		result, err := checker.Check(ctx, urlToOpen)
+		if err != nil {
+			picker.logger.Error("Safety check failed", "url", urlToOpen, "error", err)
+			fyne.Do(func() {
+				// Yellow for "could not determine"
+				indicator.FillColor = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+				indicator.Refresh()
+			})
+			return
+		}
+
+		checkResult = result
+
+		fyne.Do(func() {
+			switch result.Level {
+			case safety.ThreatLevelSafe:
+				indicator.FillColor = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+			case safety.ThreatLevelSuspicious:
+				indicator.FillColor = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+			case safety.ThreatLevelDangerous:
+				indicator.FillColor = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+			}
+			indicator.Refresh()
+		})
+	}()
+
+	// Wrap in a tappable container for the report popup
+	tappable := newTappableContainer(
+		indicatorContainer,
+		func() {
+			if checkResult != nil {
+				picker.showSafetyReport(checkResult, w)
+			}
+		},
+	)
+
+	return tappable
+}
+
+func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne.Window) {
+	var levelText string
+	var levelColor color.NRGBA
+
+	switch result.Level {
+	case safety.ThreatLevelSafe:
+		levelText = i18n.T("picker.safety_level_safe")
+		levelColor = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+	case safety.ThreatLevelSuspicious:
+		levelText = i18n.T("picker.safety_level_suspicious")
+		levelColor = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+	case safety.ThreatLevelDangerous:
+		levelText = i18n.T("picker.safety_level_dangerous")
+		levelColor = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+	}
+
+	levelLabel := canvas.NewText(levelText, levelColor)
+	levelLabel.TextStyle = fyne.TextStyle{Bold: true}
+	levelLabel.TextSize = theme.TextSize()
+
+	grid := container.New(layout.NewFormLayout(),
+		picker.whoisLabel(i18n.T("picker.safety_provider")), picker.whoisValue(result.Provider),
+		picker.whoisLabel(i18n.T("picker.safety_result")), levelLabel,
+	)
+
+	if len(result.Details) > 0 {
+		detailsText := strings.Join(result.Details, "\n")
+		grid.Add(picker.whoisLabel(i18n.T("picker.safety_details")))
+		grid.Add(picker.whoisValue(detailsText))
+	}
+
+	closeButton := widget.NewButtonWithIcon(
+		i18n.T("picker.safety_close"),
+		theme.CancelIcon(),
+		nil,
+	)
+
+	content := container.NewVBox(
+		grid,
+		container.NewCenter(closeButton),
+	)
+
+	popup := widget.NewModalPopUp(content, w.Canvas())
+	closeButton.OnTapped = func() { popup.Hide() }
+	popup.Show()
 }
 
 func (picker *BrowserPicker) buildMenuButton(urlToOpen string, w fyne.Window) fyne.CanvasObject {

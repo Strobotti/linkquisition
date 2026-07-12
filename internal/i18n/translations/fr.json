@@ -400,5 +400,26 @@
   },
   "config.security_test_success": {
     "other": "✓ Identifiants valides"
+  },
+  "picker.safety_level_safe": {
+    "other": "Sûr"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Suspect"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Dangereux"
+  },
+  "picker.safety_provider": {
+    "other": "Fournisseur :"
+  },
+  "picker.safety_result": {
+    "other": "Résultat :"
+  },
+  "picker.safety_details": {
+    "other": "Détails :"
+  },
+  "picker.safety_close": {
+    "other": "Fermer"
   }
 }

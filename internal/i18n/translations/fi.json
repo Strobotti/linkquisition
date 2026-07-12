@@ -400,5 +400,26 @@
   },
   "config.security_test_success": {
     "other": "✓ Tunnisteet kelvolliset"
+  },
+  "picker.safety_level_safe": {
+    "other": "Turvallinen"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Epäilyttävä"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Vaarallinen"
+  },
+  "picker.safety_provider": {
+    "other": "Palveluntarjoaja:"
+  },
+  "picker.safety_result": {
+    "other": "Tulos:"
+  },
+  "picker.safety_details": {
+    "other": "Tiedot:"
+  },
+  "picker.safety_close": {
+    "other": "Sulje"
   }
 }

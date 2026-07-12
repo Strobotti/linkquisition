@@ -400,5 +400,26 @@
   },
   "config.security_test_success": {
     "other": "✓ Credentials valid"
+  },
+  "picker.safety_level_safe": {
+    "other": "Safe"
+  },
+  "picker.safety_level_suspicious": {
+    "other": "Suspicious"
+  },
+  "picker.safety_level_dangerous": {
+    "other": "Dangerous"
+  },
+  "picker.safety_provider": {
+    "other": "Provider:"
+  },
+  "picker.safety_result": {
+    "other": "Result:"
+  },
+  "picker.safety_details": {
+    "other": "Details:"
+  },
+  "picker.safety_close": {
+    "other": "Close"
   }
 }
