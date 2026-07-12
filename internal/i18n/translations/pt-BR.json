@@ -367,5 +367,38 @@
   },
   "picker.whois_error": {
     "other": "Falha ao consultar informações do domínio:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Segurança"
+  },
+  "config.security_enabled": {
+    "other": "Ativar verificação de segurança de URL"
+  },
+  "config.security_provider_label": {
+    "other": "Provedor:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "Chave API:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Digite sua chave API"
+  },
+  "config.security_get_key": {
+    "other": "Obter chave API →"
+  },
+  "config.security_test": {
+    "other": "Testar"
+  },
+  "config.security_testing": {
+    "other": "Testando…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Credenciais válidas"
   }
 }

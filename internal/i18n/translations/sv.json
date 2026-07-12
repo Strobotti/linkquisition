@@ -367,5 +367,16 @@
   },
   "picker.whois_error": {
     "other": "Kunde inte hämta domäninformation:\n{{.Error}}"
-  }
+  },
+  "config.tab_security": { "other": "Säkerhet" },
+  "config.security_enabled": { "other": "Aktivera URL-säkerhetskontroll" },
+  "config.security_provider_label": { "other": "Leverantör:" },
+  "config.security_provider_google": { "other": "Google Safe Browsing" },
+  "config.security_provider_virustotal": { "other": "VirusTotal" },
+  "config.security_api_key_label": { "other": "API-nyckel:" },
+  "config.security_api_key_placeholder": { "other": "Ange din API-nyckel" },
+  "config.security_get_key": { "other": "Skaffa API-nyckel →" },
+  "config.security_test": { "other": "Testa" },
+  "config.security_testing": { "other": "Testar…" },
+  "config.security_test_success": { "other": "✓ Uppgifter giltiga" }
 }

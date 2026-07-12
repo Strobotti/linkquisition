@@ -367,5 +367,38 @@
   },
   "picker.whois_error": {
     "other": "Domain-Informationen konnten nicht abgerufen werden:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Sicherheit"
+  },
+  "config.security_enabled": {
+    "other": "URL-Sicherheitsprüfung aktivieren"
+  },
+  "config.security_provider_label": {
+    "other": "Anbieter:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "API-Schlüssel:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "API-Schlüssel eingeben"
+  },
+  "config.security_get_key": {
+    "other": "API-Schlüssel erhalten →"
+  },
+  "config.security_test": {
+    "other": "Testen"
+  },
+  "config.security_testing": {
+    "other": "Teste…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Zugangsdaten gültig"
   }
 }

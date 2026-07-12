@@ -367,5 +367,38 @@
   },
   "picker.whois_error": {
     "other": "Failed to look up domain information:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Security"
+  },
+  "config.security_enabled": {
+    "other": "Enable URL safety checking"
+  },
+  "config.security_provider_label": {
+    "other": "Provider:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "API key:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Enter your API key"
+  },
+  "config.security_get_key": {
+    "other": "Get an API key →"
+  },
+  "config.security_test": {
+    "other": "Test"
+  },
+  "config.security_testing": {
+    "other": "Testing…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Credentials valid"
   }
 }

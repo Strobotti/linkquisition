@@ -367,5 +367,16 @@
   },
   "picker.whois_error": {
     "other": "Не вдалося отримати інформацію про домен:\n{{.Error}}"
-  }
+  },
+  "config.tab_security": { "other": "Безпека" },
+  "config.security_enabled": { "other": "Увімкнути перевірку безпеки URL" },
+  "config.security_provider_label": { "other": "Постачальник:" },
+  "config.security_provider_google": { "other": "Google Safe Browsing" },
+  "config.security_provider_virustotal": { "other": "VirusTotal" },
+  "config.security_api_key_label": { "other": "API-ключ:" },
+  "config.security_api_key_placeholder": { "other": "Введіть API-ключ" },
+  "config.security_get_key": { "other": "Отримати API-ключ →" },
+  "config.security_test": { "other": "Тест" },
+  "config.security_testing": { "other": "Тестування…" },
+  "config.security_test_success": { "other": "✓ Облікові дані дійсні" }
 }

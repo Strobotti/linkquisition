@@ -367,5 +367,38 @@
   },
   "picker.whois_error": {
     "other": "Nem sikerült lekérdezni a domain információkat:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Biztonság"
+  },
+  "config.security_enabled": {
+    "other": "URL biztonsági ellenőrzés engedélyezése"
+  },
+  "config.security_provider_label": {
+    "other": "Szolgáltató:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "API kulcs:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Adja meg az API kulcsot"
+  },
+  "config.security_get_key": {
+    "other": "API kulcs beszerzése →"
+  },
+  "config.security_test": {
+    "other": "Teszt"
+  },
+  "config.security_testing": {
+    "other": "Tesztelés…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Hitelesítő adatok érvényesek"
   }
 }

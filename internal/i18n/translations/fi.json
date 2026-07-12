@@ -367,5 +367,38 @@
   },
   "picker.whois_error": {
     "other": "Verkkotunnuksen tietojen haku epäonnistui:\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Turvallisuus"
+  },
+  "config.security_enabled": {
+    "other": "Ota URL-turvatarkistus käyttöön"
+  },
+  "config.security_provider_label": {
+    "other": "Palveluntarjoaja:"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "API-avain:"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Syötä API-avain"
+  },
+  "config.security_get_key": {
+    "other": "Hanki API-avain →"
+  },
+  "config.security_test": {
+    "other": "Testaa"
+  },
+  "config.security_testing": {
+    "other": "Testataan…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Tunnisteet kelvolliset"
   }
 }

@@ -367,5 +367,38 @@
   },
   "picker.whois_error": {
     "other": "Impossible de récupérer les informations du domaine :\n{{.Error}}"
+  },
+  "config.tab_security": {
+    "other": "Sécurité"
+  },
+  "config.security_enabled": {
+    "other": "Activer la vérification de sécurité des URL"
+  },
+  "config.security_provider_label": {
+    "other": "Fournisseur :"
+  },
+  "config.security_provider_google": {
+    "other": "Google Safe Browsing"
+  },
+  "config.security_provider_virustotal": {
+    "other": "VirusTotal"
+  },
+  "config.security_api_key_label": {
+    "other": "Clé API :"
+  },
+  "config.security_api_key_placeholder": {
+    "other": "Entrez votre clé API"
+  },
+  "config.security_get_key": {
+    "other": "Obtenir une clé API →"
+  },
+  "config.security_test": {
+    "other": "Tester"
+  },
+  "config.security_testing": {
+    "other": "Test en cours…"
+  },
+  "config.security_test_success": {
+    "other": "✓ Identifiants valides"
   }
 }
