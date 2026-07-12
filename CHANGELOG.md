@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.0](https://github.com/Strobotti/linkquisition/compare/v2.12.0...v2.13.0) (2026-07-12)
+
+
+### Features
+
+* picker menu with QR code, Whois lookup, and URL safety checking ([#138](https://github.com/Strobotti/linkquisition/issues/138)) ([453efd3](https://github.com/Strobotti/linkquisition/commit/453efd3c8848b9ccae6f745fd5f2024fd3d071f2))
+
 ## [2.12.0](https://github.com/Strobotti/linkquisition/compare/v2.11.0...v2.12.0) (2026-07-11)
 
 
