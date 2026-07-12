@@ -24,6 +24,7 @@ type CheckResult struct {
 	Level     ThreatLevel
 	Provider  string
 	Details   []string
+	ReportURL string
 	CheckedAt time.Time
 }
 

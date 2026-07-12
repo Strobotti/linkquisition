@@ -4,6 +4,7 @@ import (
 	"context"
 	"image/color"
 	"log/slog"
+	"net/url"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -340,6 +341,17 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 		grid.Add(picker.whoisValue(detailsText))
 	}
 
+	var reportLink fyne.CanvasObject
+	if result.ReportURL != "" {
+		parsedURL, _ := url.Parse(result.ReportURL)
+		if parsedURL != nil {
+			reportLink = widget.NewHyperlink(
+				i18n.T("picker.safety_view_report"),
+				parsedURL,
+			)
+		}
+	}
+
 	closeButton := widget.NewButtonWithIcon(
 		i18n.T("picker.safety_close"),
 		theme.CancelIcon(),
@@ -353,8 +365,13 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 	content := container.NewVBox(
 		minWidthSpacer,
 		grid,
-		container.NewCenter(closeButton),
 	)
+
+	if reportLink != nil {
+		content.Add(container.NewCenter(reportLink))
+	}
+
+	content.Add(container.NewCenter(closeButton))
 
 	popup := widget.NewModalPopUp(content, w.Canvas())
 	closeButton.OnTapped = func() { popup.Hide() }

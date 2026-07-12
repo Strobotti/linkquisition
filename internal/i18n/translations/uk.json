@@ -421,5 +421,8 @@
   },
   "picker.safety_close": {
     "other": "Закрити"
+  },
+  "picker.safety_view_report": {
+    "other": "Переглянути повний звіт"
   }
 }

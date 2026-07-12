@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 )
 
 const (
 	safeBrowsingLookupURL = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
 	safeBrowsingTestURL   = "https://safebrowsing.googleapis.com/v4/threatLists"
+	safeBrowsingReportURL = "https://transparencyreport.google.com/safe-browsing/search?url="
 )
 
 type googleSafeBrowsing struct {
@@ -51,6 +53,8 @@ func (g *googleSafeBrowsing) TestCredentials(ctx context.Context) error {
 
 //nolint:cyclop
 func (g *googleSafeBrowsing) Check(ctx context.Context, targetURL string) (*CheckResult, error) {
+	reportURL := safeBrowsingReportURL + url.QueryEscape(targetURL)
+
 	payload := safeBrowsingRequest{
 		Client: sbClient{
 			ClientID:      "linkquisition",
@@ -69,9 +73,9 @@ func (g *googleSafeBrowsing) Check(ctx context.Context, targetURL string) (*Chec
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	url := safeBrowsingLookupURL + "?key=" + g.apiKey
+	apiURL := safeBrowsingLookupURL + "?key=" + g.apiKey
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, apiURL, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -97,6 +101,7 @@ func (g *googleSafeBrowsing) Check(ctx context.Context, targetURL string) (*Chec
 	checkResult := &CheckResult{
 		Level:     ThreatLevelSafe,
 		Provider:  g.Name(),
+		ReportURL: reportURL,
 		CheckedAt: time.Now(),
 	}
 

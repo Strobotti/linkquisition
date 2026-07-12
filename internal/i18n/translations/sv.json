@@ -421,5 +421,8 @@
   },
   "picker.safety_close": {
     "other": "Stäng"
+  },
+  "picker.safety_view_report": {
+    "other": "Visa fullständig rapport"
   }
 }
