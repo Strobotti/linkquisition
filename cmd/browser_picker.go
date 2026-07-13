@@ -273,7 +273,35 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 
 	// Run check in background
 	go func() {
-		checker, err := safety.NewChecker(settings.Security.GetProvider(), settings.Security.APIKey)
+		provider := settings.Security.GetProvider()
+
+		// Check cache first (if caching is enabled)
+		var cache *safety.Cache
+		if settings.Security.Cache.Enabled {
+			cache = safety.NewCache(
+				picker.settingsService.GetConfigFolderPath(),
+				provider,
+				settings.Security.Cache.GetTTL(),
+			)
+
+			if cached, ok := cache.Get(urlToOpen); ok {
+				checkResult = cached
+				fyne.Do(func() {
+					switch cached.Level {
+					case safety.ThreatLevelSafe:
+						indicator.Color = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+					case safety.ThreatLevelSuspicious:
+						indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+					case safety.ThreatLevelDangerous:
+						indicator.Color = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+					}
+					indicator.Refresh()
+				})
+				return
+			}
+		}
+
+		checker, err := safety.NewChecker(provider, settings.Security.APIKey)
 		if err != nil {
 			picker.logger.Error("Failed to create safety checker", "error", err)
 			return
@@ -293,6 +321,13 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 		}
 
 		checkResult = result
+
+		// Store result in cache (best-effort)
+		if cache != nil {
+			if cacheErr := cache.Put(urlToOpen, result); cacheErr != nil {
+				picker.logger.Debug("Failed to cache safety result", "url", urlToOpen, "error", cacheErr)
+			}
+		}
 
 		fyne.Do(func() {
 			switch result.Level {
