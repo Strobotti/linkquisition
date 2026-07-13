@@ -181,6 +181,42 @@ Supported providers:
 
 The check runs asynchronously and does not block the picker from opening.
 
+# CONTEXT MENU
+
+The browser picker has a context menu (⋯ button) next to the URL with these
+actions:
+
+*Copy URL*
+	Copy the (possibly plugin-modified) URL to clipboard.
+
+*QR Code*
+	Generate a scannable QR code for the URL, useful for quickly opening it
+	on a mobile device.
+
+*WHOIS*
+	Perform a live WHOIS lookup and display domain registration details:
+	registrar, creation/expiry dates, domain age, DNSSEC status, name servers,
+	and EPP status codes.
+
+# FAVICON
+
+When _ui.showFavicon_ is enabled in the configuration, the picker displays the
+website's favicon next to the URL. The icon is fetched lazily and does not delay
+picker startup.
+
+Available strategies (set via _ui.faviconStrategy_):
+- *direct* (default) — fetches _/favicon.ico_ from the host
+- *parsed* — downloads the page HTML and parses the _<link rel="icon">_ tag
+- *google* — uses Google's favicon service (URL is sent to Google)
+
+Favicons are cached locally for 7 days.
+
+# UPDATE CHECK
+
+The About tab in the configuration screen has a "Check for updates" button that
+queries the GitHub releases API. If a newer version is available, a link to the
+release page is shown. No automatic update checking is performed.
+
 # SEE ALSO
 
 *linkquisition*(5), *xdg-settings*(1)

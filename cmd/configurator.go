@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/internal/ui"
+	"github.com/strobotti/linkquisition/internal/updater"
 	"github.com/strobotti/linkquisition/resources"
 )
 
@@ -499,13 +501,62 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 		container.NewHBox(widget.NewLabel(i18n.T("about.github_label")), githubLink),
 	)
 
+	// Update check section
+	updateSection := c.buildUpdateCheckSection(w)
+
 	return container.NewVBox(
 		container.NewHBox(icon, title),
 		widget.NewSeparator(),
 		description,
 		widget.NewSeparator(),
 		details,
+		widget.NewSeparator(),
+		updateSection,
 	)
+}
+
+func (c *Configurator) buildUpdateCheckSection(w fyne.Window) fyne.CanvasObject {
+	statusLabel := widget.NewLabel("")
+
+	releaseLink := container.NewHBox()
+	releaseLink.Hide()
+
+	checkButton := widget.NewButton(i18n.T("about.check_updates"), nil)
+	checkButton.OnTapped = func() {
+		checkButton.Disable()
+		checkButton.SetText(i18n.T("about.checking_updates"))
+		statusLabel.SetText("")
+		releaseLink.Hide()
+
+		go func() {
+			result, err := updater.Check(context.Background(), version)
+
+			fyne.Do(func() {
+				checkButton.Enable()
+				checkButton.SetText(i18n.T("about.check_updates"))
+
+				if err != nil {
+					c.logger.Error("Update check failed", "error", err)
+					statusLabel.SetText(i18n.T("about.update_error"))
+					return
+				}
+
+				if result.IsNewer {
+					statusLabel.SetText(i18n.T("about.update_available", map[string]interface{}{
+						"Version": result.LatestVersion,
+					}))
+
+					releaseLink.RemoveAll()
+					releaseLink.Add(ui.NewLinkWithCopy(i18n.T("about.view_release"), result.ReleaseURL, w))
+					releaseLink.Show()
+				} else {
+					statusLabel.SetText(i18n.T("about.up_to_date"))
+				}
+			})
+		}()
+	}
+
+	return container.NewHBox(checkButton, statusLabel, releaseLink)
 }
 
 // openExternalURL opens a URL in a real browser, bypassing Linkquisition if it is

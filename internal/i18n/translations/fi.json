@@ -104,6 +104,24 @@
   "about.github_label": {
     "other": "GitHub:"
   },
+  "about.check_updates": {
+    "other": "Tarkista päivitykset"
+  },
+  "about.checking_updates": {
+    "other": "Tarkistetaan..."
+  },
+  "about.update_available": {
+    "other": "Uusi versio saatavilla: {{.Version}}"
+  },
+  "about.up_to_date": {
+    "other": "Käytössäsi on uusin versio."
+  },
+  "about.update_error": {
+    "other": "Päivitysten tarkistus epäonnistui. Yritä myöhemmin uudelleen."
+  },
+  "about.view_release": {
+    "other": "Näytä julkaisu"
+  },
   "plugin.blocked_title": {
     "other": "Estetty lisäosan toimesta"
   },

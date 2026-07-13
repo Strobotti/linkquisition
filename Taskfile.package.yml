@@ -2,7 +2,7 @@ version: '3'
 
 vars:
   VERSION:
-    sh: echo ${VERSION:-0.0.0}
+    sh: echo ${VERSION:-dev}
 
 tasks:
   clean:
