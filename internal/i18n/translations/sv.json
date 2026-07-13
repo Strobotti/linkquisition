@@ -63,7 +63,7 @@
     "other": "Kopiera"
   },
   "picker.remember_choice": {
-    "other": "Kom ihåg detta val för:"
+    "other": "Kom ihåg detta val"
   },
   "picker.remember_site": {
     "other": "{{.Site}} (bara denna webbplats)"

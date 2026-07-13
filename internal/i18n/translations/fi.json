@@ -63,7 +63,7 @@
     "other": "Kopioi"
   },
   "picker.remember_choice": {
-    "other": "Muista tämä valinta:"
+    "other": "Muista tämä valinta"
   },
   "picker.remember_site": {
     "other": "{{.Site}} (vain tämä sivusto)"

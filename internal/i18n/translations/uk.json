@@ -63,7 +63,7 @@
     "other": "Копіювати"
   },
   "picker.remember_choice": {
-    "other": "Запам'ятати цей вибір для:"
+    "other": "Запам'ятати цей вибір"
   },
   "picker.remember_site": {
     "other": "{{.Site}} (лише цей сайт)"

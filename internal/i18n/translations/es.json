@@ -63,7 +63,7 @@
     "other": "Copiar"
   },
   "picker.remember_choice": {
-    "other": "Recordar esta elección para:"
+    "other": "Recordar esta elección"
   },
   "picker.remember_site": {
     "other": "{{.Site}} (solo este sitio)"

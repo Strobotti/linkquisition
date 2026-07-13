@@ -698,7 +698,7 @@ func (picker *BrowserPicker) buildRememberCheck(
 	// If site == domain (no subdomain), just show the simple checkbox
 	if site == domain {
 		check := widget.NewCheckWithData(
-			i18n.T("picker.remember_choice")+" "+site,
+			i18n.T("picker.remember_choice"),
 			remember,
 		)
 		return []fyne.CanvasObject{check}
@@ -719,18 +719,23 @@ func (picker *BrowserPicker) buildRememberCheck(
 		},
 	)
 	radio.SetSelected(siteLabel)
-	radio.Hide()
+
+	// Indent the radio group to visually nest it under the checkbox
+	indent := canvas.NewRectangle(color.Transparent)
+	indent.SetMinSize(fyne.NewSize(theme.Padding()*4, 0))
+	indentedRadio := container.NewHBox(indent, radio)
+	indentedRadio.Hide()
 
 	check := widget.NewCheck(i18n.T("picker.remember_choice"), func(checked bool) {
 		_ = remember.Set(checked)
 		if checked {
-			radio.Show()
+			indentedRadio.Show()
 		} else {
-			radio.Hide()
+			indentedRadio.Hide()
 		}
 	})
 
-	return []fyne.CanvasObject{check, radio}
+	return []fyne.CanvasObject{check, indentedRadio}
 }
 
 func (picker *BrowserPicker) buildKeyboardGuide() []fyne.CanvasObject {

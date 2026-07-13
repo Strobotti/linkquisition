@@ -30,7 +30,7 @@ func TestT_WithTemplateData(t *testing.T) {
 	Init("en")
 
 	got := T("picker.remember_choice")
-	want := "Remember this choice for:"
+	want := "Remember this choice"
 
 	if got != want {
 		t.Errorf("T(\"picker.remember_choice\") = %q, want %q", got, want)
@@ -88,7 +88,7 @@ func TestInit_FinnishLocale_WithTemplateData(t *testing.T) {
 	Init("fi")
 
 	got := T("picker.remember_choice")
-	want := "Muista tämä valinta:"
+	want := "Muista tämä valinta"
 
 	if got != want {
 		t.Errorf("T(\"picker.remember_choice\") with fi locale = %q, want %q", got, want)
