@@ -2,6 +2,7 @@ package linkquisition_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1078,6 +1079,36 @@ func TestUiSettings_GetFaviconStrategy(t *testing.T) {
 		t.Run(
 			tt.name, func(t *testing.T) {
 				assert.Equal(t, tt.expected, tt.ui.GetFaviconStrategy())
+			},
+		)
+	}
+}
+
+func TestSecurityCacheSettings_GetTTL(t *testing.T) {
+	for _, tt := range [...]struct {
+		name     string
+		cache    SecurityCacheSettings
+		expected time.Duration
+	}{
+		{
+			name:     "defaults to 24h when TTLHours is zero",
+			cache:    SecurityCacheSettings{},
+			expected: 24 * time.Hour,
+		},
+		{
+			name:     "returns configured TTL",
+			cache:    SecurityCacheSettings{TTLHours: 12},
+			expected: 12 * time.Hour,
+		},
+		{
+			name:     "defaults to 24h for negative value",
+			cache:    SecurityCacheSettings{TTLHours: -1},
+			expected: 24 * time.Hour,
+		},
+	} {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				assert.Equal(t, tt.expected, tt.cache.GetTTL())
 			},
 		)
 	}

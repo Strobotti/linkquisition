@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var ErrNoMatchFound = errors.New("no match found")
@@ -35,6 +36,8 @@ const (
 
 	SecurityProviderGoogleSafeBrowsing = "google_safe_browsing"
 	SecurityProviderVirusTotal         = "virustotal"
+
+	DefaultSecurityCacheTTLHours = 24
 
 	DefaultMaxItemsPerRow = 5
 )
@@ -165,11 +168,27 @@ func (u *UiSettings) GetFaviconStrategy() string {
 	}
 }
 
+// SecurityCacheSettings holds configuration for caching security check results.
+type SecurityCacheSettings struct {
+	Enabled  bool `json:"enabled,omitempty"`
+	TTLHours int  `json:"ttlHours,omitempty"`
+}
+
+// GetTTL returns the effective cache TTL duration.
+func (s *SecurityCacheSettings) GetTTL() time.Duration {
+	if s.TTLHours > 0 {
+		return time.Duration(s.TTLHours) * time.Hour
+	}
+
+	return DefaultSecurityCacheTTLHours * time.Hour
+}
+
 // SecuritySettings holds configuration for URL safety checking.
 type SecuritySettings struct {
-	Enabled  bool   `json:"enabled,omitempty"`
-	Provider string `json:"provider,omitempty"`
-	APIKey   string `json:"apiKey,omitempty"`
+	Enabled  bool                  `json:"enabled,omitempty"`
+	Provider string                `json:"provider,omitempty"`
+	APIKey   string                `json:"apiKey,omitempty"`
+	Cache    SecurityCacheSettings `json:"cache,omitempty"`
 }
 
 // GetProvider returns the effective security provider, defaulting to Google Safe Browsing.
