@@ -50,7 +50,7 @@ func (c *Configurator) Run() error {
 		container.NewTabItem(i18n.T("config.tab_browsers"), c.getBrowsersTab()),
 		container.NewTabItem(i18n.T("config.tab_rules"), c.getRulesTab()),
 		container.NewTabItem(i18n.T("config.tab_plugins"), c.getPluginsTab()),
-		container.NewTabItem(i18n.T("config.tab_security"), c.getSecurityTab()),
+		container.NewTabItem(i18n.T("config.tab_security"), c.getSecurityTab(w)),
 		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab(w)),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)

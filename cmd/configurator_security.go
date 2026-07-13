@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strconv"
 	"time"
 
@@ -24,7 +23,7 @@ const (
 	virusTotalURL         = "https://www.virustotal.com/gui/my-apikey"
 )
 
-func (c *Configurator) getSecurityTab() fyne.CanvasObject {
+func (c *Configurator) getSecurityTab(w fyne.Window) fyne.CanvasObject {
 	settings := c.settingsService.GetSettings()
 
 	enabledCheck := widget.NewCheck(i18n.T("config.security_enabled"), nil)
@@ -48,19 +47,28 @@ func (c *Configurator) getSecurityTab() fyne.CanvasObject {
 	apiKeyEntry.SetPlaceHolder(i18n.T("config.security_api_key_placeholder"))
 	apiKeyEntry.SetText(settings.Security.APIKey)
 
-	providerLink := widget.NewHyperlink(
-		i18n.T("config.security_get_key"),
-		parseURL(googleSafeBrowsingURL),
+	initialLinkURL := googleSafeBrowsingURL
+	if settings.Security.GetProvider() == linkquisition.SecurityProviderVirusTotal {
+		initialLinkURL = virusTotalURL
+	}
+
+	providerLinkContainer := container.NewStack(
+		newLinkWithCopy(i18n.T("config.security_get_key"), initialLinkURL, w),
 	)
 
 	testStatus := widget.NewLabel("")
 
 	updateProviderLink := func() {
+		var linkURL string
 		if providerSelect.SelectedIndex() == 1 {
-			providerLink.SetURL(parseURL(virusTotalURL))
+			linkURL = virusTotalURL
 		} else {
-			providerLink.SetURL(parseURL(googleSafeBrowsingURL))
+			linkURL = googleSafeBrowsingURL
 		}
+		providerLinkContainer.Objects = []fyne.CanvasObject{
+			newLinkWithCopy(i18n.T("config.security_get_key"), linkURL, w),
+		}
+		providerLinkContainer.Refresh()
 	}
 
 	providerSelect.OnChanged = func(_ string) {
@@ -109,7 +117,7 @@ func (c *Configurator) getSecurityTab() fyne.CanvasObject {
 	form := container.New(layout.NewFormLayout(),
 		widget.NewLabel(i18n.T("config.security_provider_label")), providerSelect,
 		widget.NewLabel(i18n.T("config.security_api_key_label")), apiKeyEntry,
-		widget.NewLabel(""), providerLink,
+		widget.NewLabel(""), providerLinkContainer,
 		widget.NewLabel(""), container.NewHBox(testButton, testStatus),
 	)
 
@@ -204,9 +212,4 @@ func (c *Configurator) getSelectedProvider(sel *widget.Select) string {
 	}
 
 	return linkquisition.SecurityProviderGoogleSafeBrowsing
-}
-
-func parseURL(rawURL string) *url.URL {
-	u, _ := url.Parse(rawURL)
-	return u
 }
