@@ -287,6 +287,15 @@
   "config.rules_regex_help_link": {
     "other": "Szintaxis referencia"
   },
+  "config.rules_type_help_site": {
+    "other": "A teljes gazdanévvel egyezik (pl. www.example.com). Nem egyezik aldomainekkel, mint blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "A regisztrált domainnel és összes aldomainjével egyezik (pl. example.com egyezik a www.example.com, blog.example.com stb. címekkel)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "A teljes URL-t Go RE2 reguláris kifejezéssel hasonlítja össze. Használjon .*-ot helyettesítő karakterként."
+  },
   "config.rules_filter_placeholder": {
     "other": "Szabályok szűrése..."
   },

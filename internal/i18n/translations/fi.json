@@ -287,6 +287,15 @@
   "config.rules_regex_help_link": {
     "other": "Syntaksiohje"
   },
+  "config.rules_type_help_site": {
+    "other": "Täsmää tarkkaan isäntänimeen (esim. www.example.com). Ei täsmää aliverkkotunnuksiin kuten blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Täsmää rekisteröityyn verkkotunnukseen ja kaikkiin sen aliverkkotunnuksiin (esim. example.com täsmää www.example.com, blog.example.com jne.)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Täsmää koko URL-osoitteen Go RE2 -säännölliseen lausekkeeseen. Käytä .* jokerimerkkeinä."
+  },
   "config.rules_filter_placeholder": {
     "other": "Suodata sääntöjä..."
   },

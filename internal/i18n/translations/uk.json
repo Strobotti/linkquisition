@@ -287,6 +287,15 @@
   "config.rules_regex_help_link": {
     "other": "Довідка з синтаксису"
   },
+  "config.rules_type_help_site": {
+    "other": "Збігається з повним іменем хоста (напр. www.example.com). Не збігається з піддоменами, як blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Збігається з зареєстрованим доменом та всіма його піддоменами (напр. example.com збігається з www.example.com, blog.example.com тощо)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Порівнює повну URL-адресу з регулярним виразом Go RE2. Використовуйте .* як підстановку."
+  },
   "config.rules_filter_placeholder": {
     "other": "Фільтрувати правила..."
   },

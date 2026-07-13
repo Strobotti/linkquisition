@@ -287,6 +287,15 @@
   "config.rules_regex_help_link": {
     "other": "Syntax reference"
   },
+  "config.rules_type_help_site": {
+    "other": "Matches the full hostname (e.g. www.example.com). Does not match subdomains like blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Matches the registered domain and all its subdomains (e.g. example.com matches www.example.com, blog.example.com, etc.)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Matches the full URL against a Go RE2 regular expression. Use .* for wildcards."
+  },
   "config.rules_filter_placeholder": {
     "other": "Filter rules..."
   },

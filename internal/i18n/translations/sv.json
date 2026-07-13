@@ -287,6 +287,15 @@
   "config.rules_regex_help_link": {
     "other": "Syntaxreferens"
   },
+  "config.rules_type_help_site": {
+    "other": "Matchar det fullständiga värdnamnet (t.ex. www.example.com). Matchar inte subdomäner som blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Matchar den registrerade domänen och alla dess subdomäner (t.ex. example.com matchar www.example.com, blog.example.com osv.)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Matchar hela URL:en mot ett Go RE2 reguljärt uttryck. Använd .* som jokertecken."
+  },
   "config.rules_filter_placeholder": {
     "other": "Filtrera regler..."
   },

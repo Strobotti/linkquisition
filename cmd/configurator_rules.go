@@ -366,6 +366,8 @@ type regexPanel struct {
 	indicator     *canvas.Text
 	indicatorBox  *fyne.Container
 	errorLabel    *widget.Label
+	typeHelpLabel *widget.Label
+	regexHelpRow  *fyne.Container
 	testEntry     *widget.Entry
 	testResult    *canvas.Text
 	testResultBox *fyne.Container
@@ -397,21 +399,29 @@ func newRegexPanel(w fyne.Window) *regexPanel {
 	testResultBox := container.NewHBox(testResult)
 	testResultBox.Hide()
 
-	// Help text with link to regex reference
-	helpLabel := widget.NewLabel(i18n.T("config.rules_regex_help"))
-	helpLabel.TextStyle = fyne.TextStyle{Italic: true}
+	// Help text with link to regex reference (only shown for regex type)
+	regexHelpLabel := widget.NewLabel(i18n.T("config.rules_regex_help"))
+	regexHelpLabel.TextStyle = fyne.TextStyle{Italic: true}
 	regexDocsURL := "https://pkg.go.dev/regexp/syntax"
-	helpLink := ui.NewLinkWithCopy(i18n.T("config.rules_regex_help_link"), regexDocsURL, w)
-	helpRow := container.NewHBox(helpLabel, helpLink)
+	regexHelpLink := ui.NewLinkWithCopy(i18n.T("config.rules_regex_help_link"), regexDocsURL, w)
+	regexHelpRow := container.NewHBox(regexHelpLabel, regexHelpLink)
+	regexHelpRow.Hide()
+
+	// Type help label (shown for all types, content changes with type)
+	typeHelpLabel := widget.NewLabel("")
+	typeHelpLabel.Wrapping = fyne.TextWrapWord
+	typeHelpLabel.TextStyle = fyne.TextStyle{Italic: true}
 
 	// Full panel (everything below the value entry)
-	panel := container.NewVBox(errorLabel, helpRow, testEntry, testResultBox)
+	panel := container.NewVBox(errorLabel, typeHelpLabel, regexHelpRow, testEntry, testResultBox)
 	panel.Hide()
 
 	rp := &regexPanel{
 		indicator:     indicator,
 		indicatorBox:  indicatorBox,
 		errorLabel:    errorLabel,
+		typeHelpLabel: typeHelpLabel,
+		regexHelpRow:  regexHelpRow,
 		testEntry:     testEntry,
 		testResult:    testResult,
 		testResultBox: testResultBox,
@@ -426,15 +436,37 @@ func newRegexPanel(w fyne.Window) *regexPanel {
 }
 
 func (rp *regexPanel) update(matchType, value string) {
+	rp.panel.Show()
+	rp.pattern = value
+
+	// Update type-specific help text
+	switch matchType {
+	case linkquisition.BrowserMatchTypeSite:
+		rp.typeHelpLabel.SetText(i18n.T("config.rules_type_help_site"))
+		rp.typeHelpLabel.Show()
+	case linkquisition.BrowserMatchTypeDomain:
+		rp.typeHelpLabel.SetText(i18n.T("config.rules_type_help_domain"))
+		rp.typeHelpLabel.Show()
+	case linkquisition.BrowserMatchTypeRegex:
+		rp.typeHelpLabel.SetText(i18n.T("config.rules_type_help_regex"))
+		rp.typeHelpLabel.Show()
+	default:
+		rp.typeHelpLabel.Hide()
+	}
+
+	// Regex-specific elements
 	if matchType != linkquisition.BrowserMatchTypeRegex {
 		rp.indicatorBox.Hide()
-		rp.panel.Hide()
+		rp.regexHelpRow.Hide()
+		rp.testEntry.Hide()
+		rp.testResultBox.Hide()
+		rp.errorLabel.Hide()
 		return
 	}
 
-	rp.pattern = value
 	rp.indicatorBox.Show()
-	rp.panel.Show()
+	rp.regexHelpRow.Show()
+	rp.testEntry.Show()
 
 	if value == "" {
 		rp.indicator.Text = "—"

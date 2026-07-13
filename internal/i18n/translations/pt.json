@@ -287,6 +287,15 @@
   "config.rules_regex_help_link": {
     "other": "Referência de sintaxe"
   },
+  "config.rules_type_help_site": {
+    "other": "Corresponde ao nome de host completo (ex. www.example.com). Não corresponde a subdomínios como blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Corresponde ao domínio registado e todos os seus subdomínios (ex. example.com corresponde a www.example.com, blog.example.com, etc.)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Compara o URL completo com uma expressão regular Go RE2. Use .* como caractere universal."
+  },
   "config.rules_filter_placeholder": {
     "other": "Filtrar regras..."
   },
