@@ -153,6 +153,8 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 	w.CenterOnScreen()
 
+	setPickerWindowAlwaysOnTop()
+
 	w.ShowAndRun()
 
 	return nil
