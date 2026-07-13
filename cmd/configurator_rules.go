@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -396,8 +397,15 @@ func newRegexPanel() *regexPanel {
 	testResultBox := container.NewHBox(testResult)
 	testResultBox.Hide()
 
+	// Help text with link to regex reference
+	helpLabel := widget.NewLabel(i18n.T("config.rules_regex_help"))
+	helpLabel.TextStyle = fyne.TextStyle{Italic: true}
+	regexDocsURL, _ := url.Parse("https://pkg.go.dev/regexp/syntax")
+	helpLink := widget.NewHyperlink(i18n.T("config.rules_regex_help_link"), regexDocsURL)
+	helpRow := container.NewHBox(helpLabel, helpLink)
+
 	// Full panel (everything below the value entry)
-	panel := container.NewVBox(errorLabel, testEntry, testResultBox)
+	panel := container.NewVBox(errorLabel, helpRow, testEntry, testResultBox)
 	panel.Hide()
 
 	rp := &regexPanel{

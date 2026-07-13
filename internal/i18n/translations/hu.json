@@ -281,6 +281,12 @@
   "config.rules_regex_no_match": {
     "other": "Nem egyezik"
   },
+  "config.rules_regex_help": {
+    "other": "Go RE2 szintaxist használ."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Szintaxis referencia"
+  },
   "config.rules_filter_placeholder": {
     "other": "Szabályok szűrése..."
   },

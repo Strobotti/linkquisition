@@ -281,6 +281,12 @@
   "config.rules_regex_no_match": {
     "other": "Не збігається"
   },
+  "config.rules_regex_help": {
+    "other": "Використовує синтаксис Go RE2."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Довідка з синтаксису"
+  },
   "config.rules_filter_placeholder": {
     "other": "Фільтрувати правила..."
   },

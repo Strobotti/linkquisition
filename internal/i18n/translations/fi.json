@@ -281,6 +281,12 @@
   "config.rules_regex_no_match": {
     "other": "Ei täsmää"
   },
+  "config.rules_regex_help": {
+    "other": "Käyttää Go RE2 -syntaksia."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Syntaksiohje"
+  },
   "config.rules_filter_placeholder": {
     "other": "Suodata sääntöjä..."
   },

@@ -281,6 +281,12 @@
   "config.rules_regex_no_match": {
     "other": "Ne correspond pas"
   },
+  "config.rules_regex_help": {
+    "other": "Utilise la syntaxe Go RE2."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Référence syntaxique"
+  },
   "config.rules_filter_placeholder": {
     "other": "Filtrer les règles..."
   },

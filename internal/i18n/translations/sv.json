@@ -281,6 +281,12 @@
   "config.rules_regex_no_match": {
     "other": "Matchar inte"
   },
+  "config.rules_regex_help": {
+    "other": "Använder Go RE2-syntax."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Syntaxreferens"
+  },
   "config.rules_filter_placeholder": {
     "other": "Filtrera regler..."
   },
