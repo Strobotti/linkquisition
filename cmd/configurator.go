@@ -517,7 +517,6 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 
 func (c *Configurator) buildUpdateCheckSection(w fyne.Window) fyne.CanvasObject {
 	statusLabel := widget.NewLabel("")
-	statusLabel.Wrapping = fyne.TextWrapWord
 
 	releaseLink := container.NewHBox()
 	releaseLink.Hide()
@@ -557,11 +556,7 @@ func (c *Configurator) buildUpdateCheckSection(w fyne.Window) fyne.CanvasObject 
 		}()
 	}
 
-	return container.NewVBox(
-		container.NewHBox(checkButton),
-		statusLabel,
-		releaseLink,
-	)
+	return container.NewHBox(checkButton, statusLabel, releaseLink)
 }
 
 // openExternalURL opens a URL in a real browser, bypassing Linkquisition if it is
