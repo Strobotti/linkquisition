@@ -206,10 +206,10 @@ func (c *Configurator) buildVisibilityToggle(hidden bool, idx int, listContainer
 			s.Browsers[idx].Hidden = !s.Browsers[idx].Hidden
 			if err := c.settingsService.WriteSettings(s); err != nil {
 				c.logger.Error("Error saving browser visibility", "error", err)
-				btn.Enable()
+				fyne.Do(func() { btn.Enable() })
 				return
 			}
-			c.rebuildBrowsersList(listContainer)
+			fyne.Do(func() { c.rebuildBrowsersList(listContainer) })
 		}()
 	}
 	return btn
@@ -385,18 +385,22 @@ func (c *Configurator) scanBrowsersAndRebuild(listContainer *fyne.Container, btn
 	go func() {
 		if err := c.settingsService.ScanBrowsers(); err != nil {
 			c.logger.Error("Error scanning browsers", "error", err)
-			btn.SetText(originalText)
-			btn.Enable()
+			fyne.Do(func() {
+				btn.SetText(originalText)
+				btn.Enable()
 
-			windows := c.fapp.Driver().AllWindows()
-			if len(windows) > 0 {
-				dialog.ShowError(err, windows[0])
-			}
+				windows := c.fapp.Driver().AllWindows()
+				if len(windows) > 0 {
+					dialog.ShowError(err, windows[0])
+				}
+			})
 			return
 		}
-		btn.SetText(i18n.T("config.scan_browsers_done"))
+		fyne.Do(func() {
+			btn.SetText(i18n.T("config.scan_browsers_done"))
+		})
 		time.AfterFunc(time.Second, func() {
-			c.rebuildBrowsersList(listContainer)
+			fyne.Do(func() { c.rebuildBrowsersList(listContainer) })
 		})
 	}()
 }
