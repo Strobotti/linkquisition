@@ -178,16 +178,22 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 	valueEntry := widget.NewEntry()
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 
-	errorLabel := widget.NewLabel("")
-	errorLabel.TextStyle = fyne.TextStyle{Italic: true}
-	errorLabel.Hide()
+	regexIndicator := newRegexIndicator()
+
+	typeSelect.OnChanged = func(selected string) {
+		regexIndicator.update(selected, valueEntry.Text)
+	}
+	valueEntry.OnChanged = func(text string) {
+		regexIndicator.update(typeSelect.Selected, text)
+	}
 
 	form := container.NewVBox(
 		widget.NewForm(
 			widget.NewFormItem(i18n.T("config.rules_type"), typeSelect),
-			widget.NewFormItem(i18n.T("config.rules_value"), valueEntry),
+			widget.NewFormItem(i18n.T("config.rules_value"), container.NewBorder(
+				nil, nil, nil, regexIndicator.container, valueEntry,
+			)),
 		),
-		errorLabel,
 	)
 
 	windows := c.fapp.Driver().AllWindows()
@@ -215,8 +221,6 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 			// Validate regex
 			if typeSelect.Selected == linkquisition.BrowserMatchTypeRegex {
 				if _, err := regexp.Compile(valueEntry.Text); err != nil {
-					errorLabel.SetText(i18n.T("config.rules_regex_invalid"))
-					errorLabel.Show()
 					return
 				}
 			}
@@ -225,7 +229,7 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 		},
 		parentWindow,
 	)
-	d.Resize(fyne.NewSize(500, 220)) //nolint:mnd
+	d.Resize(fyne.NewSize(500, 200)) //nolint:mnd
 	d.Show()
 }
 
@@ -246,16 +250,24 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 	valueEntry.SetText(rule.Value)
 
-	errorLabel := widget.NewLabel("")
-	errorLabel.TextStyle = fyne.TextStyle{Italic: true}
-	errorLabel.Hide()
+	regexIndicator := newRegexIndicator()
+	// Initialize indicator state based on current rule
+	regexIndicator.update(rule.Type, rule.Value)
+
+	typeSelect.OnChanged = func(selected string) {
+		regexIndicator.update(selected, valueEntry.Text)
+	}
+	valueEntry.OnChanged = func(text string) {
+		regexIndicator.update(typeSelect.Selected, text)
+	}
 
 	form := container.NewVBox(
 		widget.NewForm(
 			widget.NewFormItem(i18n.T("config.rules_type"), typeSelect),
-			widget.NewFormItem(i18n.T("config.rules_value"), valueEntry),
+			widget.NewFormItem(i18n.T("config.rules_value"), container.NewBorder(
+				nil, nil, nil, regexIndicator.container, valueEntry,
+			)),
 		),
-		errorLabel,
 	)
 
 	windows := c.fapp.Driver().AllWindows()
@@ -280,8 +292,6 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 			// Validate regex
 			if typeSelect.Selected == linkquisition.BrowserMatchTypeRegex {
 				if _, err := regexp.Compile(valueEntry.Text); err != nil {
-					errorLabel.SetText(i18n.T("config.rules_regex_invalid"))
-					errorLabel.Show()
 					return
 				}
 			}
@@ -290,7 +300,7 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 		},
 		parentWindow,
 	)
-	d.Resize(fyne.NewSize(500, 220)) //nolint:mnd
+	d.Resize(fyne.NewSize(500, 200)) //nolint:mnd
 	d.Show()
 }
 
@@ -343,6 +353,54 @@ func (c *Configurator) deleteRule(browserIdx, ruleIdx int, listContainer *fyne.C
 	}
 
 	c.rebuildRulesList(listContainer, "")
+}
+
+const (
+	regexIndicatorSize = 12
+)
+
+// regexIndicator shows a colored dot next to the value entry when the rule
+// type is "regex". Green = valid regex, red = invalid regex. Hidden for
+// non-regex types.
+type regexIndicator struct {
+	dot       *canvas.Circle
+	container *fyne.Container
+}
+
+func newRegexIndicator() *regexIndicator {
+	dot := canvas.NewCircle(color.NRGBA{R: 0, G: 180, B: 0, A: 255})
+	dot.Resize(fyne.NewSize(regexIndicatorSize, regexIndicatorSize))
+
+	dotContainer := container.NewCenter(dot)
+	dotContainer.Hide()
+
+	return &regexIndicator{
+		dot:       dot,
+		container: dotContainer,
+	}
+}
+
+func (ri *regexIndicator) update(matchType, value string) {
+	if matchType != linkquisition.BrowserMatchTypeRegex {
+		ri.container.Hide()
+		return
+	}
+
+	ri.container.Show()
+
+	if value == "" {
+		ri.dot.FillColor = color.NRGBA{R: 180, G: 180, B: 0, A: 255} // yellow for empty
+		ri.dot.Refresh()
+		return
+	}
+
+	if _, err := regexp.Compile(value); err != nil {
+		ri.dot.FillColor = color.NRGBA{R: 220, G: 0, B: 0, A: 255} // red
+	} else {
+		ri.dot.FillColor = color.NRGBA{R: 0, G: 180, B: 0, A: 255} // green
+	}
+
+	ri.dot.Refresh()
 }
 
 // withSubtleBackground wraps a widget in a container with a very subtle
