@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "Impossible de récupérer les informations du domaine :\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "Impossible de récupérer les informations du domaine"
+  },
+  "picker.whois_error_timeout": {
+    "other": "La requête WHOIS a expiré"
+  },
+  "picker.whois_error_connection": {
+    "other": "Impossible de se connecter au serveur WHOIS"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "Impossible de déterminer le domaine à partir de l'URL"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "Un pare-feu ou un VPN peut bloquer les connexions sortantes sur le port 43"
+  },
   "config.tab_security": {
     "other": "Sécurité"
   },

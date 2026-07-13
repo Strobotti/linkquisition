@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "Domain-Informationen konnten nicht abgerufen werden:\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "Domain-Informationen konnten nicht abgerufen werden"
+  },
+  "picker.whois_error_timeout": {
+    "other": "Die WHOIS-Abfrage ist abgelaufen"
+  },
+  "picker.whois_error_connection": {
+    "other": "Verbindung zum WHOIS-Server konnte nicht hergestellt werden"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "Die Domain konnte nicht aus der URL ermittelt werden"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "Eine Firewall oder ein VPN blockiert möglicherweise ausgehende Verbindungen auf Port 43"
+  },
   "config.tab_security": {
     "other": "Sicherheit"
   },

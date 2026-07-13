@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "Falha ao consultar informações do domínio:\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "Falha ao consultar informações do domínio"
+  },
+  "picker.whois_error_timeout": {
+    "other": "A consulta WHOIS expirou"
+  },
+  "picker.whois_error_connection": {
+    "other": "Não foi possível ligar ao servidor WHOIS"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "Não foi possível determinar o domínio a partir do URL"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "Uma firewall ou VPN pode estar a bloquear ligações de saída na porta 43"
+  },
   "config.tab_security": {
     "other": "Segurança"
   },
