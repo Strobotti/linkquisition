@@ -139,6 +139,18 @@ and *rule* subcommands).
 	- Google Safe Browsing: _https://console.cloud.google.com/apis/credentials_
 	- VirusTotal: _https://www.virustotal.com/gui/my-apikey_
 
+*cache* (object, optional)
+	Settings for caching security check results. When enabled, results are
+	stored locally and reused within the TTL window to reduce API calls and
+	improve picker responsiveness. Results are cached separately per provider.
+
+	*enabled* (boolean, optional)
+		If _true_, security check results are cached. Default: _false_.
+
+	*ttlHours* (integer, optional)
+		Cache time-to-live in hours. Entries older than this are discarded and
+		re-checked on next use. Default: _24_.
+
 # EXAMPLE
 
 ```
@@ -175,7 +187,11 @@ and *rule* subcommands).
   "security": {
     "enabled": true,
     "provider": "google_safe_browsing",
-    "apiKey": "YOUR_API_KEY"
+    "apiKey": "YOUR_API_KEY",
+    "cache": {
+      "enabled": true,
+      "ttlHours": 24
+    }
   }
 }
 ```
