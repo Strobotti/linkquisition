@@ -14,7 +14,6 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -206,8 +205,8 @@ func (picker *BrowserPicker) tapButton(obj fyne.CanvasObject) {
 		return
 	}
 	// For horizontal layout, the tappable wrapper holds the callback
-	if tappable, ok := obj.(*tappableContainer); ok {
-		tappable.onTapped()
+	if tappable, ok := obj.(*ui.TappableContainer); ok {
+		tappable.OnTapped()
 	}
 }
 
@@ -794,7 +793,7 @@ func (picker *BrowserPicker) makeHorizontalBrowserButton(
 		nameLabel,
 	)
 
-	return newTappableContainer(content, callback)
+	return ui.NewTappableContainer(content, callback)
 }
 
 func (picker *BrowserPicker) browserOpenCallback(
@@ -829,52 +828,4 @@ func (picker *BrowserPicker) browserOpenCallback(
 		}()
 		picker.fapp.Quit()
 	}
-}
-
-// tappableContainer wraps a canvas object to make it respond to tap and hover events.
-type tappableContainer struct {
-	widget.BaseWidget
-	content  fyne.CanvasObject
-	bg       *canvas.Rectangle
-	onTapped func()
-}
-
-// Compile-time interface checks.
-var (
-	_ fyne.Tappable     = (*tappableContainer)(nil)
-	_ desktop.Hoverable = (*tappableContainer)(nil)
-)
-
-func newTappableContainer(content fyne.CanvasObject, onTapped func()) *tappableContainer {
-	bg := canvas.NewRectangle(color.Transparent)
-	bg.CornerRadius = 8
-	t := &tappableContainer{
-		content:  content,
-		bg:       bg,
-		onTapped: onTapped,
-	}
-	t.ExtendBaseWidget(t)
-	return t
-}
-
-func (t *tappableContainer) Tapped(_ *fyne.PointEvent) {
-	if t.onTapped != nil {
-		t.onTapped()
-	}
-}
-
-func (t *tappableContainer) MouseIn(_ *desktop.MouseEvent) {
-	t.bg.FillColor = ui.ColorHoverBg
-	t.bg.Refresh()
-}
-
-func (t *tappableContainer) MouseMoved(_ *desktop.MouseEvent) {}
-
-func (t *tappableContainer) MouseOut() {
-	t.bg.FillColor = color.Transparent
-	t.bg.Refresh()
-}
-
-func (t *tappableContainer) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(container.NewStack(t.bg, t.content))
 }
