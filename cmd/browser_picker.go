@@ -4,7 +4,6 @@ import (
 	"context"
 	"image/color"
 	"log/slog"
-	"net/url"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -391,15 +390,7 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 
 	var reportLink fyne.CanvasObject
 	if result.ReportURL != "" {
-		parsedURL, _ := url.Parse(result.ReportURL)
-		if parsedURL != nil {
-			hyperlink := widget.NewHyperlink(
-				i18n.T("picker.safety_view_report"),
-				parsedURL,
-			)
-
-			reportLink = container.NewHBox(hyperlink)
-		}
+		reportLink = newLinkWithCopy(i18n.T("picker.safety_view_report"), result.ReportURL, w)
 	}
 
 	closeButton := widget.NewButtonWithIcon(
