@@ -73,7 +73,6 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	remember := binding.NewBool()
 	_ = remember.Set(false)
 	rememberMatchType := binding.NewString()
-	// TODO give user the option to choose between site and domain (and later on regex, too)
 	_ = rememberMatchType.Set(linkquisition.BrowserMatchTypeSite)
 
 	settings := picker.settingsService.GetSettings()
@@ -128,7 +127,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	}
 
 	widgets = append(widgets, picker.buildURLDisplay(urlToOpen, w)...)
-	widgets = append(widgets, picker.buildRememberCheck(urlToOpen, remember)...)
+	widgets = append(widgets, picker.buildRememberCheck(urlToOpen, remember, rememberMatchType)...)
 
 	if !settings.Ui.HideKeyboardGuideLabel {
 		widgets = append(widgets, picker.buildKeyboardGuide()...)
@@ -687,15 +686,51 @@ func (picker *BrowserPicker) fetchAndUpdateFavicon(
 	img.Refresh()
 }
 
-func (picker *BrowserPicker) buildRememberCheck(urlToOpen string, remember binding.Bool) []fyne.CanvasObject {
+func (picker *BrowserPicker) buildRememberCheck(
+	urlToOpen string,
+	remember binding.Bool,
+	rememberMatchType binding.String,
+) []fyne.CanvasObject {
 	uto := linkquisition.NewURL(urlToOpen)
 	site, _ := uto.GetSite()
-	check := widget.NewCheckWithData(
-		i18n.T("picker.remember_choice", map[string]interface{}{"Site": site}),
-		remember,
-	)
+	domain, _ := uto.GetDomain()
 
-	return []fyne.CanvasObject{check}
+	// If site == domain (no subdomain), just show the simple checkbox
+	if site == domain {
+		check := widget.NewCheckWithData(
+			i18n.T("picker.remember_choice")+" "+site,
+			remember,
+		)
+		return []fyne.CanvasObject{check}
+	}
+
+	// Build radio options with actual values shown
+	siteLabel := i18n.T("picker.remember_site", map[string]interface{}{"Site": site})
+	domainLabel := i18n.T("picker.remember_domain", map[string]interface{}{"Domain": domain})
+
+	radio := widget.NewRadioGroup(
+		[]string{siteLabel, domainLabel},
+		func(selected string) {
+			if selected == domainLabel {
+				_ = rememberMatchType.Set(linkquisition.BrowserMatchTypeDomain)
+			} else {
+				_ = rememberMatchType.Set(linkquisition.BrowserMatchTypeSite)
+			}
+		},
+	)
+	radio.SetSelected(siteLabel)
+	radio.Hide()
+
+	check := widget.NewCheck(i18n.T("picker.remember_choice"), func(checked bool) {
+		_ = remember.Set(checked)
+		if checked {
+			radio.Show()
+		} else {
+			radio.Hide()
+		}
+	})
+
+	return []fyne.CanvasObject{check, radio}
 }
 
 func (picker *BrowserPicker) buildKeyboardGuide() []fyne.CanvasObject {
