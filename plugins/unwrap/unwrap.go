@@ -40,7 +40,7 @@ func (p *unwrap) Metadata() linkquisition.PluginMetadata {
 	return linkquisition.PluginMetadata{
 		Name:        "Unwrap",
 		Description: "Unwraps URLs that are wrapped inside redirect/tracking URLs (e.g. Microsoft Defender SafeLinks)",
-		Author:      "Strobotti",
+		Author:      "Juha Jantunen",
 		Version:     "2.0.0",
 		URL:         "https://github.com/Strobotti/linkquisition",
 		Settings: []linkquisition.PluginSettingDescriptor{

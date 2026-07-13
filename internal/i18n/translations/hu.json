@@ -508,5 +508,11 @@
   },
   "config.plugins_kv_add_row": {
     "other": "Szabály hozzáadása"
+  },
+  "config.plugins_reset_defaults": {
+    "other": "Visszaállítás alapértelmezésre"
+  },
+  "config.plugins_author": {
+    "other": "Szerző"
   }
 }

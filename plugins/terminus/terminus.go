@@ -31,7 +31,7 @@ func (p *terminus) Metadata() linkquisition.PluginMetadata {
 	return linkquisition.PluginMetadata{
 		Name:        "Terminus",
 		Description: "Resolves redirect chains to find the final destination URL before browser matching",
-		Author:      "Strobotti",
+		Author:      "Juha Jantunen",
 		Version:     "2.0.0",
 		URL:         "https://github.com/Strobotti/linkquisition",
 		Settings: []linkquisition.PluginSettingDescriptor{

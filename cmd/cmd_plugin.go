@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -227,10 +228,18 @@ func runPluginAdd(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("plugin file %q not found in %s", pluginFile, pluginDir)
 	}
 
-	// Add with default settings (just the path, enabled, no custom settings)
+	// Probe plugin metadata to get default settings
+	var pluginSettings map[string]interface{}
+	discardLogger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
+	meta, err := probePluginMetadata(pluginPath, discardLogger)
+	if err == nil && len(meta.Settings) > 0 {
+		pluginSettings = buildDefaultSettingsFromMetadata(&meta)
+	}
+
 	settings.Plugins = append(settings.Plugins, linkquisition.PluginSettings{
 		Path:       pluginFile,
 		IsDisabled: false,
+		Settings:   pluginSettings,
 	})
 
 	if err := settingsService.WriteSettings(settings); err != nil {

@@ -508,5 +508,11 @@
   },
   "config.plugins_kv_add_row": {
     "other": "Додати правило"
+  },
+  "config.plugins_reset_defaults": {
+    "other": "Скинути до стандартних"
+  },
+  "config.plugins_author": {
+    "other": "Автор"
   }
 }

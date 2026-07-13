@@ -96,7 +96,7 @@ func (p *sanitize) Metadata() linkquisition.PluginMetadata {
 	return linkquisition.PluginMetadata{
 		Name:        "Sanitize",
 		Description: "Strips tracking and marketing query parameters (UTM tags, click IDs, etc.) from URLs",
-		Author:      "Strobotti",
+		Author:      "Juha Jantunen",
 		Version:     "2.0.0",
 		URL:         "https://github.com/Strobotti/linkquisition",
 		Settings: []linkquisition.PluginSettingDescriptor{
