@@ -47,7 +47,7 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 	parentWindow := windows[0]
 
 	scrollContent := container.NewVScroll(form)
-	scrollContent.SetMinSize(fyne.NewSize(550, 300)) //nolint:mnd
+	scrollContent.SetMinSize(fyne.NewSize(700, 350)) //nolint:mnd
 
 	d := dialog.NewCustomConfirm(
 		title,
@@ -62,7 +62,7 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 		},
 		parentWindow,
 	)
-	d.Resize(fyne.NewSize(600, 450)) //nolint:mnd
+	d.Resize(fyne.NewSize(780, 500)) //nolint:mnd
 	d.Show()
 }
 
@@ -101,7 +101,7 @@ func (c *Configurator) showAddPluginSettings(
 	parentWindow := windows[0]
 
 	scrollContent := container.NewVScroll(form)
-	scrollContent.SetMinSize(fyne.NewSize(550, 300)) //nolint:mnd
+	scrollContent.SetMinSize(fyne.NewSize(700, 350)) //nolint:mnd
 
 	d := dialog.NewCustomConfirm(
 		title,
@@ -123,7 +123,7 @@ func (c *Configurator) showAddPluginSettings(
 		},
 		parentWindow,
 	)
-	d.Resize(fyne.NewSize(600, 450)) //nolint:mnd
+	d.Resize(fyne.NewSize(780, 500)) //nolint:mnd
 	d.Show()
 }
 
@@ -165,6 +165,8 @@ func (c *Configurator) buildSettingWidget(
 		return c.buildStringSetting(desc, currentSettings)
 	case linkquisition.SettingTypeStringList:
 		return c.buildStringListSetting(desc, currentSettings)
+	case linkquisition.SettingTypeKeyValueList:
+		return c.buildKeyValueListSetting(desc, currentSettings)
 	default:
 		return c.buildStringSetting(desc, currentSettings)
 	}
@@ -286,6 +288,109 @@ func (c *Configurator) buildStringListSetting(
 	}
 }
 
+func (c *Configurator) buildKeyValueListSetting(
+	desc *linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
+) (item *widget.FormItem, getValue func() interface{}) {
+	keyLabel := desc.KeyFieldLabel
+	if keyLabel == "" {
+		keyLabel = desc.KeyField
+	}
+	valueLabel := desc.ValueFieldLabel
+	if valueLabel == "" {
+		valueLabel = desc.ValueField
+	}
+
+	current := getSettingKeyValueListStructured(currentSettings, desc.Key, desc.KeyField, desc.ValueField)
+
+	// rows holds the mutable state of key-value entries
+	type rowEntry struct {
+		keyEntry   *widget.Entry
+		valueEntry *widget.Entry
+	}
+	rows := make([]*rowEntry, 0, len(current))
+
+	// listContainer holds the rendered rows
+	listContainer := container.NewVBox()
+
+	var rebuildList func()
+	rebuildList = func() {
+		listContainer.RemoveAll()
+
+		// Header row
+		headerKey := widget.NewLabel(keyLabel)
+		headerKey.TextStyle.Bold = true
+		headerVal := widget.NewLabel(valueLabel)
+		headerVal.TextStyle.Bold = true
+		headerRow := container.NewGridWithColumns(
+			3, //nolint:mnd
+			headerKey,
+			headerVal,
+			widget.NewLabel(""),
+		)
+		listContainer.Add(headerRow)
+
+		for i := range rows {
+			idx := i
+			removeBtn := widget.NewButton("✕", func() {
+				rows = append(rows[:idx], rows[idx+1:]...)
+				rebuildList()
+			})
+			row := container.NewGridWithColumns(
+				3, //nolint:mnd
+				rows[idx].keyEntry,
+				rows[idx].valueEntry,
+				removeBtn,
+			)
+			listContainer.Add(row)
+		}
+	}
+
+	// Initialize rows from current values
+	for _, pair := range current {
+		keyE := widget.NewEntry()
+		keyE.SetText(pair.Key)
+		keyE.SetPlaceHolder(keyLabel)
+		valE := widget.NewEntry()
+		valE.SetText(pair.Value)
+		valE.SetPlaceHolder(valueLabel)
+		rows = append(rows, &rowEntry{keyEntry: keyE, valueEntry: valE})
+	}
+
+	rebuildList()
+
+	addBtn := widget.NewButton(i18n.T("config.plugins_kv_add_row"), func() {
+		keyE := widget.NewEntry()
+		keyE.SetPlaceHolder(keyLabel)
+		valE := widget.NewEntry()
+		valE.SetPlaceHolder(valueLabel)
+		rows = append(rows, &rowEntry{keyEntry: keyE, valueEntry: valE})
+		rebuildList()
+	})
+
+	content := container.NewVBox(listContainer, addBtn)
+	item = widget.NewFormItem(desc.Label, content)
+	item.HintText = desc.Description
+
+	return item, func() interface{} {
+		result := make([]interface{}, 0, len(rows))
+		for _, row := range rows {
+			k := strings.TrimSpace(row.keyEntry.Text)
+			v := strings.TrimSpace(row.valueEntry.Text)
+			if k == "" && v == "" {
+				continue
+			}
+			result = append(result, map[string]interface{}{
+				desc.KeyField:   k,
+				desc.ValueField: v,
+			})
+		}
+		if len(result) == 0 {
+			return nil
+		}
+		return result
+	}
+}
+
 // Helper functions to extract current setting values from the untyped map
 
 func getSettingString(settings map[string]interface{}, key string, defaultVal interface{}) string {
@@ -333,4 +438,40 @@ func getSettingStringList(settings map[string]interface{}, key string) []string 
 	}
 
 	return nil
+}
+
+// kvPair represents a single key-value pair for the KeyValueList setting type.
+type kvPair struct {
+	Key   string
+	Value string
+}
+
+// getSettingKeyValueListStructured extracts key-value pairs using the actual JSON field names
+// from the stored map objects.
+func getSettingKeyValueListStructured(
+	settings map[string]interface{}, key, keyFieldName, valueFieldName string,
+) []kvPair {
+	v, ok := settings[key]
+	if !ok {
+		return nil
+	}
+
+	list, ok := v.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	result := make([]kvPair, 0, len(list))
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		pair := kvPair{
+			Key:   fmt.Sprintf("%v", m[keyFieldName]),
+			Value: fmt.Sprintf("%v", m[valueFieldName]),
+		}
+		result = append(result, pair)
+	}
+	return result
 }

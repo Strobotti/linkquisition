@@ -5,15 +5,19 @@ Each plugin can inspect, modify, block, or warn about URLs before they reach the
 
 ## [Unwrap](./unwrap/unwrap.go) -plugin
 
-This is the first plugin that I have written for Linkquisition. I use it to "unwrap" the internal links (in my company)
-that are "wrapped" inside Microsoft Defender (Evergreen) URL when they are passed via Microsoft Teams or Outlook.
+This plugin "unwraps" URLs that are wrapped inside redirect/tracking URLs, extracting the actual
+destination. Common use cases include:
 
-Now, the actual Defender URL is a good feature, but it is not very useful when the links refer to internal resources,
-such as GitLab, Jira, Confluence, whatnot. To leverage the actually safeguarding part of the Defender URL, the plugin
-can (and should) be configured to only unwrap the known sources, and leave the rest to be opened via the Defender URL.
+- **Microsoft Teams SafeLinks** — links wrapped via `statics.teams.cdn.office.net/evergreen-assets/safelinks`
+- **Outlook SafeLinks** — links wrapped via `*.safelinks.protection.outlook.com`
 
-To enable the plugin and configure it to unwrap the Defender links from Microsoft Teams you can use the following
-configuration:
+The plugin matches URLs against configurable regex rules and extracts the target from a specified
+query parameter. To leverage the safety features of SafeLinks for unknown URLs, the plugin can be
+configured to only unwrap URLs where the destination matches a browser rule (`requireBrowserMatchToUnwrap`).
+
+### Configuration
+
+To unwrap both Teams and Outlook SafeLinks:
 
 ```json
 {
@@ -35,10 +39,14 @@ configuration:
     {
       "path": "unwrap.so",
       "settings": {
-        "requireBrowserMatchToUnwrap": true,
+        "requireBrowserMatchToUnwrap": false,
         "rules": [
           {
             "match": "^https://statics\\.teams\\.cdn\\.office\\.net/evergreen-assets/safelinks",
+            "parameter": "url"
+          },
+          {
+            "match": "^https://[a-z0-9]+\\.safelinks\\.protection\\.outlook\\.com/",
             "parameter": "url"
           }
         ]
@@ -48,9 +56,21 @@ configuration:
 }
 ```
 
-In the above example, the `requireBrowserMatchToUnwrap` -setting is set to `true`, which means that the plugin will only
-unwrap the links if there is a matching browser-rule for that URL and all the rest of the URLs are opened with full
-Evergreen-protected URL.
+### Settings
+
+| Setting                       | Type                     | Default | Description                                                         |
+|-------------------------------|--------------------------|---------|---------------------------------------------------------------------|
+| `rules`                       | []{"match", "parameter"} | `[]`    | List of regex/parameter pairs defining which URLs to unwrap         |
+| `requireBrowserMatchToUnwrap` | bool                     | `false` | Only unwrap if a browser rule matches the unwrapped destination URL |
+
+Each rule has two fields:
+
+- `match` — a regex that the incoming URL is tested against
+- `parameter` — the query parameter name containing the actual destination URL
+
+If `requireBrowserMatchToUnwrap` is `true`, the plugin will only unwrap URLs when the extracted
+destination matches one of your configured browser rules. This preserves the SafeLinks protection
+for unknown/external URLs while unwrapping known internal ones.
 
 ## [Terminus](./terminus/terminus.go) -plugin
 

@@ -43,12 +43,13 @@ type PluginResult struct {
 type PluginSettingType int
 
 const (
-	SettingTypeString     PluginSettingType = iota // free-form string
-	SettingTypeBool                                // boolean toggle
-	SettingTypeInt                                 // integer number
-	SettingTypeDuration                            // Go duration string (e.g. "5s", "168h")
-	SettingTypeStringList                          // list of strings
-	SettingTypeChoice                              // one of the values in Options
+	SettingTypeString       PluginSettingType = iota // free-form string
+	SettingTypeBool                                  // boolean toggle
+	SettingTypeInt                                   // integer number
+	SettingTypeDuration                              // Go duration string (e.g. "5s", "168h")
+	SettingTypeStringList                            // list of strings
+	SettingTypeChoice                                // one of the values in Options
+	SettingTypeKeyValueList                          // list of {key, value} pairs (rendered as two-column table)
 )
 
 // PluginSettingDescriptor tells the host application (and eventually the GUI)
@@ -74,6 +75,18 @@ type PluginSettingDescriptor struct {
 
 	// Options lists the valid values when Type is SettingTypeChoice
 	Options []string
+
+	// KeyField is the JSON field name for the first column when Type is SettingTypeKeyValueList
+	KeyField string
+
+	// KeyFieldLabel is the display label for the first column (defaults to KeyField if empty)
+	KeyFieldLabel string
+
+	// ValueField is the JSON field name for the second column when Type is SettingTypeKeyValueList
+	ValueField string
+
+	// ValueFieldLabel is the display label for the second column (defaults to ValueField if empty)
+	ValueFieldLabel string
 }
 
 // PluginMetadata describes a plugin to the host application and GUI.
