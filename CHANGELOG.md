@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.14.0](https://github.com/Strobotti/linkquisition/compare/v2.13.0...v2.14.0) (2026-07-13)
+
+
+### Features
+
+* Add KeyValueList setting type and improve unwrap plugin settings UI ([#146](https://github.com/Strobotti/linkquisition/issues/146)) ([c7d420e](https://github.com/Strobotti/linkquisition/commit/c7d420e9f6958974e7664715440537c2e506fdeb))
+* Add manual update check and document undocumented features ([#147](https://github.com/Strobotti/linkquisition/issues/147)) ([0bcbba9](https://github.com/Strobotti/linkquisition/commit/0bcbba95ac9ac799df43c367a99ce66ce92d45ec))
+* Add report link to safety check popup & document security feature ([#140](https://github.com/Strobotti/linkquisition/issues/140)) ([5efc307](https://github.com/Strobotti/linkquisition/commit/5efc307cb6dd8840145d348cd2299b4846f62867))
+* Add security check result caching and improve safety report UX ([#143](https://github.com/Strobotti/linkquisition/issues/143)) ([a401088](https://github.com/Strobotti/linkquisition/commit/a401088f2e48c3e25df91e2c991efc094c149bc3))
+* add site/domain selection to remember checkbox and improve rule editor ([#148](https://github.com/Strobotti/linkquisition/issues/148)) ([5b0d9ec](https://github.com/Strobotti/linkquisition/commit/5b0d9ecdd3505727adad6d04d2117734718fd3a5))
+* consistent link UI with clipboard copy button ([#145](https://github.com/Strobotti/linkquisition/issues/145)) ([10a7d1f](https://github.com/Strobotti/linkquisition/commit/10a7d1fb7ee725ab8deb48f4fb1f6f5356cda4ca))
+* Improve UI uniformity and extract reusable components ([#149](https://github.com/Strobotti/linkquisition/issues/149)) ([0c5dd0e](https://github.com/Strobotti/linkquisition/commit/0c5dd0e866799c455857e1e7db0839e7c145e588))
+* plugin settings UX improvements — defaults, metadata display, and reset button ([#151](https://github.com/Strobotti/linkquisition/issues/151)) ([bf7bb0f](https://github.com/Strobotti/linkquisition/commit/bf7bb0f9ffaea0a829d5eb40667e832a0542e3d2))
+* Upgrade Fyne to 2.8.0 with full Wayland support ([#142](https://github.com/Strobotti/linkquisition/issues/142)) ([29086c4](https://github.com/Strobotti/linkquisition/commit/29086c4f5006c45dbed016cfae09979014ac8900))
+
+
+### Bug Fixes
+
+* hide "no browsers configured" warning on General tab after scanning ([#150](https://github.com/Strobotti/linkquisition/issues/150)) ([3d0b5dd](https://github.com/Strobotti/linkquisition/commit/3d0b5dd0af7593d5d9d47cf3fef7ed6537c8b5f3))
+* improve whois error dialog layout and messages ([#144](https://github.com/Strobotti/linkquisition/issues/144)) ([0ce68e4](https://github.com/Strobotti/linkquisition/commit/0ce68e4db38ad2a381b165afa0d1e3472b2fb746))
+* use valid Debian version number as default in packaging ([9e74163](https://github.com/Strobotti/linkquisition/commit/9e741636e7bb9a166f57ead8a7bc2b538b60eaf7))
+
 ## [2.13.0](https://github.com/Strobotti/linkquisition/compare/v2.12.0...v2.13.0) (2026-07-12)
 
 
