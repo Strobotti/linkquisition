@@ -401,6 +401,21 @@
   "config.security_test_success": {
     "other": "✓ Uppgifter giltiga"
   },
+  "config.security_cache_enabled": {
+    "other": "Cachelagra säkerhetskontrollresultat"
+  },
+  "config.security_cache_ttl_label": {
+    "other": "Cachens varaktighet (timmar):"
+  },
+  "config.security_cache_clear": {
+    "other": "Rensa säkerhetscache"
+  },
+  "config.security_cache_clear_done": {
+    "other": "Cache rensad"
+  },
+  "config.security_cache_clear_error": {
+    "other": "Fel vid rensning av cache"
+  },
   "picker.safety_level_safe": {
     "other": "Säker"
   },

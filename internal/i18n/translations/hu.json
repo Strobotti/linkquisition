@@ -401,6 +401,21 @@
   "config.security_test_success": {
     "other": "✓ Hitelesítő adatok érvényesek"
   },
+  "config.security_cache_enabled": {
+    "other": "Biztonsági ellenőrzés eredményeinek gyorsítótárazása"
+  },
+  "config.security_cache_ttl_label": {
+    "other": "Gyorsítótár élettartama (óra):"
+  },
+  "config.security_cache_clear": {
+    "other": "Biztonsági gyorsítótár törlése"
+  },
+  "config.security_cache_clear_done": {
+    "other": "Gyorsítótár törölve"
+  },
+  "config.security_cache_clear_error": {
+    "other": "Hiba a gyorsítótár törlésekor"
+  },
   "picker.safety_level_safe": {
     "other": "Biztonságos"
   },

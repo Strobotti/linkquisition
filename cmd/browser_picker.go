@@ -46,6 +46,7 @@ type BrowserPicker struct {
 	settingsService linkquisition.SettingsService
 	logger          *slog.Logger
 	uiHooks         []linkquisition.PluginUIHook
+	modalOpen       bool
 }
 
 func NewBrowserPicker(
@@ -77,6 +78,15 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 	settings := picker.settingsService.GetSettings()
 	pickerLayout := settings.Ui.GetPickerLayout()
+
+	// Prune expired security cache entries in the background
+	if settings.Security.Cache.Enabled && settings.Security.IsConfigured() {
+		go safety.NewCache(
+			picker.settingsService.GetConfigFolderPath(),
+			settings.Security.GetProvider(),
+			settings.Security.Cache.GetTTL(),
+		).PruneExpired()
+	}
 
 	for i := range picker.browsers {
 		if pickerLayout == linkquisition.PickerLayoutHorizontal {
@@ -152,6 +162,9 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 func (picker *BrowserPicker) setupKeyboardShortcuts(w fyne.Window, buttons []fyne.CanvasObject) {
 	w.Canvas().SetOnTypedKey(
 		func(keyEvent *fyne.KeyEvent) {
+			if picker.modalOpen {
+				return
+			}
 			if keyEvent.Name == fyne.KeyEscape {
 				picker.fapp.Quit()
 			}
@@ -273,7 +286,35 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 
 	// Run check in background
 	go func() {
-		checker, err := safety.NewChecker(settings.Security.GetProvider(), settings.Security.APIKey)
+		provider := settings.Security.GetProvider()
+
+		// Check cache first (if caching is enabled)
+		var cache *safety.Cache
+		if settings.Security.Cache.Enabled {
+			cache = safety.NewCache(
+				picker.settingsService.GetConfigFolderPath(),
+				provider,
+				settings.Security.Cache.GetTTL(),
+			)
+
+			if cached, ok := cache.Get(urlToOpen); ok {
+				checkResult = cached
+				fyne.Do(func() {
+					switch cached.Level {
+					case safety.ThreatLevelSafe:
+						indicator.Color = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+					case safety.ThreatLevelSuspicious:
+						indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+					case safety.ThreatLevelDangerous:
+						indicator.Color = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+					}
+					indicator.Refresh()
+				})
+				return
+			}
+		}
+
+		checker, err := safety.NewChecker(provider, settings.Security.APIKey)
 		if err != nil {
 			picker.logger.Error("Failed to create safety checker", "error", err)
 			return
@@ -293,6 +334,13 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 		}
 
 		checkResult = result
+
+		// Store result in cache (best-effort)
+		if cache != nil {
+			if cacheErr := cache.Put(urlToOpen, result); cacheErr != nil {
+				picker.logger.Debug("Failed to cache safety result", "url", urlToOpen, "error", cacheErr)
+			}
+		}
 
 		fyne.Do(func() {
 			switch result.Level {
@@ -350,20 +398,7 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 				parsedURL,
 			)
 
-			copyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), nil)
-			copyButton.Importance = widget.LowImportance
-			copyButton.OnTapped = func() {
-				w.Clipboard().SetContent(result.ReportURL)
-				copyButton.SetIcon(theme.ConfirmIcon())
-				go func() {
-					time.Sleep(1 * time.Second)
-					fyne.Do(func() {
-						copyButton.SetIcon(theme.ContentCopyIcon())
-					})
-				}()
-			}
-
-			reportLink = container.NewHBox(hyperlink, copyButton)
+			reportLink = container.NewHBox(hyperlink)
 		}
 	}
 
@@ -389,7 +424,27 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 	content.Add(container.NewCenter(closeButton))
 
 	popup := widget.NewModalPopUp(content, w.Canvas())
-	closeButton.OnTapped = func() { popup.Hide() }
+
+	// Block picker keyboard shortcuts while modal is open
+	picker.modalOpen = true
+
+	// Override typed key handler to intercept Esc for the modal
+	originalHandler := w.Canvas().OnTypedKey()
+
+	closeModal := func() {
+		popup.Hide()
+		picker.modalOpen = false
+		w.Canvas().SetOnTypedKey(originalHandler)
+	}
+
+	closeButton.OnTapped = closeModal
+
+	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
+		if keyEvent.Name == fyne.KeyEscape {
+			closeModal()
+		}
+	})
+
 	popup.Show()
 }
 

@@ -401,6 +401,21 @@
   "config.security_test_success": {
     "other": "✓ Identifiants valides"
   },
+  "config.security_cache_enabled": {
+    "other": "Mettre en cache les résultats de sécurité"
+  },
+  "config.security_cache_ttl_label": {
+    "other": "Durée du cache (heures) :"
+  },
+  "config.security_cache_clear": {
+    "other": "Vider le cache de sécurité"
+  },
+  "config.security_cache_clear_done": {
+    "other": "Cache vidé"
+  },
+  "config.security_cache_clear_error": {
+    "other": "Erreur lors du vidage du cache"
+  },
   "picker.safety_level_safe": {
     "other": "Sûr"
   },

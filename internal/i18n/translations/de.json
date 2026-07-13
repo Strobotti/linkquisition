@@ -401,6 +401,21 @@
   "config.security_test_success": {
     "other": "✓ Zugangsdaten gültig"
   },
+  "config.security_cache_enabled": {
+    "other": "Sicherheitsprüfungsergebnisse zwischenspeichern"
+  },
+  "config.security_cache_ttl_label": {
+    "other": "Cache-Dauer (Stunden):"
+  },
+  "config.security_cache_clear": {
+    "other": "Sicherheits-Cache leeren"
+  },
+  "config.security_cache_clear_done": {
+    "other": "Cache geleert"
+  },
+  "config.security_cache_clear_error": {
+    "other": "Fehler beim Leeren des Caches"
+  },
   "picker.safety_level_safe": {
     "other": "Sicher"
   },

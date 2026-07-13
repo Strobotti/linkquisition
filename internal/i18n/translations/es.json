@@ -401,6 +401,21 @@
   "config.security_test_success": {
     "other": "✓ Credenciales válidas"
   },
+  "config.security_cache_enabled": {
+    "other": "Almacenar en caché los resultados de seguridad"
+  },
+  "config.security_cache_ttl_label": {
+    "other": "Duración de la caché (horas):"
+  },
+  "config.security_cache_clear": {
+    "other": "Limpiar caché de seguridad"
+  },
+  "config.security_cache_clear_done": {
+    "other": "Caché limpiada"
+  },
+  "config.security_cache_clear_error": {
+    "other": "Error al limpiar la caché"
+  },
   "picker.safety_level_safe": {
     "other": "Seguro"
   },

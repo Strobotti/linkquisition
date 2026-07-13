@@ -150,7 +150,11 @@ it will be treated as a different browser and might be removed if not safe-guard
   "security": {
     "enabled": true,
     "provider": "google_safe_browsing",
-    "apiKey": "YOUR_API_KEY"
+    "apiKey": "YOUR_API_KEY",
+    "cache": {
+      "enabled": true,
+      "ttlHours": 24
+    }
   }
 }
 ```
