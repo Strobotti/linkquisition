@@ -14,6 +14,7 @@ import (
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/internal/safety"
+	"github.com/strobotti/linkquisition/internal/ui"
 )
 
 const (
@@ -53,7 +54,7 @@ func (c *Configurator) getSecurityTab(w fyne.Window) fyne.CanvasObject {
 	}
 
 	providerLinkContainer := container.NewStack(
-		newLinkWithCopy(i18n.T("config.security_get_key"), initialLinkURL, w),
+		ui.NewLinkWithCopy(i18n.T("config.security_get_key"), initialLinkURL, w),
 	)
 
 	testStatus := widget.NewLabel("")
@@ -66,7 +67,7 @@ func (c *Configurator) getSecurityTab(w fyne.Window) fyne.CanvasObject {
 			linkURL = googleSafeBrowsingURL
 		}
 		providerLinkContainer.Objects = []fyne.CanvasObject{
-			newLinkWithCopy(i18n.T("config.security_get_key"), linkURL, w),
+			ui.NewLinkWithCopy(i18n.T("config.security_get_key"), linkURL, w),
 		}
 		providerLinkContainer.Refresh()
 	}

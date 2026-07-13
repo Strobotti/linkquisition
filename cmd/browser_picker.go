@@ -24,6 +24,7 @@ import (
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/internal/qrcode"
 	"github.com/strobotti/linkquisition/internal/safety"
+	"github.com/strobotti/linkquisition/internal/ui"
 	internalwhois "github.com/strobotti/linkquisition/internal/whois"
 	"github.com/strobotti/linkquisition/resources"
 )
@@ -390,7 +391,7 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 
 	var reportLink fyne.CanvasObject
 	if result.ReportURL != "" {
-		reportLink = newLinkWithCopy(i18n.T("picker.safety_view_report"), result.ReportURL, w)
+		reportLink = ui.NewLinkWithCopy(i18n.T("picker.safety_view_report"), result.ReportURL, w)
 	}
 
 	closeButton := widget.NewButtonWithIcon(

@@ -14,6 +14,7 @@ import (
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
+	"github.com/strobotti/linkquisition/internal/ui"
 	"github.com/strobotti/linkquisition/resources"
 )
 
@@ -484,7 +485,7 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 	description := widget.NewLabel(i18n.T("about.description"))
 	description.Wrapping = fyne.TextWrapWord
 
-	githubLink := newLinkWithCopy("github.com/Strobotti/linkquisition", githubURL, w)
+	githubLink := ui.NewLinkWithCopy("github.com/Strobotti/linkquisition", githubURL, w)
 
 	details := container.NewVBox(
 		container.NewHBox(widget.NewLabel(i18n.T("about.author_label")), widget.NewLabel("Juha Jantunen")),
