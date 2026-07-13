@@ -405,7 +405,7 @@
     "other": "Adja meg az API kulcsot"
   },
   "config.security_get_key": {
-    "other": "API kulcs beszerzése →"
+    "other": "API kulcs beszerzése"
   },
   "config.security_test": {
     "other": "Teszt"

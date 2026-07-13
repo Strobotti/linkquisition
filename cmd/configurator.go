@@ -14,6 +14,7 @@ import (
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
+	"github.com/strobotti/linkquisition/internal/ui"
 	"github.com/strobotti/linkquisition/resources"
 )
 
@@ -50,12 +51,18 @@ func (c *Configurator) Run() error {
 		container.NewTabItem(i18n.T("config.tab_browsers"), c.getBrowsersTab()),
 		container.NewTabItem(i18n.T("config.tab_rules"), c.getRulesTab()),
 		container.NewTabItem(i18n.T("config.tab_plugins"), c.getPluginsTab()),
-		container.NewTabItem(i18n.T("config.tab_security"), c.getSecurityTab()),
-		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab()),
+		container.NewTabItem(i18n.T("config.tab_security"), c.getSecurityTab(w)),
+		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab(w)),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	w.SetContent(tabs)
+
+	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
+		if keyEvent.Name == fyne.KeyEscape {
+			w.Close()
+		}
+	})
 
 	w.Resize(fyne.NewSize(700, 600)) //nolint:mnd
 	w.CenterOnScreen()
@@ -463,9 +470,11 @@ func (c *Configurator) buildFaviconSection(settings *linkquisition.Settings) fyn
 	)
 }
 
-func (c *Configurator) getAboutTab() fyne.CanvasObject {
+func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
+	const githubURL = "https://github.com/Strobotti/linkquisition"
+
 	openURL := func() {
-		if err := c.openExternalURL("https://github.com/Strobotti/linkquisition"); err != nil {
+		if err := c.openExternalURL(githubURL); err != nil {
 			c.logger.Error("Error opening URL", "error", err)
 		}
 	}
@@ -482,8 +491,7 @@ func (c *Configurator) getAboutTab() fyne.CanvasObject {
 	description := widget.NewLabel(i18n.T("about.description"))
 	description.Wrapping = fyne.TextWrapWord
 
-	githubLink := widget.NewButton("github.com/Strobotti/linkquisition", openURL)
-	githubLink.Importance = widget.LowImportance
+	githubLink := ui.NewLinkWithCopy("github.com/Strobotti/linkquisition", githubURL, w)
 
 	details := container.NewVBox(
 		container.NewHBox(widget.NewLabel(i18n.T("about.author_label")), widget.NewLabel("Juha Jantunen")),

@@ -100,13 +100,22 @@ func (c *Cache) PruneExpired() {
 			continue
 		}
 
-		info, err := entry.Info()
+		path := filepath.Join(c.dir, entry.Name())
+
+		data, err := os.ReadFile(path)
 		if err != nil {
 			continue
 		}
 
-		if time.Since(info.ModTime()) > c.ttl {
-			_ = os.Remove(filepath.Join(c.dir, entry.Name()))
+		var cached cachedEntry
+		if err := json.Unmarshal(data, &cached); err != nil {
+			// Corrupted — remove it
+			_ = os.Remove(path)
+			continue
+		}
+
+		if time.Since(cached.CachedAt) > c.ttl {
+			_ = os.Remove(path)
 		}
 	}
 }

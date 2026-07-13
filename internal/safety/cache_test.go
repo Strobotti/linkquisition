@@ -130,8 +130,8 @@ func TestClearAll(t *testing.T) {
 
 func TestCache_PruneExpired(t *testing.T) {
 	cacheDir := t.TempDir()
-	// Use a very short TTL
-	cache := NewCache(cacheDir, "google_safe_browsing", 1*time.Millisecond)
+	// Use a short but not too aggressive TTL to avoid flakiness on slow CI
+	cache := NewCache(cacheDir, "google_safe_browsing", 50*time.Millisecond)
 
 	result := &CheckResult{Level: ThreatLevelSafe, Provider: ProviderNameGoogleSafeBrowsing}
 
@@ -141,13 +141,12 @@ func TestCache_PruneExpired(t *testing.T) {
 	require.NoError(t, cache.Put("https://c.com", result))
 
 	// Wait for TTL to expire
-	time.Sleep(5 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
-	// Add one fresh entry
-	freshCache := NewCache(cacheDir, "google_safe_browsing", 24*time.Hour)
-	require.NoError(t, freshCache.Put("https://fresh.com", result))
+	// Add one fresh entry (within TTL)
+	require.NoError(t, cache.Put("https://fresh.com", result))
 
-	// Prune with the short TTL — only expired entries should be removed
+	// Prune — only expired entries should be removed
 	cache.PruneExpired()
 
 	// Expired entries should be gone
@@ -160,7 +159,7 @@ func TestCache_PruneExpired(t *testing.T) {
 	_, ok = cache.Get("https://c.com")
 	assert.False(t, ok)
 
-	// Fresh entry should still exist (checked with a longer TTL cache)
-	_, ok = freshCache.Get("https://fresh.com")
+	// Fresh entry should still exist
+	_, ok = cache.Get("https://fresh.com")
 	assert.True(t, ok)
 }
