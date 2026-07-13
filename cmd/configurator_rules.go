@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"image/color"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -16,6 +15,7 @@ import (
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
+	"github.com/strobotti/linkquisition/internal/ui"
 )
 
 func (c *Configurator) getRulesTab() fyne.CanvasObject {
@@ -179,7 +179,13 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 	valueEntry := widget.NewEntry()
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 
-	regexPanel := newRegexPanel()
+	windows := c.fapp.Driver().AllWindows()
+	if len(windows) == 0 {
+		return
+	}
+	parentWindow := windows[0]
+
+	regexPanel := newRegexPanel(parentWindow)
 
 	typeSelect.OnChanged = func(selected string) {
 		regexPanel.update(selected, valueEntry.Text)
@@ -197,12 +203,6 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 		),
 		regexPanel.panel,
 	)
-
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
-		return
-	}
-	parentWindow := windows[0]
 
 	settings := c.settingsService.GetSettings()
 	browserName := settings.Browsers[browserIdx].Name
@@ -252,7 +252,13 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 	valueEntry.SetText(rule.Value)
 
-	regexPanel := newRegexPanel()
+	windows := c.fapp.Driver().AllWindows()
+	if len(windows) == 0 {
+		return
+	}
+	parentWindow := windows[0]
+
+	regexPanel := newRegexPanel(parentWindow)
 	regexPanel.update(rule.Type, rule.Value)
 
 	typeSelect.OnChanged = func(selected string) {
@@ -271,12 +277,6 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 		),
 		regexPanel.panel,
 	)
-
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
-		return
-	}
-	parentWindow := windows[0]
 
 	d := dialog.NewCustomConfirm(
 		i18n.T("config.rules_edit_title"),
@@ -373,7 +373,7 @@ type regexPanel struct {
 	pattern       string
 }
 
-func newRegexPanel() *regexPanel {
+func newRegexPanel(w fyne.Window) *regexPanel {
 	// Indicator next to value entry
 	indicator := canvas.NewText("✓", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
 	indicator.TextSize = 18 //nolint:mnd
@@ -400,8 +400,8 @@ func newRegexPanel() *regexPanel {
 	// Help text with link to regex reference
 	helpLabel := widget.NewLabel(i18n.T("config.rules_regex_help"))
 	helpLabel.TextStyle = fyne.TextStyle{Italic: true}
-	regexDocsURL, _ := url.Parse("https://pkg.go.dev/regexp/syntax")
-	helpLink := widget.NewHyperlink(i18n.T("config.rules_regex_help_link"), regexDocsURL)
+	regexDocsURL := "https://pkg.go.dev/regexp/syntax"
+	helpLink := ui.NewLinkWithCopy(i18n.T("config.rules_regex_help_link"), regexDocsURL, w)
 	helpRow := container.NewHBox(helpLabel, helpLink)
 
 	// Full panel (everything below the value entry)
