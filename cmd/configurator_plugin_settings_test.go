@@ -6,10 +6,8 @@ import (
 	"github.com/strobotti/linkquisition"
 )
 
-func TestBuildDefaultSettingsFromMetadata(t *testing.T) {
-	t.Parallel()
-
-	meta := &linkquisition.PluginMetadata{
+func testPluginMetadata() *linkquisition.PluginMetadata {
+	return &linkquisition.PluginMetadata{
 		Name: "TestPlugin",
 		Settings: []linkquisition.PluginSettingDescriptor{
 			{
@@ -44,48 +42,58 @@ func TestBuildDefaultSettingsFromMetadata(t *testing.T) {
 			},
 		},
 	}
+}
 
-	defaults := buildDefaultSettingsFromMetadata(meta)
+func TestBuildDefaultSettings_ScalarTypes(t *testing.T) {
+	t.Parallel()
+	defaults := buildDefaultSettingsFromMetadata(testPluginMetadata())
 
-	// String default
 	if v, ok := defaults["stringVal"]; !ok || v != "hello" {
 		t.Errorf("expected stringVal = 'hello', got %v", v)
 	}
 
-	// Bool default
 	if v, ok := defaults["boolVal"]; !ok || v != true {
 		t.Errorf("expected boolVal = true, got %v", v)
 	}
 
-	// Choice default
 	if v, ok := defaults["choiceVal"]; !ok || v != "option1" {
 		t.Errorf("expected choiceVal = 'option1', got %v", v)
 	}
 
-	// No default — should not be in the map
+	if v, ok := defaults["duration"]; !ok || v != "168h" {
+		t.Errorf("expected duration = '168h', got %v", v)
+	}
+}
+
+func TestBuildDefaultSettings_NoDefaultOmitted(t *testing.T) {
+	t.Parallel()
+	defaults := buildDefaultSettingsFromMetadata(testPluginMetadata())
+
 	if _, ok := defaults["noDefault"]; ok {
 		t.Error("expected noDefault to not be in the map")
 	}
+}
 
-	// StringList default — should be converted to []interface{}
-	if v, ok := defaults["stringList"]; !ok {
-		t.Error("expected stringList to be in the map")
-	} else {
-		list, ok := v.([]interface{})
-		if !ok {
-			t.Fatalf("expected stringList to be []interface{}, got %T", v)
-		}
-		if len(list) != 3 {
-			t.Fatalf("expected 3 items, got %d", len(list))
-		}
-		if list[0] != "a" || list[1] != "b" || list[2] != "c" {
-			t.Errorf("expected [a b c], got %v", list)
-		}
+func TestBuildDefaultSettings_StringList(t *testing.T) {
+	t.Parallel()
+	defaults := buildDefaultSettingsFromMetadata(testPluginMetadata())
+
+	v, ok := defaults["stringList"]
+	if !ok {
+		t.Fatal("expected stringList to be in the map")
 	}
 
-	// Duration default (falls through to default case)
-	if v, ok := defaults["duration"]; !ok || v != "168h" {
-		t.Errorf("expected duration = '168h', got %v", v)
+	list, ok := v.([]interface{})
+	if !ok {
+		t.Fatalf("expected stringList to be []interface{}, got %T", v)
+	}
+
+	if len(list) != 3 {
+		t.Fatalf("expected 3 items, got %d", len(list))
+	}
+
+	if list[0] != "a" || list[1] != "b" || list[2] != "c" {
+		t.Errorf("expected [a b c], got %v", list)
 	}
 }
 

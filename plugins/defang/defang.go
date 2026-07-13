@@ -65,7 +65,7 @@ func (p *defang) Metadata() linkquisition.PluginMetadata {
 	return linkquisition.PluginMetadata{
 		Name:        "Defang",
 		Description: "Checks URLs against known-malicious domain blocklists and blocks or warns before opening",
-		Author:      "Strobotti",
+		Author:      "Juha Jantunen",
 		Version:     "2.0.0",
 		URL:         "https://github.com/Strobotti/linkquisition",
 		Settings: []linkquisition.PluginSettingDescriptor{

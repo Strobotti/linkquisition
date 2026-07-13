@@ -21,7 +21,8 @@ import (
 // from the plugin's metadata descriptors.
 func buildDefaultSettingsFromMetadata(meta *linkquisition.PluginMetadata) map[string]interface{} {
 	defaults := make(map[string]interface{})
-	for _, desc := range meta.Settings {
+	for i := range meta.Settings {
+		desc := &meta.Settings[i]
 		if desc.Default == nil {
 			continue
 		}
@@ -29,12 +30,14 @@ func buildDefaultSettingsFromMetadata(meta *linkquisition.PluginMetadata) map[st
 		case linkquisition.SettingTypeStringList:
 			if list := convertToStringList(desc.Default); list != nil {
 				asIface := make([]interface{}, len(list))
-				for i, s := range list {
-					asIface[i] = s
+				for j, s := range list {
+					asIface[j] = s
 				}
 				defaults[desc.Key] = asIface
 			}
-		default:
+		case linkquisition.SettingTypeString, linkquisition.SettingTypeBool,
+			linkquisition.SettingTypeInt, linkquisition.SettingTypeDuration,
+			linkquisition.SettingTypeChoice, linkquisition.SettingTypeKeyValueList:
 			defaults[desc.Key] = desc.Default
 		}
 	}
@@ -137,7 +140,7 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 	}
 
 	scrollContent := container.NewVScroll(scrollBody)
-	scrollContent.SetMinSize(fyne.NewSize(740, 380)) //nolint:mnd
+	scrollContent.SetMinSize(fyne.NewSize(780, 420)) //nolint:mnd
 
 	var d dialog.Dialog
 
@@ -154,7 +157,7 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 	content := container.NewBorder(nil, buttonRow, nil, nil, scrollContent)
 
 	d = dialog.NewCustomWithoutButtons(title, content, parentWindow)
-	d.Resize(fyne.NewSize(820, 540)) //nolint:mnd
+	d.Resize(fyne.NewSize(900, 700)) //nolint:mnd
 	d.Show()
 }
 
@@ -219,7 +222,7 @@ func (c *Configurator) showAddPluginSettings(
 	}
 
 	scrollContent := container.NewVScroll(scrollBody)
-	scrollContent.SetMinSize(fyne.NewSize(740, 380)) //nolint:mnd
+	scrollContent.SetMinSize(fyne.NewSize(780, 420)) //nolint:mnd
 
 	var d dialog.Dialog
 
@@ -243,7 +246,7 @@ func (c *Configurator) showAddPluginSettings(
 	content := container.NewBorder(nil, buttonRow, nil, nil, scrollContent)
 
 	d = dialog.NewCustomWithoutButtons(title, content, parentWindow)
-	d.Resize(fyne.NewSize(820, 540)) //nolint:mnd
+	d.Resize(fyne.NewSize(900, 700)) //nolint:mnd
 	d.Show()
 }
 

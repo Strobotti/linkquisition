@@ -66,7 +66,7 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 	return linkquisition.PluginMetadata{
 		Name:        "Shenanigans",
 		Description: "Adds completely useless but entertaining visual effects to the browser picker window",
-		Author:      "Strobotti",
+		Author:      "Juha Jantunen",
 		Version:     "1.0.0",
 		URL:         "https://github.com/Strobotti/linkquisition",
 		Settings: []linkquisition.PluginSettingDescriptor{
