@@ -63,7 +63,13 @@
     "other": "Copiar"
   },
   "picker.remember_choice": {
-    "other": "Lembrar esta escolha para {{.Site}}"
+    "other": "Lembrar esta escolha para:"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (apenas este site)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (todo o domínio)"
   },
   "picker.keyboard_guide": {
     "other": "Prima 'ENTER' para o primeiro, 'ESC' para sair, '{{.CopyShortcut}}' para copiar o URL"

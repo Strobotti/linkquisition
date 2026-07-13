@@ -63,7 +63,13 @@
     "other": "Копіювати"
   },
   "picker.remember_choice": {
-    "other": "Запам'ятати цей вибір для {{.Site}}"
+    "other": "Запам'ятати цей вибір для:"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (лише цей сайт)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (весь домен)"
   },
   "picker.keyboard_guide": {
     "other": "Натисніть 'ENTER' для першого, 'ESC' для виходу, '{{.CopyShortcut}}' для копіювання URL"

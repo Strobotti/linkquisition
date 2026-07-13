@@ -63,7 +63,13 @@
     "other": "Copy"
   },
   "picker.remember_choice": {
-    "other": "Remember this choice with {{.Site}}"
+    "other": "Remember this choice for:"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (this site only)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (entire domain)"
   },
   "picker.keyboard_guide": {
     "other": "Press 'ENTER' to pick first, 'ESC' to quit, '{{.CopyShortcut}}' to copy URL to clipboard"

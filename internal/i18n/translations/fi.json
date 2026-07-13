@@ -63,7 +63,13 @@
     "other": "Kopioi"
   },
   "picker.remember_choice": {
-    "other": "Muista tämä valinta sivustolle {{.Site}}"
+    "other": "Muista tämä valinta:"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (vain tämä sivusto)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (koko verkkotunnus)"
   },
   "picker.keyboard_guide": {
     "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, '{{.CopyShortcut}}' kopioidaksesi URL:n leikepöydälle"

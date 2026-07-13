@@ -63,7 +63,13 @@
     "other": "Kopiera"
   },
   "picker.remember_choice": {
-    "other": "Kom ihåg detta val för {{.Site}}"
+    "other": "Kom ihåg detta val för:"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (bara denna webbplats)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (hela domänen)"
   },
   "picker.keyboard_guide": {
     "other": "Tryck 'ENTER' för att välja första, 'ESC' för att avsluta, '{{.CopyShortcut}}' för att kopiera URL till urklipp"

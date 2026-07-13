@@ -63,7 +63,13 @@
     "other": "Másolás"
   },
   "picker.remember_choice": {
-    "other": "Választás megjegyzése a(z) {{.Site}} webhelyhez"
+    "other": "Választás megjegyzése:"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (csak ez a webhely)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (teljes domain)"
   },
   "picker.keyboard_guide": {
     "other": "Nyomj 'ENTER'-t az első kiválasztásához, 'ESC'-t a kilépéshez, '{{.CopyShortcut}}'-t az URL vágólapra másolásához"
