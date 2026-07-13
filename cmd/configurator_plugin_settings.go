@@ -39,12 +39,10 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 
 	title := i18n.T("config.plugins_settings_title", map[string]interface{}{templateKeyName: meta.Name})
 
-	// Get the parent window — use the fyne app's driver to find it
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	scrollContent := container.NewVScroll(form)
 	scrollContent.SetMinSize(fyne.NewSize(700, 350)) //nolint:mnd
@@ -94,11 +92,10 @@ func (c *Configurator) showAddPluginSettings(
 
 	title := i18n.T("config.plugins_settings_title", map[string]interface{}{templateKeyName: meta.Name})
 
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	scrollContent := container.NewVScroll(form)
 	scrollContent.SetMinSize(fyne.NewSize(700, 350)) //nolint:mnd

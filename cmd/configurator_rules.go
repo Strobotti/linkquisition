@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"image/color"
 	"regexp"
 	"strings"
 
@@ -130,7 +129,7 @@ func (c *Configurator) buildBrowserRulesSection(
 		for ruleIdx := range b.Matches {
 			row := c.buildRuleRow(browserIdx, ruleIdx, listContainer)
 			if ruleIdx%2 == 1 {
-				row = withSubtleBackground(row)
+				row = ui.WithAltRowBackground(row)
 			}
 			rulesBox.Add(row)
 		}
@@ -179,11 +178,10 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 	valueEntry := widget.NewEntry()
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	regexPanel := newRegexPanel(parentWindow)
 	regexPanel.update(linkquisition.BrowserMatchTypeSite, "")
@@ -253,11 +251,10 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 	valueEntry.SetText(rule.Value)
 
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	regexPanel := newRegexPanel(parentWindow)
 	regexPanel.update(rule.Type, rule.Value)
@@ -378,7 +375,7 @@ type regexPanel struct {
 
 func newRegexPanel(w fyne.Window) *regexPanel {
 	// Indicator next to value entry
-	indicator := canvas.NewText("✓", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
+	indicator := canvas.NewText("✓", ui.ColorSuccess)
 	indicator.TextSize = 18
 	indicator.TextStyle = fyne.TextStyle{Bold: true}
 	indicatorBox := container.NewCenter(indicator)
@@ -394,7 +391,7 @@ func newRegexPanel(w fyne.Window) *regexPanel {
 	testEntry.SetPlaceHolder(i18n.T("config.rules_regex_test_placeholder"))
 
 	// Test match result
-	testResult := canvas.NewText("", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
+	testResult := canvas.NewText("", ui.ColorSuccess)
 	testResult.TextSize = 14
 	testResult.TextStyle = fyne.TextStyle{Bold: true}
 	testResultBox := container.NewHBox(testResult)
@@ -471,7 +468,7 @@ func (rp *regexPanel) update(matchType, value string) {
 
 	if value == "" {
 		rp.indicator.Text = "—"
-		rp.indicator.Color = color.NRGBA{R: 150, G: 150, B: 150, A: 255}
+		rp.indicator.Color = ui.ColorNeutral
 		rp.indicator.Refresh()
 		rp.errorLabel.Hide()
 		rp.refreshTestResult()
@@ -480,12 +477,12 @@ func (rp *regexPanel) update(matchType, value string) {
 
 	if _, err := regexp.Compile(value); err != nil {
 		rp.indicator.Text = "✗"
-		rp.indicator.Color = color.NRGBA{R: 220, G: 0, B: 0, A: 255}
+		rp.indicator.Color = ui.ColorDanger
 		rp.errorLabel.SetText("✗ " + i18n.T("config.rules_regex_invalid"))
 		rp.errorLabel.Show()
 	} else {
 		rp.indicator.Text = "✓"
-		rp.indicator.Color = color.NRGBA{R: 0, G: 180, B: 0, A: 255}
+		rp.indicator.Color = ui.ColorSuccess
 		rp.errorLabel.Hide()
 	}
 
@@ -510,20 +507,13 @@ func (rp *regexPanel) refreshTestResult() {
 
 	if re.MatchString(testURL) {
 		rp.testResult.Text = "✓ " + i18n.T("config.rules_regex_match")
-		rp.testResult.Color = color.NRGBA{R: 0, G: 180, B: 0, A: 255}
+		rp.testResult.Color = ui.ColorSuccess
 	} else {
 		rp.testResult.Text = "✗ " + i18n.T("config.rules_regex_no_match")
-		rp.testResult.Color = color.NRGBA{R: 220, G: 0, B: 0, A: 255}
+		rp.testResult.Color = ui.ColorDanger
 	}
 
 	rp.testResult.Refresh()
-}
-
-// withSubtleBackground wraps a widget in a container with a very subtle
-// background tint, used for alternating row colors in rule lists.
-func withSubtleBackground(obj fyne.CanvasObject) fyne.CanvasObject {
-	bg := canvas.NewRectangle(color.NRGBA{R: 128, G: 128, B: 128, A: 15})
-	return container.NewStack(bg, obj)
 }
 
 // browserMatchesFilter returns true if a browser should be shown given the

@@ -44,6 +44,16 @@ func NewConfigurator(
 	}
 }
 
+// parentWindow returns the first open window, typically the configurator's main window.
+// Returns nil if no windows are open (should not happen in practice).
+func (c *Configurator) parentWindow() fyne.Window {
+	windows := c.fapp.Driver().AllWindows()
+	if len(windows) == 0 {
+		return nil
+	}
+	return windows[0]
+}
+
 //nolint:unparam
 func (c *Configurator) Run() error {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))

@@ -193,6 +193,21 @@ The app has two UI modes, both in `cmd/`:
   copy-to-clipboard button beside it. Use this whenever displaying a URL or link in the GUI
   (e.g. reference links, documentation URLs, external resources). Prefer this over a plain
   `widget.NewHyperlink` for consistency across the app.
+- **`ui.FormLabel(text)`** / **`ui.FormValue(value)`** — bold label and wrapping value label
+  for form-style key-value layouts (grids). `FormValue` substitutes "—" for empty strings.
+- **`ui.NewTappableContainer(content, onTapped)`** — wraps any `CanvasObject` to make it
+  tappable with a hover highlight (rounded rectangle). Used for grid-style interactive layouts
+  like the horizontal browser picker.
+- **`ui.WithAltRowBackground(obj)`** — wraps a widget with a subtle alternating-row background
+  tint for zebra-striping in lists.
+- **Color constants** (`ui.ColorSuccess`, `ui.ColorWarning`, `ui.ColorDanger`, `ui.ColorNeutral`,
+  `ui.ColorHoverBg`, `ui.ColorAltRowBg`) — semantic colors for status indicators, validation
+  feedback, and background highlights. Always use these instead of hardcoding `color.NRGBA` values.
+
+### Configurator helpers
+
+- **`c.parentWindow()`** — returns the main configurator window. Use this instead of the
+  verbose `c.fapp.Driver().AllWindows()` pattern when you need a parent window for dialogs.
 
 ## Settings and config model
 

@@ -14,7 +14,6 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -154,6 +153,8 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 	w.CenterOnScreen()
 
+	setPickerWindowAlwaysOnTop()
+
 	w.ShowAndRun()
 
 	return nil
@@ -206,8 +207,8 @@ func (picker *BrowserPicker) tapButton(obj fyne.CanvasObject) {
 		return
 	}
 	// For horizontal layout, the tappable wrapper holds the callback
-	if tappable, ok := obj.(*tappableContainer); ok {
-		tappable.onTapped()
+	if tappable, ok := obj.(*ui.TappableContainer); ok {
+		tappable.OnTapped()
 	}
 }
 
@@ -259,8 +260,7 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 	urlToOpen string, w fyne.Window, settings *linkquisition.Settings,
 ) fyne.CanvasObject {
 	// Gray dot initially — sized to match the menu button
-	grayColor := color.NRGBA{R: 150, G: 150, B: 150, A: 255}
-	indicator := canvas.NewText("●", grayColor)
+	indicator := canvas.NewText("●", ui.ColorNeutral)
 	indicator.TextSize = theme.TextSize() * 2
 
 	// Create a dummy button to get its height, then use that for our container
@@ -302,11 +302,11 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 				fyne.Do(func() {
 					switch cached.Level {
 					case safety.ThreatLevelSafe:
-						indicator.Color = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+						indicator.Color = ui.ColorSuccess
 					case safety.ThreatLevelSuspicious:
-						indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+						indicator.Color = ui.ColorWarning
 					case safety.ThreatLevelDangerous:
-						indicator.Color = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+						indicator.Color = ui.ColorDanger
 					}
 					indicator.Refresh()
 				})
@@ -327,7 +327,7 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 		if err != nil {
 			picker.logger.Error("Safety check failed", "url", urlToOpen, "error", err)
 			fyne.Do(func() {
-				indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+				indicator.Color = ui.ColorWarning
 				indicator.Refresh()
 			})
 			return
@@ -345,11 +345,11 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 		fyne.Do(func() {
 			switch result.Level {
 			case safety.ThreatLevelSafe:
-				indicator.Color = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+				indicator.Color = ui.ColorSuccess
 			case safety.ThreatLevelSuspicious:
-				indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+				indicator.Color = ui.ColorWarning
 			case safety.ThreatLevelDangerous:
-				indicator.Color = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+				indicator.Color = ui.ColorDanger
 			}
 			indicator.Refresh()
 		})
@@ -360,18 +360,18 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 
 func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne.Window) {
 	var levelText string
-	var levelColor color.NRGBA
+	var levelColor color.Color
 
 	switch result.Level {
 	case safety.ThreatLevelSafe:
 		levelText = i18n.T("picker.safety_level_safe")
-		levelColor = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+		levelColor = ui.ColorSuccess
 	case safety.ThreatLevelSuspicious:
 		levelText = i18n.T("picker.safety_level_suspicious")
-		levelColor = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+		levelColor = ui.ColorWarning
 	case safety.ThreatLevelDangerous:
 		levelText = i18n.T("picker.safety_level_dangerous")
-		levelColor = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+		levelColor = ui.ColorDanger
 	}
 
 	levelLabel := canvas.NewText(levelText, levelColor)
@@ -379,14 +379,14 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 	levelLabel.TextSize = theme.TextSize()
 
 	grid := container.New(layout.NewFormLayout(),
-		picker.whoisLabel(i18n.T("picker.safety_provider")), picker.whoisValue(result.Provider),
-		picker.whoisLabel(i18n.T("picker.safety_result")), levelLabel,
+		ui.FormLabel(i18n.T("picker.safety_provider")), ui.FormValue(result.Provider),
+		ui.FormLabel(i18n.T("picker.safety_result")), levelLabel,
 	)
 
 	if len(result.Details) > 0 {
 		detailsText := strings.Join(result.Details, "\n")
-		grid.Add(picker.whoisLabel(i18n.T("picker.safety_details")))
-		grid.Add(picker.whoisValue(detailsText))
+		grid.Add(ui.FormLabel(i18n.T("picker.safety_details")))
+		grid.Add(ui.FormValue(detailsText))
 	}
 
 	var reportLink fyne.CanvasObject
@@ -560,10 +560,10 @@ func (picker *BrowserPicker) buildWhoisContent(
 	info *internalwhois.DomainInfo, w fyne.Window,
 ) fyne.CanvasObject {
 	dnssecText := "✗"
-	dnssecColor := color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+	dnssecColor := ui.ColorDanger
 	if info.DNSSec {
 		dnssecText = "✓"
-		dnssecColor = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+		dnssecColor = ui.ColorSuccess
 	}
 
 	dnssecLabel := canvas.NewText(dnssecText, dnssecColor)
@@ -571,25 +571,25 @@ func (picker *BrowserPicker) buildWhoisContent(
 	dnssecLabel.TextSize = theme.TextSize()
 
 	grid := container.New(layout.NewFormLayout(),
-		picker.whoisLabel(i18n.T("picker.whois_domain")), picker.whoisValue(info.Domain),
-		picker.whoisLabel(i18n.T("picker.whois_registrar")), picker.whoisValue(info.Registrar),
-		picker.whoisLabel(i18n.T("picker.whois_created")), picker.whoisValue(info.CreatedDate),
-		picker.whoisLabel(i18n.T("picker.whois_expires")), picker.whoisValue(info.ExpiryDate),
-		picker.whoisLabel(i18n.T("picker.whois_updated")), picker.whoisValue(info.UpdatedDate),
-		picker.whoisLabel(i18n.T("picker.whois_age")), picker.whoisValue(info.DomainAge),
-		picker.whoisLabel(i18n.T("picker.whois_dnssec")), dnssecLabel,
+		ui.FormLabel(i18n.T("picker.whois_domain")), ui.FormValue(info.Domain),
+		ui.FormLabel(i18n.T("picker.whois_registrar")), ui.FormValue(info.Registrar),
+		ui.FormLabel(i18n.T("picker.whois_created")), ui.FormValue(info.CreatedDate),
+		ui.FormLabel(i18n.T("picker.whois_expires")), ui.FormValue(info.ExpiryDate),
+		ui.FormLabel(i18n.T("picker.whois_updated")), ui.FormValue(info.UpdatedDate),
+		ui.FormLabel(i18n.T("picker.whois_age")), ui.FormValue(info.DomainAge),
+		ui.FormLabel(i18n.T("picker.whois_dnssec")), dnssecLabel,
 	)
 
 	if len(info.NameServers) > 0 {
 		nsText := strings.Join(info.NameServers, ", ")
-		grid.Add(picker.whoisLabel(i18n.T("picker.whois_nameservers")))
-		grid.Add(picker.whoisValue(nsText))
+		grid.Add(ui.FormLabel(i18n.T("picker.whois_nameservers")))
+		grid.Add(ui.FormValue(nsText))
 	}
 
 	if len(info.Status) > 0 {
 		statusText := strings.Join(info.Status, ", ")
-		grid.Add(picker.whoisLabel(i18n.T("picker.whois_status")))
-		grid.Add(picker.whoisValue(statusText))
+		grid.Add(ui.FormLabel(i18n.T("picker.whois_status")))
+		grid.Add(ui.FormValue(statusText))
 	}
 
 	closeButton := widget.NewButtonWithIcon(
@@ -643,24 +643,6 @@ func (picker *BrowserPicker) buildWhoisError(err error, w fyne.Window) fyne.Canv
 	content.Add(container.NewCenter(closeButton))
 
 	return content
-}
-
-func (picker *BrowserPicker) whoisValue(value string) *widget.Label {
-	if value == "" {
-		value = "—"
-	}
-
-	v := widget.NewLabel(value)
-	v.Wrapping = fyne.TextWrapWord
-
-	return v
-}
-
-func (picker *BrowserPicker) whoisLabel(text string) *widget.Label {
-	l := widget.NewLabel(text)
-	l.TextStyle = fyne.TextStyle{Bold: true}
-
-	return l
 }
 
 // fetchAndUpdateFavicon fetches the favicon in the background and updates the image widget.
@@ -813,7 +795,7 @@ func (picker *BrowserPicker) makeHorizontalBrowserButton(
 		nameLabel,
 	)
 
-	return newTappableContainer(content, callback)
+	return ui.NewTappableContainer(content, callback)
 }
 
 func (picker *BrowserPicker) browserOpenCallback(
@@ -848,52 +830,4 @@ func (picker *BrowserPicker) browserOpenCallback(
 		}()
 		picker.fapp.Quit()
 	}
-}
-
-// tappableContainer wraps a canvas object to make it respond to tap and hover events.
-type tappableContainer struct {
-	widget.BaseWidget
-	content  fyne.CanvasObject
-	bg       *canvas.Rectangle
-	onTapped func()
-}
-
-// Compile-time interface checks.
-var (
-	_ fyne.Tappable     = (*tappableContainer)(nil)
-	_ desktop.Hoverable = (*tappableContainer)(nil)
-)
-
-func newTappableContainer(content fyne.CanvasObject, onTapped func()) *tappableContainer {
-	bg := canvas.NewRectangle(color.Transparent)
-	bg.CornerRadius = 8
-	t := &tappableContainer{
-		content:  content,
-		bg:       bg,
-		onTapped: onTapped,
-	}
-	t.ExtendBaseWidget(t)
-	return t
-}
-
-func (t *tappableContainer) Tapped(_ *fyne.PointEvent) {
-	if t.onTapped != nil {
-		t.onTapped()
-	}
-}
-
-func (t *tappableContainer) MouseIn(_ *desktop.MouseEvent) {
-	t.bg.FillColor = color.NRGBA{R: 150, G: 150, B: 150, A: 30}
-	t.bg.Refresh()
-}
-
-func (t *tappableContainer) MouseMoved(_ *desktop.MouseEvent) {}
-
-func (t *tappableContainer) MouseOut() {
-	t.bg.FillColor = color.Transparent
-	t.bg.Refresh()
-}
-
-func (t *tappableContainer) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(container.NewStack(t.bg, t.content))
 }
