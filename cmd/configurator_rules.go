@@ -379,7 +379,7 @@ type regexPanel struct {
 func newRegexPanel(w fyne.Window) *regexPanel {
 	// Indicator next to value entry
 	indicator := canvas.NewText("✓", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
-	indicator.TextSize = 18 //nolint:mnd
+	indicator.TextSize = 18
 	indicator.TextStyle = fyne.TextStyle{Bold: true}
 	indicatorBox := container.NewCenter(indicator)
 	indicatorBox.Hide()
@@ -395,7 +395,7 @@ func newRegexPanel(w fyne.Window) *regexPanel {
 
 	// Test match result
 	testResult := canvas.NewText("", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
-	testResult.TextSize = 14 //nolint:mnd
+	testResult.TextSize = 14
 	testResult.TextStyle = fyne.TextStyle{Bold: true}
 	testResultBox := container.NewHBox(testResult)
 	testResultBox.Hide()

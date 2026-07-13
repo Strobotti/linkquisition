@@ -37,6 +37,7 @@ const (
 	verticalWindowMinHeight  = 50
 	faviconDisplaySize       = 16
 	safetyCheckTimeout       = 10 * time.Second
+	rememberIndentMultiplier = 4
 )
 
 type BrowserPicker struct {
@@ -722,7 +723,7 @@ func (picker *BrowserPicker) buildRememberCheck(
 
 	// Indent the radio group to visually nest it under the checkbox
 	indent := canvas.NewRectangle(color.Transparent)
-	indent.SetMinSize(fyne.NewSize(theme.Padding()*4, 0))
+	indent.SetMinSize(fyne.NewSize(theme.Padding()*rememberIndentMultiplier, 0))
 	indentedRadio := container.NewHBox(indent, radio)
 	indentedRadio.Hide()
 
