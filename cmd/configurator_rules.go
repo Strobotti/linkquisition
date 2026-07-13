@@ -355,28 +355,25 @@ func (c *Configurator) deleteRule(browserIdx, ruleIdx int, listContainer *fyne.C
 	c.rebuildRulesList(listContainer, "")
 }
 
-const (
-	regexIndicatorSize = 12
-)
-
-// regexIndicator shows a colored dot next to the value entry when the rule
-// type is "regex". Green = valid regex, red = invalid regex. Hidden for
+// regexIndicator shows a ✓ or ✗ next to the value entry when the rule
+// type is "regex". Green ✓ = valid regex, red ✗ = invalid regex. Hidden for
 // non-regex types.
 type regexIndicator struct {
-	dot       *canvas.Circle
+	label     *canvas.Text
 	container *fyne.Container
 }
 
 func newRegexIndicator() *regexIndicator {
-	dot := canvas.NewCircle(color.NRGBA{R: 0, G: 180, B: 0, A: 255})
-	dot.Resize(fyne.NewSize(regexIndicatorSize, regexIndicatorSize))
+	label := canvas.NewText("✓", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
+	label.TextSize = 18 //nolint:mnd
+	label.TextStyle = fyne.TextStyle{Bold: true}
 
-	dotContainer := container.NewCenter(dot)
-	dotContainer.Hide()
+	labelContainer := container.NewCenter(label)
+	labelContainer.Hide()
 
 	return &regexIndicator{
-		dot:       dot,
-		container: dotContainer,
+		label:     label,
+		container: labelContainer,
 	}
 }
 
@@ -389,18 +386,21 @@ func (ri *regexIndicator) update(matchType, value string) {
 	ri.container.Show()
 
 	if value == "" {
-		ri.dot.FillColor = color.NRGBA{R: 180, G: 180, B: 0, A: 255} // yellow for empty
-		ri.dot.Refresh()
+		ri.label.Text = "—"
+		ri.label.Color = color.NRGBA{R: 150, G: 150, B: 150, A: 255} // grey for empty
+		ri.label.Refresh()
 		return
 	}
 
 	if _, err := regexp.Compile(value); err != nil {
-		ri.dot.FillColor = color.NRGBA{R: 220, G: 0, B: 0, A: 255} // red
+		ri.label.Text = "✗"
+		ri.label.Color = color.NRGBA{R: 220, G: 0, B: 0, A: 255} // red
 	} else {
-		ri.dot.FillColor = color.NRGBA{R: 0, G: 180, B: 0, A: 255} // green
+		ri.label.Text = "✓"
+		ri.label.Color = color.NRGBA{R: 0, G: 180, B: 0, A: 255} // green
 	}
 
-	ri.dot.Refresh()
+	ri.label.Refresh()
 }
 
 // withSubtleBackground wraps a widget in a container with a very subtle
