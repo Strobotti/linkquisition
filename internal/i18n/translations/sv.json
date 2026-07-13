@@ -104,6 +104,24 @@
   "about.github_label": {
     "other": "GitHub:"
   },
+  "about.check_updates": {
+    "other": "Sök efter uppdateringar"
+  },
+  "about.checking_updates": {
+    "other": "Kontrollerar..."
+  },
+  "about.update_available": {
+    "other": "Ny version tillgänglig: {{.Version}}"
+  },
+  "about.up_to_date": {
+    "other": "Du använder den senaste versionen."
+  },
+  "about.update_error": {
+    "other": "Kunde inte söka efter uppdateringar. Försök igen senare."
+  },
+  "about.view_release": {
+    "other": "Visa utgåva"
+  },
   "plugin.blocked_title": {
     "other": "Blockerad av plugin"
   },

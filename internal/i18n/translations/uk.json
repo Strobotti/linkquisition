@@ -104,6 +104,24 @@
   "about.github_label": {
     "other": "GitHub:"
   },
+  "about.check_updates": {
+    "other": "Перевірити оновлення"
+  },
+  "about.checking_updates": {
+    "other": "Перевірка..."
+  },
+  "about.update_available": {
+    "other": "Доступна нова версія: {{.Version}}"
+  },
+  "about.up_to_date": {
+    "other": "У вас встановлена найновіша версія."
+  },
+  "about.update_error": {
+    "other": "Не вдалося перевірити оновлення. Спробуйте пізніше."
+  },
+  "about.view_release": {
+    "other": "Переглянути реліз"
+  },
   "plugin.blocked_title": {
     "other": "Заблоковано плагіном"
   },

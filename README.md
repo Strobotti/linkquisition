@@ -228,10 +228,10 @@ To enable safety checking, add a `security` section to your `config.json`:
 
 Supported providers:
 
-| Provider | How to get an API key |
-|----------|----------------------|
+| Provider               | How to get an API key                                                                                                                                             |
+|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `google_safe_browsing` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) — enable the Safe Browsing API, then create an API key. Free tier: 10,000 requests/day. |
-| `virustotal` | [VirusTotal](https://www.virustotal.com/gui/my-apikey) — sign up for a free account. Free tier: 4 requests/minute, 500/day. |
+| `virustotal`           | [VirusTotal](https://www.virustotal.com/gui/my-apikey) — sign up for a free account. Free tier: 4 requests/minute, 500/day.                                       |
 
 The check runs asynchronously — it never blocks the picker from appearing. Results are cached
 locally (when `cache.enabled` is `true`) to reduce API calls on repeated URLs.
@@ -251,11 +251,11 @@ The picker can display the website's favicon next to the URL. Enable it in your 
 
 Available strategies:
 
-| Strategy | Description |
-|----------|-------------|
-| `direct` (default) | Fetches `/favicon.ico` from the host. Fast and privacy-friendly. |
-| `parsed` | Downloads the page HTML and parses the `<link rel="icon">` tag. More accurate but slower (two HTTP requests). |
-| `google` | Uses Google's favicon service. Reliable but sends the URL to Google. |
+| Strategy           | Description                                                                                                   |
+|--------------------|---------------------------------------------------------------------------------------------------------------|
+| `direct` (default) | Fetches `/favicon.ico` from the host. Fast and privacy-friendly.                                              |
+| `parsed`           | Downloads the page HTML and parses the `<link rel="icon">` tag. More accurate but slower (two HTTP requests). |
+| `google`           | Uses Google's favicon service. Reliable but sends the URL to Google.                                          |
 
 Favicons are cached locally for 7 days to avoid repeated network requests.
 

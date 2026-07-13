@@ -104,6 +104,24 @@
   "about.github_label": {
     "other": "GitHub:"
   },
+  "about.check_updates": {
+    "other": "Frissítések keresése"
+  },
+  "about.checking_updates": {
+    "other": "Ellenőrzés..."
+  },
+  "about.update_available": {
+    "other": "Új verzió érhető el: {{.Version}}"
+  },
+  "about.up_to_date": {
+    "other": "A legújabb verziót használod."
+  },
+  "about.update_error": {
+    "other": "Nem sikerült ellenőrizni a frissítéseket. Próbáld újra később."
+  },
+  "about.view_release": {
+    "other": "Kiadás megtekintése"
+  },
   "plugin.blocked_title": {
     "other": "Bővítmény által blokkolva"
   },

@@ -104,6 +104,24 @@
   "about.github_label": {
     "other": "GitHub:"
   },
+  "about.check_updates": {
+    "other": "Buscar actualizaciones"
+  },
+  "about.checking_updates": {
+    "other": "Comprobando..."
+  },
+  "about.update_available": {
+    "other": "Nueva versión disponible: {{.Version}}"
+  },
+  "about.up_to_date": {
+    "other": "Estás usando la última versión."
+  },
+  "about.update_error": {
+    "other": "No se pudo verificar actualizaciones. Inténtalo más tarde."
+  },
+  "about.view_release": {
+    "other": "Ver lanzamiento"
+  },
   "plugin.blocked_title": {
     "other": "Bloqueado por el plugin"
   },
