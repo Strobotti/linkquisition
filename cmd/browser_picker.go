@@ -378,14 +378,14 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 	levelLabel.TextSize = theme.TextSize()
 
 	grid := container.New(layout.NewFormLayout(),
-		picker.whoisLabel(i18n.T("picker.safety_provider")), picker.whoisValue(result.Provider),
-		picker.whoisLabel(i18n.T("picker.safety_result")), levelLabel,
+		ui.FormLabel(i18n.T("picker.safety_provider")), ui.FormValue(result.Provider),
+		ui.FormLabel(i18n.T("picker.safety_result")), levelLabel,
 	)
 
 	if len(result.Details) > 0 {
 		detailsText := strings.Join(result.Details, "\n")
-		grid.Add(picker.whoisLabel(i18n.T("picker.safety_details")))
-		grid.Add(picker.whoisValue(detailsText))
+		grid.Add(ui.FormLabel(i18n.T("picker.safety_details")))
+		grid.Add(ui.FormValue(detailsText))
 	}
 
 	var reportLink fyne.CanvasObject
@@ -570,25 +570,25 @@ func (picker *BrowserPicker) buildWhoisContent(
 	dnssecLabel.TextSize = theme.TextSize()
 
 	grid := container.New(layout.NewFormLayout(),
-		picker.whoisLabel(i18n.T("picker.whois_domain")), picker.whoisValue(info.Domain),
-		picker.whoisLabel(i18n.T("picker.whois_registrar")), picker.whoisValue(info.Registrar),
-		picker.whoisLabel(i18n.T("picker.whois_created")), picker.whoisValue(info.CreatedDate),
-		picker.whoisLabel(i18n.T("picker.whois_expires")), picker.whoisValue(info.ExpiryDate),
-		picker.whoisLabel(i18n.T("picker.whois_updated")), picker.whoisValue(info.UpdatedDate),
-		picker.whoisLabel(i18n.T("picker.whois_age")), picker.whoisValue(info.DomainAge),
-		picker.whoisLabel(i18n.T("picker.whois_dnssec")), dnssecLabel,
+		ui.FormLabel(i18n.T("picker.whois_domain")), ui.FormValue(info.Domain),
+		ui.FormLabel(i18n.T("picker.whois_registrar")), ui.FormValue(info.Registrar),
+		ui.FormLabel(i18n.T("picker.whois_created")), ui.FormValue(info.CreatedDate),
+		ui.FormLabel(i18n.T("picker.whois_expires")), ui.FormValue(info.ExpiryDate),
+		ui.FormLabel(i18n.T("picker.whois_updated")), ui.FormValue(info.UpdatedDate),
+		ui.FormLabel(i18n.T("picker.whois_age")), ui.FormValue(info.DomainAge),
+		ui.FormLabel(i18n.T("picker.whois_dnssec")), dnssecLabel,
 	)
 
 	if len(info.NameServers) > 0 {
 		nsText := strings.Join(info.NameServers, ", ")
-		grid.Add(picker.whoisLabel(i18n.T("picker.whois_nameservers")))
-		grid.Add(picker.whoisValue(nsText))
+		grid.Add(ui.FormLabel(i18n.T("picker.whois_nameservers")))
+		grid.Add(ui.FormValue(nsText))
 	}
 
 	if len(info.Status) > 0 {
 		statusText := strings.Join(info.Status, ", ")
-		grid.Add(picker.whoisLabel(i18n.T("picker.whois_status")))
-		grid.Add(picker.whoisValue(statusText))
+		grid.Add(ui.FormLabel(i18n.T("picker.whois_status")))
+		grid.Add(ui.FormValue(statusText))
 	}
 
 	closeButton := widget.NewButtonWithIcon(
@@ -642,24 +642,6 @@ func (picker *BrowserPicker) buildWhoisError(err error, w fyne.Window) fyne.Canv
 	content.Add(container.NewCenter(closeButton))
 
 	return content
-}
-
-func (picker *BrowserPicker) whoisValue(value string) *widget.Label {
-	if value == "" {
-		value = "—"
-	}
-
-	v := widget.NewLabel(value)
-	v.Wrapping = fyne.TextWrapWord
-
-	return v
-}
-
-func (picker *BrowserPicker) whoisLabel(text string) *widget.Label {
-	l := widget.NewLabel(text)
-	l.TextStyle = fyne.TextStyle{Bold: true}
-
-	return l
 }
 
 // fetchAndUpdateFavicon fetches the favicon in the background and updates the image widget.
