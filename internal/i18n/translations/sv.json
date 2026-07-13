@@ -405,7 +405,7 @@
     "other": "Ange din API-nyckel"
   },
   "config.security_get_key": {
-    "other": "Skaffa API-nyckel →"
+    "other": "Skaffa API-nyckel"
   },
   "config.security_test": {
     "other": "Testa"

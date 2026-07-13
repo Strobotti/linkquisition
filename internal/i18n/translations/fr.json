@@ -405,7 +405,7 @@
     "other": "Entrez votre clé API"
   },
   "config.security_get_key": {
-    "other": "Obtenir une clé API →"
+    "other": "Obtenir une clé API"
   },
   "config.security_test": {
     "other": "Tester"

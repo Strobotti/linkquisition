@@ -405,7 +405,7 @@
     "other": "Введіть API-ключ"
   },
   "config.security_get_key": {
-    "other": "Отримати API-ключ →"
+    "other": "Отримати API-ключ"
   },
   "config.security_test": {
     "other": "Тест"

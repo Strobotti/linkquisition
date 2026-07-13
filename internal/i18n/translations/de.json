@@ -405,7 +405,7 @@
     "other": "API-Schlüssel eingeben"
   },
   "config.security_get_key": {
-    "other": "API-Schlüssel erhalten →"
+    "other": "API-Schlüssel erhalten"
   },
   "config.security_test": {
     "other": "Testen"
