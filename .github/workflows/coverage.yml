@@ -24,6 +24,9 @@ jobs:
           packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev
           version: 1.0
 
+      - name: Generate Wayland protocol headers
+        run: ./scripts/generate-wayland-protocols.sh
+
       - uses: arduino/setup-task@v3
         with:
           version: 3.x

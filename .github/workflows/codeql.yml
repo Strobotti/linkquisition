@@ -28,6 +28,9 @@ jobs:
           packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev
           version: 1.0
 
+      - name: Generate Wayland protocol headers
+        run: ./scripts/generate-wayland-protocols.sh
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
@@ -36,7 +39,7 @@ jobs:
       - name: Build
         run: |
           # Build main binary and internal packages (exclude plugins — they require -buildmode=plugin)
-          go build -tags x11 $(go list ./... | grep -v '/plugins/')
+          go build $(go list ./... | grep -v '/plugins/')
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4

@@ -22,6 +22,9 @@ jobs:
           packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev
           version: 1.0
 
+      - name: Generate Wayland protocol headers
+        run: ./scripts/generate-wayland-protocols.sh
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
 
@@ -58,6 +61,10 @@ jobs:
         with:
           packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev
           version: 1.0
+
+      - name: Generate Wayland protocol headers
+        if: runner.os == 'Linux'
+        run: ./scripts/generate-wayland-protocols.sh
 
       - uses: arduino/setup-task@v3
         with:

@@ -13,7 +13,6 @@ builds:
     flags:
       - -trimpath
       - -buildvcs=false
-      - -tags=x11
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
@@ -32,7 +31,6 @@ builds:
     flags:
       - -trimpath
       - -buildvcs=false
-      - -tags=x11
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
@@ -51,7 +49,6 @@ builds:
     flags:
       - -trimpath
       - -buildvcs=false
-      - -tags=x11
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
@@ -70,7 +67,6 @@ builds:
     flags:
       - -trimpath
       - -buildvcs=false
-      - -tags=x11
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
@@ -89,7 +85,6 @@ builds:
     flags:
       - -trimpath
       - -buildvcs=false
-      - -tags=x11
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
@@ -108,7 +103,6 @@ builds:
     flags:
       - -trimpath
       - -buildvcs=false
-      - -tags=x11
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
