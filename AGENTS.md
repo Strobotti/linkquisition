@@ -187,6 +187,13 @@ The app has two UI modes, both in `cmd/`:
   The General tab is composed of `build*Section()` methods. Add new sections there.
 - **BrowserPicker** (`cmd/browser_picker.go`) — the URL picker, shown when launched with a URL.
 
+### UI helpers (`internal/ui/`)
+
+- **`ui.NewLinkWithCopy(text, rawURL, window)`** — creates a clickable hyperlink with a
+  copy-to-clipboard button beside it. Use this whenever displaying a URL or link in the GUI
+  (e.g. reference links, documentation URLs, external resources). Prefer this over a plain
+  `widget.NewHyperlink` for consistency across the app.
+
 ## Settings and config model
 
 - `settings.go` — `Settings` struct, constants (`LogLevel*`, `BrowserMatchType*`, `Source*`),

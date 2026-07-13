@@ -63,7 +63,13 @@
     "other": "Kopieren"
   },
   "picker.remember_choice": {
-    "other": "Auswahl für {{.Site}} merken"
+    "other": "Auswahl merken"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (nur diese Seite)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (gesamte Domain)"
   },
   "picker.keyboard_guide": {
     "other": "Drücke 'ENTER' für den ersten, 'ESC' zum Beenden, '{{.CopyShortcut}}' um die URL zu kopieren"
@@ -248,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Regel hinzufügen für {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Regel bearbeiten"
+  },
   "config.rules_type": {
     "other": "Typ"
   },
@@ -262,6 +271,30 @@
   },
   "config.rules_regex_invalid": {
     "other": "Ungültiger regulärer Ausdruck"
+  },
+  "config.rules_regex_test_placeholder": {
+    "other": "Test-URL (z.B. https://www.example.com/seite)"
+  },
+  "config.rules_regex_match": {
+    "other": "Stimmt überein"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Stimmt nicht überein"
+  },
+  "config.rules_regex_help": {
+    "other": "Verwendet Go RE2-Syntax."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Syntaxreferenz"
+  },
+  "config.rules_type_help_site": {
+    "other": "Stimmt mit dem vollständigen Hostnamen überein (z.B. www.example.com). Stimmt nicht mit Subdomains wie blog.example.com überein."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Stimmt mit der registrierten Domain und allen Subdomains überein (z.B. example.com passt zu www.example.com, blog.example.com usw.)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Gleicht die vollständige URL mit einem Go RE2 regulären Ausdruck ab. Verwenden Sie .* als Platzhalter."
   },
   "config.rules_filter_placeholder": {
     "other": "Regeln filtern..."

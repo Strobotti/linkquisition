@@ -63,7 +63,13 @@
     "other": "Kopioi"
   },
   "picker.remember_choice": {
-    "other": "Muista tämä valinta sivustolle {{.Site}}"
+    "other": "Muista tämä valinta"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (vain tämä sivusto)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (koko verkkotunnus)"
   },
   "picker.keyboard_guide": {
     "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, '{{.CopyShortcut}}' kopioidaksesi URL:n leikepöydälle"
@@ -248,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Lisää sääntö selaimelle {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Muokkaa sääntöä"
+  },
   "config.rules_type": {
     "other": "Tyyppi"
   },
@@ -262,6 +271,30 @@
   },
   "config.rules_regex_invalid": {
     "other": "Virheellinen säännöllinen lauseke"
+  },
+  "config.rules_regex_test_placeholder": {
+    "other": "Testi-URL (esim. https://www.example.com/sivu)"
+  },
+  "config.rules_regex_match": {
+    "other": "Täsmää"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Ei täsmää"
+  },
+  "config.rules_regex_help": {
+    "other": "Käyttää Go RE2 -syntaksia."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Syntaksiohje"
+  },
+  "config.rules_type_help_site": {
+    "other": "Täsmää tarkkaan isäntänimeen (esim. www.example.com). Ei täsmää aliverkkotunnuksiin kuten blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Täsmää rekisteröityyn verkkotunnukseen ja kaikkiin sen aliverkkotunnuksiin (esim. example.com täsmää www.example.com, blog.example.com jne.)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Täsmää koko URL-osoitteen Go RE2 -säännölliseen lausekkeeseen. Käytä .* jokerimerkkeinä."
   },
   "config.rules_filter_placeholder": {
     "other": "Suodata sääntöjä..."

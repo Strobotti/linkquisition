@@ -29,11 +29,25 @@ func TestInit_ExplicitOverride(t *testing.T) {
 func TestT_WithTemplateData(t *testing.T) {
 	Init("en")
 
-	got := T("picker.remember_choice", map[string]interface{}{"Site": "example.com"})
-	want := "Remember this choice with example.com"
+	got := T("picker.remember_choice")
+	want := "Remember this choice"
 
 	if got != want {
 		t.Errorf("T(\"picker.remember_choice\") = %q, want %q", got, want)
+	}
+
+	got = T("picker.remember_site", map[string]interface{}{"Site": "www.example.com"})
+	want = "www.example.com (this site only)"
+
+	if got != want {
+		t.Errorf("T(\"picker.remember_site\") = %q, want %q", got, want)
+	}
+
+	got = T("picker.remember_domain", map[string]interface{}{"Domain": "example.com"})
+	want = "example.com (entire domain)"
+
+	if got != want {
+		t.Errorf("T(\"picker.remember_domain\") = %q, want %q", got, want)
 	}
 }
 
@@ -73,11 +87,18 @@ func TestInit_FinnishLocale(t *testing.T) {
 func TestInit_FinnishLocale_WithTemplateData(t *testing.T) {
 	Init("fi")
 
-	got := T("picker.remember_choice", map[string]interface{}{"Site": "example.com"})
-	want := "Muista tämä valinta sivustolle example.com"
+	got := T("picker.remember_choice")
+	want := "Muista tämä valinta"
 
 	if got != want {
 		t.Errorf("T(\"picker.remember_choice\") with fi locale = %q, want %q", got, want)
+	}
+
+	got = T("picker.remember_site", map[string]interface{}{"Site": "www.example.com"})
+	want = "www.example.com (vain tämä sivusto)"
+
+	if got != want {
+		t.Errorf("T(\"picker.remember_site\") with fi locale = %q, want %q", got, want)
 	}
 }
 

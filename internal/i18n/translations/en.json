@@ -63,7 +63,13 @@
     "other": "Copy"
   },
   "picker.remember_choice": {
-    "other": "Remember this choice with {{.Site}}"
+    "other": "Remember this choice"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (this site only)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (entire domain)"
   },
   "picker.keyboard_guide": {
     "other": "Press 'ENTER' to pick first, 'ESC' to quit, '{{.CopyShortcut}}' to copy URL to clipboard"
@@ -248,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Add Rule to {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Edit Rule"
+  },
   "config.rules_type": {
     "other": "Type"
   },
@@ -262,6 +271,30 @@
   },
   "config.rules_regex_invalid": {
     "other": "Invalid regular expression"
+  },
+  "config.rules_regex_test_placeholder": {
+    "other": "Test URL (e.g. https://www.example.com/page)"
+  },
+  "config.rules_regex_match": {
+    "other": "Matches"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Does not match"
+  },
+  "config.rules_regex_help": {
+    "other": "Uses Go RE2 syntax."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Syntax reference"
+  },
+  "config.rules_type_help_site": {
+    "other": "Matches the full hostname (e.g. www.example.com). Does not match subdomains like blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Matches the registered domain and all its subdomains (e.g. example.com matches www.example.com, blog.example.com, etc.)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Matches the full URL against a Go RE2 regular expression. Use .* for wildcards."
   },
   "config.rules_filter_placeholder": {
     "other": "Filter rules..."

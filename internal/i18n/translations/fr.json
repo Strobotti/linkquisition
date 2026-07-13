@@ -63,7 +63,13 @@
     "other": "Copier"
   },
   "picker.remember_choice": {
-    "other": "Se souvenir de ce choix pour {{.Site}}"
+    "other": "Se souvenir de ce choix"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (ce site uniquement)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (tout le domaine)"
   },
   "picker.keyboard_guide": {
     "other": "Appuyez sur 'ENTRÉE' pour le premier, 'ÉCHAP' pour quitter, '{{.CopyShortcut}}' pour copier l'URL"
@@ -248,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Ajouter une règle à {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Modifier la règle"
+  },
   "config.rules_type": {
     "other": "Type"
   },
@@ -262,6 +271,30 @@
   },
   "config.rules_regex_invalid": {
     "other": "Expression régulière invalide"
+  },
+  "config.rules_regex_test_placeholder": {
+    "other": "URL de test (ex. https://www.example.com/page)"
+  },
+  "config.rules_regex_match": {
+    "other": "Correspond"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Ne correspond pas"
+  },
+  "config.rules_regex_help": {
+    "other": "Utilise la syntaxe Go RE2."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Référence syntaxique"
+  },
+  "config.rules_type_help_site": {
+    "other": "Correspond au nom d'hôte complet (ex. www.example.com). Ne correspond pas aux sous-domaines comme blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Correspond au domaine enregistré et tous ses sous-domaines (ex. example.com correspond à www.example.com, blog.example.com, etc.)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Compare l'URL complète à une expression régulière Go RE2. Utilisez .* comme joker."
   },
   "config.rules_filter_placeholder": {
     "other": "Filtrer les règles..."

@@ -63,7 +63,13 @@
     "other": "Копіювати"
   },
   "picker.remember_choice": {
-    "other": "Запам'ятати цей вибір для {{.Site}}"
+    "other": "Запам'ятати цей вибір"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (лише цей сайт)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (весь домен)"
   },
   "picker.keyboard_guide": {
     "other": "Натисніть 'ENTER' для першого, 'ESC' для виходу, '{{.CopyShortcut}}' для копіювання URL"
@@ -248,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Додати правило для {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Редагувати правило"
+  },
   "config.rules_type": {
     "other": "Тип"
   },
@@ -262,6 +271,30 @@
   },
   "config.rules_regex_invalid": {
     "other": "Недійсний регулярний вираз"
+  },
+  "config.rules_regex_test_placeholder": {
+    "other": "Тестова URL (напр. https://www.example.com/сторінка)"
+  },
+  "config.rules_regex_match": {
+    "other": "Збігається"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Не збігається"
+  },
+  "config.rules_regex_help": {
+    "other": "Використовує синтаксис Go RE2."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Довідка з синтаксису"
+  },
+  "config.rules_type_help_site": {
+    "other": "Збігається з повним іменем хоста (напр. www.example.com). Не збігається з піддоменами, як blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "Збігається з зареєстрованим доменом та всіма його піддоменами (напр. example.com збігається з www.example.com, blog.example.com тощо)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "Порівнює повну URL-адресу з регулярним виразом Go RE2. Використовуйте .* як підстановку."
   },
   "config.rules_filter_placeholder": {
     "other": "Фільтрувати правила..."

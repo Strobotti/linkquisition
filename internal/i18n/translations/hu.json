@@ -63,7 +63,13 @@
     "other": "Másolás"
   },
   "picker.remember_choice": {
-    "other": "Választás megjegyzése a(z) {{.Site}} webhelyhez"
+    "other": "Választás megjegyzése"
+  },
+  "picker.remember_site": {
+    "other": "{{.Site}} (csak ez a webhely)"
+  },
+  "picker.remember_domain": {
+    "other": "{{.Domain}} (teljes domain)"
   },
   "picker.keyboard_guide": {
     "other": "Nyomj 'ENTER'-t az első kiválasztásához, 'ESC'-t a kilépéshez, '{{.CopyShortcut}}'-t az URL vágólapra másolásához"
@@ -248,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Szabály hozzáadása: {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Szabály szerkesztése"
+  },
   "config.rules_type": {
     "other": "Típus"
   },
@@ -262,6 +271,30 @@
   },
   "config.rules_regex_invalid": {
     "other": "Érvénytelen reguláris kifejezés"
+  },
+  "config.rules_regex_test_placeholder": {
+    "other": "Teszt URL (pl. https://www.example.com/oldal)"
+  },
+  "config.rules_regex_match": {
+    "other": "Egyezik"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Nem egyezik"
+  },
+  "config.rules_regex_help": {
+    "other": "Go RE2 szintaxist használ."
+  },
+  "config.rules_regex_help_link": {
+    "other": "Szintaxis referencia"
+  },
+  "config.rules_type_help_site": {
+    "other": "A teljes gazdanévvel egyezik (pl. www.example.com). Nem egyezik aldomainekkel, mint blog.example.com."
+  },
+  "config.rules_type_help_domain": {
+    "other": "A regisztrált domainnel és összes aldomainjével egyezik (pl. example.com egyezik a www.example.com, blog.example.com stb. címekkel)."
+  },
+  "config.rules_type_help_regex": {
+    "other": "A teljes URL-t Go RE2 reguláris kifejezéssel hasonlítja össze. Használjon .*-ot helyettesítő karakterként."
   },
   "config.rules_filter_placeholder": {
     "other": "Szabályok szűrése..."
