@@ -57,8 +57,6 @@ func (c *Configurator) getSecurityTab(w fyne.Window) fyne.CanvasObject {
 		ui.NewLinkWithCopy(i18n.T("config.security_get_key"), initialLinkURL, w),
 	)
 
-	testStatus := widget.NewLabel("")
-
 	updateProviderLink := func() {
 		var linkURL string
 		if providerSelect.SelectedIndex() == 1 {
