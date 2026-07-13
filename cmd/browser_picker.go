@@ -259,8 +259,7 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 	urlToOpen string, w fyne.Window, settings *linkquisition.Settings,
 ) fyne.CanvasObject {
 	// Gray dot initially — sized to match the menu button
-	grayColor := color.NRGBA{R: 150, G: 150, B: 150, A: 255}
-	indicator := canvas.NewText("●", grayColor)
+	indicator := canvas.NewText("●", ui.ColorNeutral)
 	indicator.TextSize = theme.TextSize() * 2
 
 	// Create a dummy button to get its height, then use that for our container
@@ -302,11 +301,11 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 				fyne.Do(func() {
 					switch cached.Level {
 					case safety.ThreatLevelSafe:
-						indicator.Color = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+						indicator.Color = ui.ColorSuccess
 					case safety.ThreatLevelSuspicious:
-						indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+						indicator.Color = ui.ColorWarning
 					case safety.ThreatLevelDangerous:
-						indicator.Color = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+						indicator.Color = ui.ColorDanger
 					}
 					indicator.Refresh()
 				})
@@ -327,7 +326,7 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 		if err != nil {
 			picker.logger.Error("Safety check failed", "url", urlToOpen, "error", err)
 			fyne.Do(func() {
-				indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+				indicator.Color = ui.ColorWarning
 				indicator.Refresh()
 			})
 			return
@@ -345,11 +344,11 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 		fyne.Do(func() {
 			switch result.Level {
 			case safety.ThreatLevelSafe:
-				indicator.Color = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+				indicator.Color = ui.ColorSuccess
 			case safety.ThreatLevelSuspicious:
-				indicator.Color = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+				indicator.Color = ui.ColorWarning
 			case safety.ThreatLevelDangerous:
-				indicator.Color = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+				indicator.Color = ui.ColorDanger
 			}
 			indicator.Refresh()
 		})
@@ -360,18 +359,18 @@ func (picker *BrowserPicker) buildSafetyIndicator(
 
 func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne.Window) {
 	var levelText string
-	var levelColor color.NRGBA
+	var levelColor color.Color
 
 	switch result.Level {
 	case safety.ThreatLevelSafe:
 		levelText = i18n.T("picker.safety_level_safe")
-		levelColor = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+		levelColor = ui.ColorSuccess
 	case safety.ThreatLevelSuspicious:
 		levelText = i18n.T("picker.safety_level_suspicious")
-		levelColor = color.NRGBA{R: 220, G: 180, B: 50, A: 255}
+		levelColor = ui.ColorWarning
 	case safety.ThreatLevelDangerous:
 		levelText = i18n.T("picker.safety_level_dangerous")
-		levelColor = color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+		levelColor = ui.ColorDanger
 	}
 
 	levelLabel := canvas.NewText(levelText, levelColor)
@@ -560,10 +559,10 @@ func (picker *BrowserPicker) buildWhoisContent(
 	info *internalwhois.DomainInfo, w fyne.Window,
 ) fyne.CanvasObject {
 	dnssecText := "✗"
-	dnssecColor := color.NRGBA{R: 220, G: 50, B: 50, A: 255}
+	dnssecColor := ui.ColorDanger
 	if info.DNSSec {
 		dnssecText = "✓"
-		dnssecColor = color.NRGBA{R: 50, G: 180, B: 50, A: 255}
+		dnssecColor = ui.ColorSuccess
 	}
 
 	dnssecLabel := canvas.NewText(dnssecText, dnssecColor)
@@ -883,7 +882,7 @@ func (t *tappableContainer) Tapped(_ *fyne.PointEvent) {
 }
 
 func (t *tappableContainer) MouseIn(_ *desktop.MouseEvent) {
-	t.bg.FillColor = color.NRGBA{R: 150, G: 150, B: 150, A: 30}
+	t.bg.FillColor = ui.ColorHoverBg
 	t.bg.Refresh()
 }
 
