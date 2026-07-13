@@ -46,6 +46,7 @@ type BrowserPicker struct {
 	settingsService linkquisition.SettingsService
 	logger          *slog.Logger
 	uiHooks         []linkquisition.PluginUIHook
+	modalOpen       bool
 }
 
 func NewBrowserPicker(
@@ -161,6 +162,9 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 func (picker *BrowserPicker) setupKeyboardShortcuts(w fyne.Window, buttons []fyne.CanvasObject) {
 	w.Canvas().SetOnTypedKey(
 		func(keyEvent *fyne.KeyEvent) {
+			if picker.modalOpen {
+				return
+			}
 			if keyEvent.Name == fyne.KeyEscape {
 				picker.fapp.Quit()
 			}
@@ -394,20 +398,7 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 				parsedURL,
 			)
 
-			copyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), nil)
-			copyButton.Importance = widget.LowImportance
-			copyButton.OnTapped = func() {
-				w.Clipboard().SetContent(result.ReportURL)
-				copyButton.SetIcon(theme.ConfirmIcon())
-				go func() {
-					time.Sleep(1 * time.Second)
-					fyne.Do(func() {
-						copyButton.SetIcon(theme.ContentCopyIcon())
-					})
-				}()
-			}
-
-			reportLink = container.NewHBox(hyperlink, copyButton)
+			reportLink = container.NewHBox(hyperlink)
 		}
 	}
 
@@ -433,7 +424,27 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 	content.Add(container.NewCenter(closeButton))
 
 	popup := widget.NewModalPopUp(content, w.Canvas())
-	closeButton.OnTapped = func() { popup.Hide() }
+
+	// Block picker keyboard shortcuts while modal is open
+	picker.modalOpen = true
+
+	// Override typed key handler to intercept Esc for the modal
+	originalHandler := w.Canvas().OnTypedKey()
+
+	closeModal := func() {
+		popup.Hide()
+		picker.modalOpen = false
+		w.Canvas().SetOnTypedKey(originalHandler)
+	}
+
+	closeButton.OnTapped = closeModal
+
+	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
+		if keyEvent.Name == fyne.KeyEscape {
+			closeModal()
+		}
+	})
+
 	popup.Show()
 }
 
