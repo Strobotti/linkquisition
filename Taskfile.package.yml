@@ -37,6 +37,27 @@ tasks:
       - sed -i 's/{{ "{{" }}ARCH{{ "}}" }}/amd64/g' package/linux/DEBIAN/control
       - dpkg-deb --build package/linux dist/linkquisition_{{.VERSION}}_linux_amd64.deb
 
+  deb:dev:
+    description: "Builds a native .deb package for local development (plugins work correctly)"
+    cmds:
+      - task package:linux
+      - mkdir -p dist
+      - mkdir -p package/linux/DEBIAN package/linux/usr/bin package/linux/usr/lib/linkquisition/plugins
+      - go build -trimpath -tags release -ldflags '-s -w -X main.version={{.VERSION}}' -o package/linux/usr/bin/linkquisition ./cmd/
+      - task build:plugins
+      - cp templates/DEBIAN/control.tpl package/linux/DEBIAN/control
+      - sed -i 's/{{ "{{" }}VERSION{{ "}}" }}/{{.VERSION}}/g' package/linux/DEBIAN/control
+      - sed -i 's/{{ "{{" }}ARCH{{ "}}" }}/amd64/g' package/linux/DEBIAN/control
+      - dpkg-deb --build package/linux dist/linkquisition_{{.VERSION}}_linux_amd64.deb
+      - echo "dist/linkquisition_{{.VERSION}}_linux_amd64.deb created successfully"
+
+  deb:install-dev:
+    description: "Builds a native .deb and installs it locally (plugins work correctly)"
+    cmds:
+      - task package:deb:dev
+      - sudo dpkg -i dist/linkquisition_{{.VERSION}}_linux_amd64.deb
+      - echo "Installed linkquisition {{.VERSION}} — run 'linkquisition' to launch"
+
   app:
     description: "Builds a macOS .app bundle with a universal binary (arm64 + amd64)"
     cmds:
