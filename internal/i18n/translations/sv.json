@@ -272,6 +272,15 @@
   "config.rules_regex_invalid": {
     "other": "Ogiltigt reguljärt uttryck"
   },
+  "config.rules_regex_test_placeholder": {
+    "other": "Test-URL (t.ex. https://www.example.com/sida)"
+  },
+  "config.rules_regex_match": {
+    "other": "Matchar"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Matchar inte"
+  },
   "config.rules_filter_placeholder": {
     "other": "Filtrera regler..."
   },

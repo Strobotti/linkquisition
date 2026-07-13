@@ -272,6 +272,15 @@
   "config.rules_regex_invalid": {
     "other": "Недійсний регулярний вираз"
   },
+  "config.rules_regex_test_placeholder": {
+    "other": "Тестова URL (напр. https://www.example.com/сторінка)"
+  },
+  "config.rules_regex_match": {
+    "other": "Збігається"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Не збігається"
+  },
   "config.rules_filter_placeholder": {
     "other": "Фільтрувати правила..."
   },

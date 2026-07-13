@@ -272,6 +272,15 @@
   "config.rules_regex_invalid": {
     "other": "Érvénytelen reguláris kifejezés"
   },
+  "config.rules_regex_test_placeholder": {
+    "other": "Teszt URL (pl. https://www.example.com/oldal)"
+  },
+  "config.rules_regex_match": {
+    "other": "Egyezik"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Nem egyezik"
+  },
   "config.rules_filter_placeholder": {
     "other": "Szabályok szűrése..."
   },

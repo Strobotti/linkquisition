@@ -272,6 +272,15 @@
   "config.rules_regex_invalid": {
     "other": "Invalid regular expression"
   },
+  "config.rules_regex_test_placeholder": {
+    "other": "Test URL (e.g. https://www.example.com/page)"
+  },
+  "config.rules_regex_match": {
+    "other": "Matches"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Does not match"
+  },
   "config.rules_filter_placeholder": {
     "other": "Filter rules..."
   },

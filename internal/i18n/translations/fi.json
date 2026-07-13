@@ -272,6 +272,15 @@
   "config.rules_regex_invalid": {
     "other": "Virheellinen säännöllinen lauseke"
   },
+  "config.rules_regex_test_placeholder": {
+    "other": "Testi-URL (esim. https://www.example.com/sivu)"
+  },
+  "config.rules_regex_match": {
+    "other": "Täsmää"
+  },
+  "config.rules_regex_no_match": {
+    "other": "Ei täsmää"
+  },
   "config.rules_filter_placeholder": {
     "other": "Suodata sääntöjä..."
   },

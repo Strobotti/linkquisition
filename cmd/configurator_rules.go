@@ -178,22 +178,23 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 	valueEntry := widget.NewEntry()
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 
-	regexIndicator := newRegexIndicator()
+	regexPanel := newRegexPanel()
 
 	typeSelect.OnChanged = func(selected string) {
-		regexIndicator.update(selected, valueEntry.Text)
+		regexPanel.update(selected, valueEntry.Text)
 	}
 	valueEntry.OnChanged = func(text string) {
-		regexIndicator.update(typeSelect.Selected, text)
+		regexPanel.update(typeSelect.Selected, text)
 	}
 
 	form := container.NewVBox(
 		widget.NewForm(
 			widget.NewFormItem(i18n.T("config.rules_type"), typeSelect),
 			widget.NewFormItem(i18n.T("config.rules_value"), container.NewBorder(
-				nil, nil, nil, regexIndicator.container, valueEntry,
+				nil, nil, nil, regexPanel.indicatorBox, valueEntry,
 			)),
 		),
+		regexPanel.panel,
 	)
 
 	windows := c.fapp.Driver().AllWindows()
@@ -229,7 +230,7 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 		},
 		parentWindow,
 	)
-	d.Resize(fyne.NewSize(500, 200)) //nolint:mnd
+	d.Resize(fyne.NewSize(500, 300)) //nolint:mnd
 	d.Show()
 }
 
@@ -250,24 +251,24 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 	valueEntry.SetText(rule.Value)
 
-	regexIndicator := newRegexIndicator()
-	// Initialize indicator state based on current rule
-	regexIndicator.update(rule.Type, rule.Value)
+	regexPanel := newRegexPanel()
+	regexPanel.update(rule.Type, rule.Value)
 
 	typeSelect.OnChanged = func(selected string) {
-		regexIndicator.update(selected, valueEntry.Text)
+		regexPanel.update(selected, valueEntry.Text)
 	}
 	valueEntry.OnChanged = func(text string) {
-		regexIndicator.update(typeSelect.Selected, text)
+		regexPanel.update(typeSelect.Selected, text)
 	}
 
 	form := container.NewVBox(
 		widget.NewForm(
 			widget.NewFormItem(i18n.T("config.rules_type"), typeSelect),
 			widget.NewFormItem(i18n.T("config.rules_value"), container.NewBorder(
-				nil, nil, nil, regexIndicator.container, valueEntry,
+				nil, nil, nil, regexPanel.indicatorBox, valueEntry,
 			)),
 		),
+		regexPanel.panel,
 	)
 
 	windows := c.fapp.Driver().AllWindows()
@@ -300,7 +301,7 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 		},
 		parentWindow,
 	)
-	d.Resize(fyne.NewSize(500, 200)) //nolint:mnd
+	d.Resize(fyne.NewSize(500, 300)) //nolint:mnd
 	d.Show()
 }
 
@@ -355,52 +356,126 @@ func (c *Configurator) deleteRule(browserIdx, ruleIdx int, listContainer *fyne.C
 	c.rebuildRulesList(listContainer, "")
 }
 
-// regexIndicator shows a ✓ or ✗ next to the value entry when the rule
-// type is "regex". Green ✓ = valid regex, red ✗ = invalid regex. Hidden for
-// non-regex types.
-type regexIndicator struct {
-	label     *canvas.Text
-	container *fyne.Container
+// regexPanel provides live regex validation and test-matching UI.
+// Hidden for non-regex rule types. Shows:
+// 1. ✓/✗ indicator next to the value entry
+// 2. Error message below value when invalid
+// 3. A test URL input with match result indicator
+type regexPanel struct {
+	indicator     *canvas.Text
+	indicatorBox  *fyne.Container
+	errorLabel    *widget.Label
+	testEntry     *widget.Entry
+	testResult    *canvas.Text
+	testResultBox *fyne.Container
+	panel         *fyne.Container
+	pattern       string
 }
 
-func newRegexIndicator() *regexIndicator {
-	label := canvas.NewText("✓", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
-	label.TextSize = 18 //nolint:mnd
-	label.TextStyle = fyne.TextStyle{Bold: true}
+func newRegexPanel() *regexPanel {
+	// Indicator next to value entry
+	indicator := canvas.NewText("✓", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
+	indicator.TextSize = 18 //nolint:mnd
+	indicator.TextStyle = fyne.TextStyle{Bold: true}
+	indicatorBox := container.NewCenter(indicator)
+	indicatorBox.Hide()
 
-	labelContainer := container.NewCenter(label)
-	labelContainer.Hide()
+	// Error label shown below value when regex is invalid
+	errorLabel := widget.NewLabel("")
+	errorLabel.TextStyle = fyne.TextStyle{Italic: true}
+	errorLabel.Hide()
 
-	return &regexIndicator{
-		label:     label,
-		container: labelContainer,
+	// Test URL entry
+	testEntry := widget.NewEntry()
+	testEntry.SetPlaceHolder(i18n.T("config.rules_regex_test_placeholder"))
+
+	// Test match result
+	testResult := canvas.NewText("", color.NRGBA{R: 0, G: 180, B: 0, A: 255})
+	testResult.TextSize = 14 //nolint:mnd
+	testResult.TextStyle = fyne.TextStyle{Bold: true}
+	testResultBox := container.NewHBox(testResult)
+	testResultBox.Hide()
+
+	// Full panel (everything below the value entry)
+	panel := container.NewVBox(errorLabel, testEntry, testResultBox)
+	panel.Hide()
+
+	rp := &regexPanel{
+		indicator:     indicator,
+		indicatorBox:  indicatorBox,
+		errorLabel:    errorLabel,
+		testEntry:     testEntry,
+		testResult:    testResult,
+		testResultBox: testResultBox,
+		panel:         panel,
 	}
+
+	testEntry.OnChanged = func(_ string) {
+		rp.refreshTestResult()
+	}
+
+	return rp
 }
 
-func (ri *regexIndicator) update(matchType, value string) {
+func (rp *regexPanel) update(matchType, value string) {
 	if matchType != linkquisition.BrowserMatchTypeRegex {
-		ri.container.Hide()
+		rp.indicatorBox.Hide()
+		rp.panel.Hide()
 		return
 	}
 
-	ri.container.Show()
+	rp.pattern = value
+	rp.indicatorBox.Show()
+	rp.panel.Show()
 
 	if value == "" {
-		ri.label.Text = "—"
-		ri.label.Color = color.NRGBA{R: 150, G: 150, B: 150, A: 255} // grey for empty
-		ri.label.Refresh()
+		rp.indicator.Text = "—"
+		rp.indicator.Color = color.NRGBA{R: 150, G: 150, B: 150, A: 255}
+		rp.indicator.Refresh()
+		rp.errorLabel.Hide()
+		rp.refreshTestResult()
 		return
 	}
 
 	if _, err := regexp.Compile(value); err != nil {
-		ri.label.Text = "✗"
-		ri.label.Color = color.NRGBA{R: 220, G: 0, B: 0, A: 255} // red
+		rp.indicator.Text = "✗"
+		rp.indicator.Color = color.NRGBA{R: 220, G: 0, B: 0, A: 255}
+		rp.errorLabel.SetText("✗ " + i18n.T("config.rules_regex_invalid"))
+		rp.errorLabel.Show()
 	} else {
-		ri.label.Text = "✓"
-		ri.label.Color = color.NRGBA{R: 0, G: 180, B: 0, A: 255} // green
+		rp.indicator.Text = "✓"
+		rp.indicator.Color = color.NRGBA{R: 0, G: 180, B: 0, A: 255}
+		rp.errorLabel.Hide()
 	}
 
-	ri.label.Refresh()
+	rp.indicator.Refresh()
+	rp.refreshTestResult()
+}
+
+func (rp *regexPanel) refreshTestResult() {
+	testURL := rp.testEntry.Text
+	if testURL == "" {
+		rp.testResultBox.Hide()
+		return
+	}
+
+	re, err := regexp.Compile(rp.pattern)
+	if err != nil || rp.pattern == "" {
+		rp.testResultBox.Hide()
+		return
+	}
+
+	rp.testResultBox.Show()
+
+	if re.MatchString(testURL) {
+		rp.testResult.Text = "✓ " + i18n.T("config.rules_regex_match")
+		rp.testResult.Color = color.NRGBA{R: 0, G: 180, B: 0, A: 255}
+	} else {
+		rp.testResult.Text = "✗ " + i18n.T("config.rules_regex_no_match")
+		rp.testResult.Color = color.NRGBA{R: 220, G: 0, B: 0, A: 255}
+	}
+
+	rp.testResult.Refresh()
 }
 
 // withSubtleBackground wraps a widget in a container with a very subtle
