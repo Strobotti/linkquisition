@@ -28,6 +28,10 @@ type Configurator struct {
 	browserService  linkquisition.BrowserService
 	settingsService linkquisition.SettingsService
 	logger          *slog.Logger
+
+	// noBrowsersWarning holds the warning container shown on the General tab
+	// when no browsers are configured. It is hidden after a successful scan.
+	noBrowsersWarning fyne.CanvasObject
 }
 
 func NewConfigurator(
@@ -95,8 +99,8 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 
 	// Onboarding: show a warning if no browsers are configured
 	if settings := c.settingsService.GetSettings(); len(settings.Browsers) == 0 {
-		sections.Add(c.buildNoBrowsersWarning())
-		sections.Add(widget.NewSeparator())
+		c.noBrowsersWarning = container.NewVBox(c.buildNoBrowsersWarning(), widget.NewSeparator())
+		sections.Add(c.noBrowsersWarning)
 	}
 
 	sections.Add(c.buildLanguageSection())
@@ -121,6 +125,13 @@ func (c *Configurator) buildNoBrowsersWarning() fyne.CanvasObject {
 	warningLabel.TextStyle = fyne.TextStyle{Bold: true}
 
 	return container.NewVBox(warningLabel)
+}
+
+func (c *Configurator) hideNoBrowsersWarning() {
+	if c.noBrowsersWarning != nil {
+		c.noBrowsersWarning.Hide()
+		c.noBrowsersWarning = nil
+	}
 }
 
 func (c *Configurator) buildMakeDefaultSection() fyne.CanvasObject {
