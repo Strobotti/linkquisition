@@ -87,6 +87,30 @@ func (c *Cache) Clear() error {
 	return os.RemoveAll(c.dir)
 }
 
+// PruneExpired removes all expired cache entries for this provider.
+// Intended to be called in the background to keep the cache directory tidy.
+func (c *Cache) PruneExpired() {
+	entries, err := os.ReadDir(c.dir)
+	if err != nil {
+		return
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		info, err := entry.Info()
+		if err != nil {
+			continue
+		}
+
+		if time.Since(info.ModTime()) > c.ttl {
+			_ = os.Remove(filepath.Join(c.dir, entry.Name()))
+		}
+	}
+}
+
 // ClearAll removes the entire security cache directory (all providers).
 func ClearAll(configDir string) error {
 	return os.RemoveAll(filepath.Join(configDir, securityCacheDir))

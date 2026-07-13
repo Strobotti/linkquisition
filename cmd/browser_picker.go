@@ -78,6 +78,15 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	settings := picker.settingsService.GetSettings()
 	pickerLayout := settings.Ui.GetPickerLayout()
 
+	// Prune expired security cache entries in the background
+	if settings.Security.Cache.Enabled && settings.Security.IsConfigured() {
+		go safety.NewCache(
+			picker.settingsService.GetConfigFolderPath(),
+			settings.Security.GetProvider(),
+			settings.Security.Cache.GetTTL(),
+		).PruneExpired()
+	}
+
 	for i := range picker.browsers {
 		if pickerLayout == linkquisition.PickerLayoutHorizontal {
 			buttons = append(
