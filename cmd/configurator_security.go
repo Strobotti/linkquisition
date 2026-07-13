@@ -85,35 +85,7 @@ func (c *Configurator) getSecurityTab(w fyne.Window) fyne.CanvasObject {
 		c.saveSecuritySettings(enabledCheck, providerSelect, apiKeyEntry)
 	}
 
-	testButton := widget.NewButton(i18n.T("config.security_test"), func() {
-		testStatus.SetText(i18n.T("config.security_testing"))
-
-		go func() {
-			provider := c.getSelectedProvider(providerSelect)
-			key := apiKeyEntry.Text
-
-			checker, err := safety.NewChecker(provider, key)
-			if err != nil {
-				fyne.Do(func() {
-					testStatus.SetText("✗ " + err.Error())
-				})
-				return
-			}
-
-			ctx, cancel := context.WithTimeout(context.Background(), securityTestTimeout)
-			defer cancel()
-
-			err = checker.TestCredentials(ctx)
-
-			fyne.Do(func() {
-				if err != nil {
-					testStatus.SetText("✗ " + err.Error())
-				} else {
-					testStatus.SetText(i18n.T("config.security_test_success"))
-				}
-			})
-		}()
-	})
+	testButton, testStatus := c.buildSecurityTestButton(providerSelect, apiKeyEntry)
 
 	form := container.New(layout.NewFormLayout(),
 		widget.NewLabel(i18n.T("config.security_provider_label")), providerSelect,
@@ -205,6 +177,44 @@ func (c *Configurator) saveSecuritySettings(
 	if err := c.settingsService.WriteSettings(settings); err != nil {
 		c.logger.Error("Failed to save security settings", "error", err)
 	}
+}
+
+func (c *Configurator) buildSecurityTestButton(
+	providerSelect *widget.Select, apiKeyEntry *widget.Entry,
+) (*widget.Button, *widget.Label) {
+	testStatus := widget.NewLabel("")
+
+	testButton := widget.NewButton(i18n.T("config.security_test"), func() {
+		testStatus.SetText(i18n.T("config.security_testing"))
+
+		go func() {
+			provider := c.getSelectedProvider(providerSelect)
+			key := apiKeyEntry.Text
+
+			checker, err := safety.NewChecker(provider, key)
+			if err != nil {
+				fyne.Do(func() {
+					testStatus.SetText("✗ " + err.Error())
+				})
+				return
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), securityTestTimeout)
+			defer cancel()
+
+			err = checker.TestCredentials(ctx)
+
+			fyne.Do(func() {
+				if err != nil {
+					testStatus.SetText("✗ " + err.Error())
+				} else {
+					testStatus.SetText(i18n.T("config.security_test_success"))
+				}
+			})
+		}()
+	})
+
+	return testButton, testStatus
 }
 
 func (c *Configurator) getSelectedProvider(sel *widget.Select) string {
