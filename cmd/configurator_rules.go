@@ -178,11 +178,10 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 	valueEntry := widget.NewEntry()
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	regexPanel := newRegexPanel(parentWindow)
 	regexPanel.update(linkquisition.BrowserMatchTypeSite, "")
@@ -252,11 +251,10 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
 	valueEntry.SetText(rule.Value)
 
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	regexPanel := newRegexPanel(parentWindow)
 	regexPanel.update(rule.Type, rule.Value)

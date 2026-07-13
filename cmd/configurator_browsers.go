@@ -249,11 +249,10 @@ func (c *Configurator) showAddBrowserDialog(listContainer *fyne.Container) {
 		widget.NewFormItem(i18n.T("config.browsers_icon_path"), iconPathEntry),
 	)
 
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	d := dialog.NewCustomConfirm(
 		i18n.T("config.browsers_add_title"),
@@ -314,11 +313,10 @@ func (c *Configurator) showEditBrowserDialog(idx int, listContainer *fyne.Contai
 		widget.NewFormItem(i18n.T("config.browsers_icon_path"), iconPathEntry),
 	)
 
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	d := dialog.NewCustomConfirm(
 		i18n.T("config.browsers_edit_title"),
@@ -352,11 +350,10 @@ func (c *Configurator) confirmDeleteBrowser(idx int, listContainer *fyne.Contain
 	settings := c.settingsService.GetSettings()
 	b := settings.Browsers[idx]
 
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	dialog.ShowConfirm(
 		i18n.T("config.browsers_delete"),
@@ -389,9 +386,8 @@ func (c *Configurator) scanBrowsersAndRebuild(listContainer *fyne.Container, btn
 				btn.SetText(originalText)
 				btn.Enable()
 
-				windows := c.fapp.Driver().AllWindows()
-				if len(windows) > 0 {
-					dialog.ShowError(err, windows[0])
+				if pw := c.parentWindow(); pw != nil {
+					dialog.ShowError(err, pw)
 				}
 			})
 			return

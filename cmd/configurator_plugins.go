@@ -211,11 +211,10 @@ func (c *Configurator) movePlugin(idx, direction int, listContainer *fyne.Contai
 }
 
 func (c *Configurator) confirmRemovePlugin(idx int, displayName string, listContainer *fyne.Container) {
-	windows := c.fapp.Driver().AllWindows()
-	if len(windows) == 0 {
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
 		return
 	}
-	parentWindow := windows[0]
 
 	dialog.ShowConfirm(
 		i18n.T("config.plugins_remove_title"),
