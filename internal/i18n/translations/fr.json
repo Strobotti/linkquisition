@@ -454,5 +454,8 @@
   },
   "picker.safety_view_report": {
     "other": "Voir le rapport complet"
+  },
+  "config.plugins_kv_add_row": {
+    "other": "Ajouter une règle"
   }
 }

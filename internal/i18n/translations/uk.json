@@ -454,5 +454,8 @@
   },
   "picker.safety_view_report": {
     "other": "Переглянути повний звіт"
+  },
+  "config.plugins_kv_add_row": {
+    "other": "Додати правило"
   }
 }

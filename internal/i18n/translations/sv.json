@@ -454,5 +454,8 @@
   },
   "picker.safety_view_report": {
     "other": "Visa fullständig rapport"
+  },
+  "config.plugins_kv_add_row": {
+    "other": "Lägg till regel"
   }
 }

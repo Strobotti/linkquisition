@@ -454,5 +454,8 @@
   },
   "picker.safety_view_report": {
     "other": "Teljes jelentés megtekintése"
+  },
+  "config.plugins_kv_add_row": {
+    "other": "Szabály hozzáadása"
   }
 }
