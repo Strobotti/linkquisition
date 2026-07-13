@@ -129,7 +129,7 @@ func (c *Configurator) buildBrowserRulesSection(
 		for ruleIdx := range b.Matches {
 			row := c.buildRuleRow(browserIdx, ruleIdx, listContainer)
 			if ruleIdx%2 == 1 {
-				row = withSubtleBackground(row)
+				row = ui.WithAltRowBackground(row)
 			}
 			rulesBox.Add(row)
 		}
@@ -514,13 +514,6 @@ func (rp *regexPanel) refreshTestResult() {
 	}
 
 	rp.testResult.Refresh()
-}
-
-// withSubtleBackground wraps a widget in a container with a very subtle
-// background tint, used for alternating row colors in rule lists.
-func withSubtleBackground(obj fyne.CanvasObject) fyne.CanvasObject {
-	bg := canvas.NewRectangle(ui.ColorAltRowBg)
-	return container.NewStack(bg, obj)
 }
 
 // browserMatchesFilter returns true if a browser should be shown given the
