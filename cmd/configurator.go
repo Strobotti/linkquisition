@@ -58,6 +58,12 @@ func (c *Configurator) Run() error {
 
 	w.SetContent(tabs)
 
+	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
+		if keyEvent.Name == fyne.KeyEscape {
+			w.Close()
+		}
+	})
+
 	w.Resize(fyne.NewSize(700, 600)) //nolint:mnd
 	w.CenterOnScreen()
 
