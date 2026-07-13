@@ -401,6 +401,21 @@
   "config.security_test_success": {
     "other": "✓ Tunnisteet kelvolliset"
   },
+  "config.security_cache_enabled": {
+    "other": "Välimuistita turvatarkistuksen tulokset"
+  },
+  "config.security_cache_ttl_label": {
+    "other": "Välimuistin kesto (tuntia):"
+  },
+  "config.security_cache_clear": {
+    "other": "Tyhjennä turvavälimuisti"
+  },
+  "config.security_cache_clear_done": {
+    "other": "Välimuisti tyhjennetty"
+  },
+  "config.security_cache_clear_error": {
+    "other": "Virhe välimuistia tyhjennettäessä"
+  },
   "picker.safety_level_safe": {
     "other": "Turvallinen"
   },

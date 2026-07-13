@@ -401,6 +401,21 @@
   "config.security_test_success": {
     "other": "✓ Облікові дані дійсні"
   },
+  "config.security_cache_enabled": {
+    "other": "Кешувати результати перевірки безпеки"
+  },
+  "config.security_cache_ttl_label": {
+    "other": "Тривалість кешу (години):"
+  },
+  "config.security_cache_clear": {
+    "other": "Очистити кеш безпеки"
+  },
+  "config.security_cache_clear_done": {
+    "other": "Кеш очищено"
+  },
+  "config.security_cache_clear_error": {
+    "other": "Помилка очищення кешу"
+  },
   "picker.safety_level_safe": {
     "other": "Безпечно"
   },

@@ -401,6 +401,21 @@
   "config.security_test_success": {
     "other": "✓ Credentials valid"
   },
+  "config.security_cache_enabled": {
+    "other": "Cache security check results"
+  },
+  "config.security_cache_ttl_label": {
+    "other": "Cache duration (hours):"
+  },
+  "config.security_cache_clear": {
+    "other": "Clear security cache"
+  },
+  "config.security_cache_clear_done": {
+    "other": "Cache cleared"
+  },
+  "config.security_cache_clear_error": {
+    "other": "Error clearing cache"
+  },
   "picker.safety_level_safe": {
     "other": "Safe"
   },

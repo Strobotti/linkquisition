@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -111,9 +113,70 @@ func (c *Configurator) getSecurityTab() fyne.CanvasObject {
 		widget.NewLabel(""), container.NewHBox(testButton, testStatus),
 	)
 
+	// Cache section
+	cacheCheck := widget.NewCheck(i18n.T("config.security_cache_enabled"), nil)
+	cacheCheck.Checked = settings.Security.Cache.Enabled
+
+	ttlEntry := widget.NewEntry()
+	ttlEntry.SetText(fmt.Sprintf("%d", settings.Security.Cache.GetTTL()/time.Hour))
+
+	clearCacheButton := widget.NewButton(i18n.T("config.security_cache_clear"), func() {})
+	clearCacheButton.Importance = widget.LowImportance
+	clearCacheButton.OnTapped = func() {
+		configDir := c.settingsService.GetConfigFolderPath()
+		if err := safety.ClearAll(configDir); err != nil {
+			c.logger.Error("Error clearing security cache", "error", err)
+			clearCacheButton.SetText(i18n.T("config.security_cache_clear_error"))
+		} else {
+			clearCacheButton.SetText(i18n.T("config.security_cache_clear_done"))
+			clearCacheButton.Disable()
+		}
+	}
+
+	cacheForm := container.New(layout.NewFormLayout(),
+		widget.NewLabel(i18n.T("config.security_cache_ttl_label")), ttlEntry,
+	)
+
+	// Show/hide cache options based on checkbox
+	updateCacheVisible := func(enabled bool) {
+		if enabled {
+			cacheForm.Show()
+			clearCacheButton.Show()
+		} else {
+			cacheForm.Hide()
+			clearCacheButton.Hide()
+		}
+	}
+	updateCacheVisible(settings.Security.Cache.Enabled)
+
+	cacheCheck.OnChanged = func(checked bool) {
+		s := c.settingsService.GetSettings()
+		s.Security.Cache.Enabled = checked
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Failed to save security cache setting", "error", err)
+		}
+		updateCacheVisible(checked)
+	}
+
+	ttlEntry.OnChanged = func(val string) {
+		hours, err := strconv.Atoi(val)
+		if err != nil || hours <= 0 {
+			return
+		}
+		s := c.settingsService.GetSettings()
+		s.Security.Cache.TTLHours = hours
+		if err := c.settingsService.WriteSettings(s); err != nil {
+			c.logger.Error("Failed to save security cache TTL", "error", err)
+		}
+	}
+
 	return container.NewVBox(
 		enabledCheck,
 		form,
+		widget.NewSeparator(),
+		cacheCheck,
+		cacheForm,
+		clearCacheButton,
 	)
 }
 
