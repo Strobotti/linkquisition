@@ -254,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Lisää sääntö selaimelle {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Muokkaa sääntöä"
+  },
   "config.rules_type": {
     "other": "Tyyppi"
   },

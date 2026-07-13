@@ -254,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Lägg till regel för {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Redigera regel"
+  },
   "config.rules_type": {
     "other": "Typ"
   },

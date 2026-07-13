@@ -254,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Szabály hozzáadása: {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Szabály szerkesztése"
+  },
   "config.rules_type": {
     "other": "Típus"
   },

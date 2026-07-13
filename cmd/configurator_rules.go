@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -151,11 +152,17 @@ func (c *Configurator) buildRuleRow(
 	valueLabel := widget.NewLabel(rule.Value)
 	valueLabel.Truncation = fyne.TextTruncateEllipsis
 
-	deleteBtn := widget.NewButton("🗑", func() {
+	editBtn := widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
+		c.showEditRuleDialog(browserIdx, ruleIdx, listContainer)
+	})
+
+	deleteBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
 		c.deleteRule(browserIdx, ruleIdx, listContainer)
 	})
 
-	return container.NewBorder(nil, nil, typeLabel, deleteBtn, valueLabel)
+	buttons := container.NewHBox(editBtn, deleteBtn)
+
+	return container.NewBorder(nil, nil, typeLabel, buttons, valueLabel)
 }
 
 func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Container) {
@@ -220,6 +227,89 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 	)
 	d.Resize(fyne.NewSize(500, 220)) //nolint:mnd
 	d.Show()
+}
+
+func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer *fyne.Container) {
+	settings := c.settingsService.GetSettings()
+	rule := settings.Browsers[browserIdx].Matches[ruleIdx]
+
+	ruleTypes := []string{
+		linkquisition.BrowserMatchTypeSite,
+		linkquisition.BrowserMatchTypeDomain,
+		linkquisition.BrowserMatchTypeRegex,
+	}
+
+	typeSelect := widget.NewSelect(ruleTypes, nil)
+	typeSelect.SetSelected(rule.Type)
+
+	valueEntry := widget.NewEntry()
+	valueEntry.SetPlaceHolder(i18n.T("config.rules_value_placeholder"))
+	valueEntry.SetText(rule.Value)
+
+	errorLabel := widget.NewLabel("")
+	errorLabel.TextStyle = fyne.TextStyle{Italic: true}
+	errorLabel.Hide()
+
+	form := container.NewVBox(
+		widget.NewForm(
+			widget.NewFormItem(i18n.T("config.rules_type"), typeSelect),
+			widget.NewFormItem(i18n.T("config.rules_value"), valueEntry),
+		),
+		errorLabel,
+	)
+
+	windows := c.fapp.Driver().AllWindows()
+	if len(windows) == 0 {
+		return
+	}
+	parentWindow := windows[0]
+
+	d := dialog.NewCustomConfirm(
+		i18n.T("config.rules_edit_title"),
+		i18n.T("config.plugins_save"),
+		i18n.T("config.plugins_cancel"),
+		form,
+		func(save bool) {
+			if !save {
+				return
+			}
+			if valueEntry.Text == "" {
+				return
+			}
+
+			// Validate regex
+			if typeSelect.Selected == linkquisition.BrowserMatchTypeRegex {
+				if _, err := regexp.Compile(valueEntry.Text); err != nil {
+					errorLabel.SetText(i18n.T("config.rules_regex_invalid"))
+					errorLabel.Show()
+					return
+				}
+			}
+
+			c.updateRule(browserIdx, ruleIdx, typeSelect.Selected, valueEntry.Text, listContainer)
+		},
+		parentWindow,
+	)
+	d.Resize(fyne.NewSize(500, 220)) //nolint:mnd
+	d.Show()
+}
+
+func (c *Configurator) updateRule(
+	browserIdx, ruleIdx int, matchType, matchValue string, listContainer *fyne.Container,
+) {
+	settings := c.settingsService.GetSettings()
+
+	settings.Browsers[browserIdx].Matches[ruleIdx] = linkquisition.BrowserMatch{
+		Type:  matchType,
+		Value: matchValue,
+	}
+
+	if err := c.settingsService.WriteSettings(settings); err != nil {
+		c.logger.Error("Error updating rule", "error", err)
+		return
+	}
+
+	c.rebuildRulesList(listContainer, "")
 }
 
 func (c *Configurator) addRule(browserIdx int, matchType, matchValue string, listContainer *fyne.Container) {

@@ -254,6 +254,9 @@
   "config.rules_add_title": {
     "other": "Додати правило для {{.Name}}"
   },
+  "config.rules_edit_title": {
+    "other": "Редагувати правило"
+  },
   "config.rules_type": {
     "other": "Тип"
   },
