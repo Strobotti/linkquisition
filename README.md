@@ -36,9 +36,15 @@ Motivation behind this project is:
     - `Ctrl+C` to just copy the URL to clipboard and close the window
     - Number keys (1-9) to select a browser
 - Optional favicon display next to the URL in the picker (lazy-loaded, no startup delay)
+    - Three retrieval strategies: direct (`/favicon.ico`), parsed (HTML link tag), or Google's service
 - URL safety checking via [Google Safe Browsing](https://safebrowsing.google.com/) or
   [VirusTotal](https://www.virustotal.com/) — shows a color-coded indicator in the picker
   with a clickable link to the full provider report
+- WHOIS lookup — view domain registration details (registrar, age, expiry, DNSSEC status)
+  directly from the picker's context menu
+- QR code generation — generate a scannable QR code for the URL to quickly open it on a
+  mobile device
+- Manual update check in the About tab — see if a newer release is available on GitHub
 
 ## Installation
 
@@ -182,6 +188,76 @@ Currently supported languages:
 
 To contribute a new translation, add a JSON file to `internal/i18n/translations/` following the
 format of the existing files (e.g. `en.json`). The filename should be the locale code (e.g. `de.json` for German).
+
+### Picker context menu
+
+The browser picker has a context menu (⋯ button) next to the URL with these features:
+
+- **Copy URL** — copy the (possibly plugin-modified) URL to clipboard
+- **QR Code** — generates a scannable QR code for the URL, useful for quickly opening it on a
+  mobile device
+- **WHOIS** — performs a live WHOIS lookup and shows domain registration details: registrar,
+  creation/expiry dates, domain age, DNSSEC status, name servers, and EPP status codes
+
+### URL safety checking
+
+When enabled, the picker shows a color-coded dot next to the URL that indicates its safety status:
+
+- **Green** — no threats detected
+- **Yellow** — check failed or URL is suspicious
+- **Red** — URL is flagged as malicious
+
+Clicking the dot opens a popup with the provider name, threat level, details, and a link to view
+the full report on the provider's website.
+
+To enable safety checking, add a `security` section to your `config.json`:
+
+```json
+{
+  "security": {
+    "enabled": true,
+    "provider": "google_safe_browsing",
+    "apiKey": "YOUR_API_KEY",
+    "cache": {
+      "enabled": true,
+      "ttlHours": 24
+    }
+  }
+}
+```
+
+Supported providers:
+
+| Provider | How to get an API key |
+|----------|----------------------|
+| `google_safe_browsing` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) — enable the Safe Browsing API, then create an API key. Free tier: 10,000 requests/day. |
+| `virustotal` | [VirusTotal](https://www.virustotal.com/gui/my-apikey) — sign up for a free account. Free tier: 4 requests/minute, 500/day. |
+
+The check runs asynchronously — it never blocks the picker from appearing. Results are cached
+locally (when `cache.enabled` is `true`) to reduce API calls on repeated URLs.
+
+### Favicon
+
+The picker can display the website's favicon next to the URL. Enable it in your config:
+
+```json
+{
+  "ui": {
+    "showFavicon": true,
+    "faviconStrategy": "direct"
+  }
+}
+```
+
+Available strategies:
+
+| Strategy | Description |
+|----------|-------------|
+| `direct` (default) | Fetches `/favicon.ico` from the host. Fast and privacy-friendly. |
+| `parsed` | Downloads the page HTML and parses the `<link rel="icon">` tag. More accurate but slower (two HTTP requests). |
+| `google` | Uses Google's favicon service. Reliable but sends the URL to Google. |
+
+Favicons are cached locally for 7 days to avoid repeated network requests.
 
 ## Command-line interface
 
