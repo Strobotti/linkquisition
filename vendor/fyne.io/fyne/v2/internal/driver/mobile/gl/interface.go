@@ -106,6 +106,11 @@ type Context interface {
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glDeleteBuffers.xhtml
 	DeleteBuffer(v Buffer)
 
+	// DeleteProgram deletes the given program object.
+	//
+	// http://www.khronos.org/opengles/sdk/docs/man3/html/glDeleteProgram.xhtml
+	DeleteProgram(p Program)
+
 	// DeleteTexture deletes the given texture object.
 	//
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glDeleteTextures.xhtml
@@ -148,6 +153,9 @@ type Context interface {
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glGetError.xhtml
 	GetError() Enum
 
+	// GetInteger returns an integer OpenGL state value.
+	GetInteger(pname Enum) int
+
 	// GetProgrami returns a parameter value for a shader.
 	//
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glGetProgramiv.xhtml
@@ -178,6 +186,12 @@ type Context interface {
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glLinkProgram.xhtml
 	LinkProgram(p Program)
 
+	// CopyTexSubImage2D reads a rectangle from the current read framebuffer and
+	// writes it into a sub-region of the texture image currently bound to target.
+	//
+	// http://www.khronos.org/opengles/sdk/docs/man3/html/glCopyTexSubImage2D.xhtml
+	CopyTexSubImage2D(target Enum, level, xoffset, yoffset, x, y, width, height int)
+
 	// ReadPixels returns pixel data from a buffer.
 	//
 	// In GLES 3, the source buffer is controlled with ReadBuffer.
@@ -204,15 +218,30 @@ type Context interface {
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glTexParameter.xhtml
 	TexParameteri(target, pname Enum, param int)
 
+	// Uniform1i writes an int uniform variable.
+	//
+	// http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
+	Uniform1i(dst Uniform, v int)
+
 	// Uniform1f writes a float uniform variable.
 	//
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
 	Uniform1f(dst Uniform, v float32)
 
+	// Uniform1fv writes a float array uniform variable.
+	//
+	// http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
+	Uniform1fv(dst Uniform, v []float32)
+
 	// Uniform2f writes a vec2 uniform variable.
 	//
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
 	Uniform2f(dst Uniform, v0, v1 float32)
+
+	// Uniform2fv writes a vec2 uniform array of len(src)/2 elements.
+	//
+	// http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
+	Uniform2fv(dst Uniform, v []float32)
 
 	// Uniform4f writes a vec4 uniform variable.
 	//

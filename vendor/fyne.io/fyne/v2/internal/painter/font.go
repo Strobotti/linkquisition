@@ -25,9 +25,12 @@ import (
 
 const (
 	// DefaultTabWidth is the default width in spaces
-	DefaultTabWidth = 4
+	DefaultTabWidth               = 4
+	UnderlineOffsetFromBaseline   = 2
+	StrikethroughToBaselineFactor = 0.75
 
 	fontTabSpaceSize = 10
+	replacementChar  = 0xfffd // that’s '�'
 )
 
 var (
@@ -35,6 +38,8 @@ var (
 	fontScanLock sync.Mutex
 	loaded       bool
 )
+
+var shaper = &shaping.HarfbuzzShaper{}
 
 func loadMap() {
 	loaded = true
@@ -58,7 +63,7 @@ func lookupLangFont(family string, aspect font.Aspect) *font.Face {
 	}
 
 	fm.SetQuery(fontscan.Query{Families: []string{family}, Aspect: aspect})
-	l, _ := language.NewLangID(language.Language(lang.SystemLocale().LanguageString()))
+	l, _ := language.NewLangID(language.NewLanguage(lang.SystemLocale().LanguageString()))
 	return fm.ResolveFaceForLang(l)
 }
 
@@ -78,7 +83,7 @@ func lookupRuneFont(r rune, family string, aspect font.Aspect) *font.Face {
 	return fm.ResolveFace(r)
 }
 
-func lookupFaces(theme, fallback, emoji fyne.Resource, family string, style fyne.TextStyle) (faces *dynamicFontMap) {
+func lookupFaces(theme, fallback fyne.Resource, additional []fyne.Resource, family string, style fyne.TextStyle) (faces *dynamicFontMap) {
 	f1 := loadMeasureFont(theme)
 	if theme == fallback {
 		faces = &dynamicFontMap{family: family, faces: []*font.Face{f1}}
@@ -95,8 +100,8 @@ func lookupFaces(theme, fallback, emoji fyne.Resource, family string, style fyne
 		aspect.Weight = font.WeightBold
 	}
 
-	if emoji != nil {
-		faces.addFace(loadMeasureFont(emoji))
+	for _, added := range additional {
+		faces.addFace(loadMeasureFont(added))
 	}
 
 	local := lookupLangFont(family, aspect)
@@ -136,18 +141,26 @@ func CachedFontFace(style fyne.TextStyle, source fyne.Resource, o fyne.CanvasObj
 		th := theme.CurrentForWidget(o)
 		font1 := th.Font(style)
 
-		emoji := theme.DefaultEmojiFont() // TODO only one emoji - maybe others too
+		// Skip any nil fallback fonts — they can be nil when built with
+		// -tags no_emoji, and the lookupFaces loop expects non-nil entries.
+		var fallbacks []fyne.Resource
+		if emoji := theme.DefaultEmojiFont(); emoji != nil { // TODO only one emoji - maybe others too
+			fallbacks = append(fallbacks, emoji)
+		}
+		if sym := theme.DefaultSymbolFont(); sym != nil {
+			fallbacks = append(fallbacks, sym)
+		}
 		switch {
 		case style.Monospace:
-			faces = lookupFaces(font1, theme.DefaultTextMonospaceFont(), emoji, fontscan.Monospace, style)
+			faces = lookupFaces(font1, theme.DefaultTextMonospaceFont(), fallbacks, fontscan.Monospace, style)
 		case style.Bold:
 			if style.Italic {
-				faces = lookupFaces(font1, theme.DefaultTextBoldItalicFont(), emoji, fontscan.SansSerif, style)
+				faces = lookupFaces(font1, theme.DefaultTextBoldItalicFont(), fallbacks, fontscan.SansSerif, style)
 			} else {
-				faces = lookupFaces(font1, theme.DefaultTextBoldFont(), emoji, fontscan.SansSerif, style)
+				faces = lookupFaces(font1, theme.DefaultTextBoldFont(), fallbacks, fontscan.SansSerif, style)
 			}
 		case style.Italic:
-			faces = lookupFaces(font1, theme.DefaultTextItalicFont(), emoji, fontscan.SansSerif, style)
+			faces = lookupFaces(font1, theme.DefaultTextItalicFont(), fallbacks, fontscan.SansSerif, style)
 		case style.Symbol:
 			th := theme.SymbolFont()
 			fallback := theme.DefaultSymbolFont()
@@ -160,7 +173,7 @@ func CachedFontFace(style fyne.TextStyle, source fyne.Resource, o fyne.CanvasObj
 				faces = &dynamicFontMap{family: fontscan.SansSerif, faces: []*font.Face{f1, f2}}
 			}
 		default:
-			faces = lookupFaces(font1, theme.DefaultTextFont(), emoji, fontscan.SansSerif, style)
+			faces = lookupFaces(font1, theme.DefaultTextFont(), fallbacks, fontscan.SansSerif, style)
 		}
 
 		val = &FontCacheItem{Fonts: faces}
@@ -178,6 +191,11 @@ func ClearFontCache() {
 
 // DrawString draws a string into an image.
 func DrawString(dst draw.Image, s string, color color.Color, f shaping.Fontmap, fontSize, scale float32, style fyne.TextStyle) {
+	DrawStringOffset(dst, s, color, f, fontSize, scale, style, 0)
+}
+
+// DrawStringOffset draws a string shifted left by the specified pixel offset.
+func DrawStringOffset(dst draw.Image, s string, color color.Color, f shaping.Fontmap, fontSize, scale float32, style fyne.TextStyle, offset int) {
 	r := render.Renderer{
 		FontSize: fontSize,
 		PixScale: scale,
@@ -185,19 +203,14 @@ func DrawString(dst draw.Image, s string, color color.Color, f shaping.Fontmap, 
 	}
 
 	advance := float32(0)
-	y := math.MinInt
 	walkString(f, s, float32ToFixed266(fontSize), style, &advance, scale, func(run shaping.Output, x float32) {
-		if y == math.MinInt {
-			y = int(math.Ceil(float64(fixed266ToFloat32(run.LineBounds.Ascent) * r.PixScale)))
-		}
-		if len(run.Glyphs) == 1 {
-			if run.Glyphs[0].GlyphID == 0 {
-				r.DrawStringAt(string([]rune{0xfffd}), dst, int(x), y, f.ResolveFace(0xfffd))
-				return
-			}
+		y := int(math.Ceil(float64(fixed266ToFloat32(run.LineBounds.Ascent) * r.PixScale)))
+		if len(run.Glyphs) == 1 && run.Glyphs[0].GlyphID == 0 {
+			r.DrawStringAt(string([]rune{replacementChar}), dst, int(x)-offset, y, f.ResolveFace(replacementChar))
+			return
 		}
 
-		r.DrawShapedRunAt(run, dst, int(x), y)
+		r.DrawShapedRunAt(run, dst, int(x)-offset, y)
 	})
 }
 
@@ -267,7 +280,6 @@ func walkString(faces shaping.Fontmap, s string, textSize fixed.Int26_6, style f
 		Face:      faces.ResolveFace(' '),
 		Size:      textSize,
 	}
-	shaper := &shaping.HarfbuzzShaper{}
 	segmenter := &shaping.Segmenter{}
 	out := shaper.Shape(in)
 
@@ -289,7 +301,7 @@ func walkString(faces shaping.Fontmap, s string, textSize fixed.Int26_6, style f
 			if r == '\t' {
 				if pending {
 					in.RunEnd = i
-					x = shapeCallback(shaper, in, x, scale, cb)
+					x = shapeCallback(in, x, scale, cb)
 				}
 				x = tabStop(spacew, x, style.TabWidth)
 
@@ -301,7 +313,7 @@ func walkString(faces shaping.Fontmap, s string, textSize fixed.Int26_6, style f
 			}
 		}
 
-		x = shapeCallback(shaper, in, x, scale, cb)
+		x = shapeCallback(in, x, scale, cb)
 	}
 
 	*advance = x
@@ -309,35 +321,30 @@ func walkString(faces shaping.Fontmap, s string, textSize fixed.Int26_6, style f
 		fixed266ToFloat32(out.LineBounds.Ascent)
 }
 
-func shapeCallback(shaper shaping.Shaper, in shaping.Input, x, scale float32, cb func(shaping.Output, float32)) float32 {
+func shapeCallback(in shaping.Input, x, scale float32, cb func(shaping.Output, float32)) float32 {
 	out := shaper.Shape(in)
 	glyphs := out.Glyphs
 	start := 0
-	pending := false
 	adv := fixed.I(0)
 	for i, g := range out.Glyphs {
 		if g.GlyphID == 0 {
-			if pending {
+			if start < i {
 				out.Glyphs = glyphs[start:i]
 				cb(out, x)
 				x += fixed266ToFloat32(adv) * scale
-				adv = 0
 			}
 
 			out.Glyphs = glyphs[i : i+1]
 			cb(out, x)
 			x += fixed266ToFloat32(glyphs[i].Advance) * scale
-			adv = 0
 
+			adv = 0
 			start = i + 1
-			pending = false
-		} else {
-			pending = true
 		}
 		adv += g.Advance
 	}
 
-	if pending {
+	if start < len(glyphs) {
 		out.Glyphs = glyphs[start:]
 		cb(out, x)
 		x += fixed266ToFloat32(adv) * scale

@@ -6,8 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"fyne.io/fyne/v2"
 	"github.com/fsnotify/fsnotify"
+
+	"fyne.io/fyne/v2"
 )
 
 func watchFileAddTarget(watcher *fsnotify.Watcher, path string) {
@@ -41,7 +42,12 @@ func watchFile(path string, callback func()) *fsnotify.Watcher {
 	go func() {
 		for event := range watcher.Events {
 			if event.Op.Has(fsnotify.Remove) { // if it was deleted then watch again
-				watcher.Remove(path) // fsnotify returns false positives, see https://github.com/fsnotify/fsnotify/issues/268
+				err = watcher.Remove(path)
+				if err != nil {
+					fyne.LogError("failed to stop watching removed settings file", err)
+					// fsnotify used to return false positives (https://github.com/fsnotify/fsnotify/issues/268).
+					// So, don’t return but just continue here.
+				}
 
 				watchFileAddTarget(watcher, path)
 			} else {
@@ -62,9 +68,11 @@ func watchFile(path string, callback func()) *fsnotify.Watcher {
 func (s *settings) watchSettings() {
 	s.watcher = watchFile(s.schema.StoragePath(), s.fileChanged)
 
-	a := fyne.CurrentApp()
-	if a != nil && s != nil && a.Settings() == s { // ignore if testing
-		watchTheme(s)
+	if s.explicitThemeVariantName() == "" {
+		a := fyne.CurrentApp()
+		if a != nil && s != nil && a.Settings() == s { // ignore if testing
+			watchTheme(s)
+		}
 	}
 }
 

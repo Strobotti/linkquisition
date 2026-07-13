@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/driver/desktop"
+	fynecolor "fyne.io/fyne/v2/internal/color"
 	"fyne.io/fyne/v2/internal/svg"
 	"fyne.io/fyne/v2/internal/widget"
 	"fyne.io/fyne/v2/theme"
@@ -51,7 +52,7 @@ func (i *menuItem) CreateRenderer() fyne.WidgetRenderer {
 	v := fyne.CurrentApp().Settings().ThemeVariant()
 
 	background := canvas.NewRectangle(th.Color(theme.ColorNameHover, v))
-	background.CornerRadius = th.Size(theme.SizeNameSelectionRadius)
+	background.CornerRadius = th.Size(theme.SizeNameMenuRadius)
 	background.Hide()
 	text := canvas.NewText(i.Item.Label, th.Color(theme.ColorNameForeground, v))
 	text.Alignment = i.alignment
@@ -212,6 +213,7 @@ type menuItemRenderer struct {
 func (r *menuItemRenderer) Layout(size fyne.Size) {
 	th := r.i.parent.Theme()
 	innerPad := th.Size(theme.SizeNameInnerPadding)
+	pad := th.Size(theme.SizeNamePadding)
 	inlineIcon := th.Size(theme.SizeNameInlineIcon)
 
 	leftOffset := innerPad + r.checkSpace()
@@ -251,7 +253,8 @@ func (r *menuItemRenderer) Layout(size fyne.Size) {
 	r.text.Resize(fyne.NewSize(rightOffset-leftOffset, textHeight))
 	r.text.Move(fyne.NewPos(leftOffset, innerPad))
 
-	r.background.Resize(size)
+	r.background.Resize(size.Subtract(fyne.NewSquareSize(pad)))
+	r.background.Move(fyne.NewPos(pad/2, pad/2))
 }
 
 func (r *menuItemRenderer) MinSize() fyne.Size {
@@ -285,7 +288,7 @@ func (r *menuItemRenderer) MinSize() fyne.Size {
 func (r *menuItemRenderer) updateVisuals() {
 	th := r.i.parent.Theme()
 	v := fyne.CurrentApp().Settings().ThemeVariant()
-	r.background.CornerRadius = th.Size(theme.SizeNameSelectionRadius)
+	r.background.CornerRadius = th.Size(theme.SizeNameMenuRadius)
 	if fyne.CurrentDevice().IsMobile() {
 		r.background.Hide()
 	} else if r.i.isActive() {
@@ -362,9 +365,9 @@ func (r *menuItemRenderer) refreshText(text *canvas.Text, shortcut bool) {
 
 func shortcutColor(th fyne.Theme) color.Color {
 	v := fyne.CurrentApp().Settings().ThemeVariant()
-	r, g, b, a := th.Color(theme.ColorNameForeground, v).RGBA()
-	a = uint32(float32(a) * 0.95)
-	return color.NRGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
+	r, g, b, a := fynecolor.ToNRGBA(th.Color(theme.ColorNameForeground, v))
+	a = uint8(float32(a) * 0.198)
+	return color.NRGBA{R: r, G: g, B: b, A: a}
 }
 
 func textsForShortcut(sc fyne.KeyboardShortcut, th fyne.Theme) (texts []*canvas.Text) {

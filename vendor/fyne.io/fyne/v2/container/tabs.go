@@ -107,13 +107,15 @@ func tabsAdjustedLocation(l TabLocation, b baseTabs) TabLocation {
 		if o := fyne.CurrentDevice().Orientation(); fyne.IsVertical(o) {
 			if l == TabLocationLeading {
 				return TabLocationTop
-			} else if l == TabLocationTrailing {
+			}
+			if l == TabLocationTrailing {
 				return TabLocationBottom
 			}
 		} else {
 			if l == TabLocationTop {
 				return TabLocationLeading
-			} else if l == TabLocationBottom {
+			}
+			if l == TabLocationBottom {
 				return TabLocationTrailing
 			}
 		}
@@ -125,6 +127,11 @@ func tabsAdjustedLocation(l TabLocation, b baseTabs) TabLocation {
 func buildPopUpMenu(t baseTabs, button *widget.Button, items []*fyne.MenuItem) *widget.PopUpMenu {
 	d := fyne.CurrentApp().Driver()
 	c := d.CanvasForObject(button)
+	if c == nil {
+		// Overflow button detached from its canvas; nothing to host the
+		// pop-up on (see fyne-io/fyne#5965).
+		return nil
+	}
 	popUpMenu := widget.NewPopUpMenu(fyne.NewMenu("", items...), c)
 	buttonPos := d.AbsolutePositionForObject(button)
 	buttonSize := button.Size()
@@ -338,13 +345,14 @@ func (r *baseTabsRenderer) layout(t baseTabs, size fyne.Size) {
 
 	th := theme.CurrentForWidget(t)
 	padding := th.Size(theme.SizeNamePadding)
+	dividerWidth := th.Size(theme.SizeNameSeparatorThickness)
 	switch t.tabLocation() {
 	case TabLocationTop:
 		barHeight := barMin.Height
 		barPos = fyne.NewPos(0, 0)
 		barSize = fyne.NewSize(size.Width, barHeight)
 		dividerPos = fyne.NewPos(0, barHeight)
-		dividerSize = fyne.NewSize(size.Width, padding)
+		dividerSize = fyne.NewSize(size.Width, dividerWidth)
 		contentPos = fyne.NewPos(0, barHeight+padding)
 		contentSize = fyne.NewSize(size.Width, size.Height-barHeight-padding)
 	case TabLocationLeading:
@@ -352,7 +360,7 @@ func (r *baseTabsRenderer) layout(t baseTabs, size fyne.Size) {
 		barPos = fyne.NewPos(0, 0)
 		barSize = fyne.NewSize(barWidth, size.Height)
 		dividerPos = fyne.NewPos(barWidth, 0)
-		dividerSize = fyne.NewSize(padding, size.Height)
+		dividerSize = fyne.NewSize(dividerWidth, size.Height)
 		contentPos = fyne.NewPos(barWidth+padding, 0)
 		contentSize = fyne.NewSize(size.Width-barWidth-padding, size.Height)
 	case TabLocationBottom:
@@ -360,7 +368,7 @@ func (r *baseTabsRenderer) layout(t baseTabs, size fyne.Size) {
 		barPos = fyne.NewPos(0, size.Height-barHeight)
 		barSize = fyne.NewSize(size.Width, barHeight)
 		dividerPos = fyne.NewPos(0, size.Height-barHeight-padding)
-		dividerSize = fyne.NewSize(size.Width, padding)
+		dividerSize = fyne.NewSize(size.Width, dividerWidth)
 		contentPos = fyne.NewPos(0, 0)
 		contentSize = fyne.NewSize(size.Width, size.Height-barHeight-padding)
 	case TabLocationTrailing:
@@ -368,7 +376,7 @@ func (r *baseTabsRenderer) layout(t baseTabs, size fyne.Size) {
 		barPos = fyne.NewPos(size.Width-barWidth, 0)
 		barSize = fyne.NewSize(barWidth, size.Height)
 		dividerPos = fyne.NewPos(size.Width-barWidth-padding, 0)
-		dividerSize = fyne.NewSize(padding, size.Height)
+		dividerSize = fyne.NewSize(dividerWidth, size.Height)
 		contentPos = fyne.NewPos(0, 0)
 		contentSize = fyne.NewSize(size.Width-barWidth-padding, size.Height)
 	}
@@ -567,6 +575,10 @@ func (b *tabButton) MinSize() fyne.Size {
 }
 
 func (b *tabButton) MouseIn(*desktop.MouseEvent) {
+	if isMobile(b.tabs) { // mobile simulation still has desktop events
+		return
+	}
+
 	b.hovered = true
 	b.Refresh()
 }
@@ -575,6 +587,10 @@ func (b *tabButton) MouseMoved(*desktop.MouseEvent) {
 }
 
 func (b *tabButton) MouseOut() {
+	if isMobile(b.tabs) { // mobile simulation still has desktop events
+		return
+	}
+
 	b.hovered = false
 	b.Refresh()
 }
@@ -608,16 +624,18 @@ func (r *tabButtonRenderer) Layout(size fyne.Size) {
 	innerOffset := fyne.NewPos(padding.Width/2, padding.Height/2)
 	labelShift := float32(0)
 	if r.icon.Visible() {
+		shiftPad := pad
 		iconSize := r.iconSize()
 		var iconOffset fyne.Position
 		if r.button.iconPosition == buttonIconTop {
 			iconOffset = fyne.NewPos((innerSize.Width-iconSize)/2, 0)
+			shiftPad = 0
 		} else {
 			iconOffset = fyne.NewPos(0, (innerSize.Height-iconSize)/2)
 		}
 		r.icon.Resize(fyne.NewSquareSize(iconSize))
 		r.icon.Move(innerOffset.Add(iconOffset))
-		labelShift = iconSize + pad
+		labelShift = iconSize + shiftPad
 	}
 	if r.label.Text != "" {
 		var labelOffset fyne.Position
@@ -646,7 +664,7 @@ func (r *tabButtonRenderer) MinSize() fyne.Size {
 	if r.button.iconPosition == buttonIconTop {
 		contentWidth = fyne.Max(textSize.Width, iconSize)
 		if r.icon.Visible() {
-			contentHeight += iconSize
+			contentHeight += iconSize - padding*2
 		}
 		if r.label.Text != "" {
 			if r.icon.Visible() {
@@ -703,6 +721,9 @@ func (r *tabButtonRenderer) Refresh() {
 		r.label.Color = th.Color(theme.ColorNameDisabled, v)
 	}
 	r.label.TextSize = th.Size(theme.SizeNameText)
+	if isMobile(r.button.tabs) {
+		r.label.TextSize = th.Size(theme.SizeNameCaptionText)
+	}
 	if r.button.text == "" {
 		r.label.Hide()
 	} else {
@@ -740,7 +761,7 @@ func (r *tabButtonRenderer) Refresh() {
 func (r *tabButtonRenderer) iconSize() float32 {
 	iconSize := r.button.Theme().Size(theme.SizeNameInlineIcon)
 	if r.button.iconPosition == buttonIconTop {
-		return 2 * iconSize
+		return 1.5 * iconSize
 	}
 
 	return iconSize
@@ -751,7 +772,7 @@ func (r *tabButtonRenderer) padding() fyne.Size {
 	if r.label.Text != "" && r.button.iconPosition == buttonIconInline {
 		return fyne.NewSquareSize(padding * 2)
 	}
-	return fyne.NewSize(padding, padding*2)
+	return fyne.NewSize(padding, padding)
 }
 
 var (

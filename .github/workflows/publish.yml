@@ -19,8 +19,11 @@ jobs:
       - name: Install build dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: gcc libgl1-mesa-dev xorg-dev
+          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev
           version: 1.0
+
+      - name: Generate Wayland protocol headers
+        run: ./scripts/generate-wayland-protocols.sh
 
       - uses: arduino/setup-task@v3
         with:
@@ -57,8 +60,12 @@ jobs:
         if: runner.os == 'Linux'
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: gcc libgl1-mesa-dev xorg-dev scdoc
+          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev scdoc
           version: 1.0
+
+      - name: Generate Wayland protocol headers
+        if: runner.os == 'Linux'
+        run: ./scripts/generate-wayland-protocols.sh
 
       - uses: arduino/setup-task@v3
         with:
@@ -129,8 +136,11 @@ jobs:
       - name: Install build dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: gcc libgl1-mesa-dev xorg-dev scdoc
+          packages: gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev scdoc
           version: 1.0
+
+      - name: Generate Wayland protocol headers
+        run: ./scripts/generate-wayland-protocols.sh
 
       - name: Install syft
         run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin

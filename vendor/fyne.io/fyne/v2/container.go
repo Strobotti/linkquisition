@@ -1,7 +1,11 @@
 package fyne
 
-// Declare conformity to [CanvasObject]
-var _ CanvasObject = (*Container)(nil)
+var (
+	// Declare conformity to [CanvasObject]
+	_ CanvasObject = (*Container)(nil)
+	// Declare conformity to [Accessible]
+	_ Accessible = (*Container)(nil)
+)
 
 // Container is a [CanvasObject] that contains a collection of child objects.
 // The layout of the children is set by the specified Layout.
@@ -47,6 +51,20 @@ func NewContainerWithLayout(layout Layout, objects ...CanvasObject) *Container {
 	ret.size = layout.MinSize(objects)
 	ret.layout()
 	return ret
+}
+
+// AccessibilityLabel for a container just returns "Container".
+//
+// Since: 2.8
+func (c *Container) AccessibilityLabel() string {
+	return "Container"
+}
+
+// AccessibilityRole for a container is AccessibleRoleContainer.
+//
+// Since: 2.8
+func (c *Container) AccessibilityRole() AccessibleRole {
+	return AccessibleRoleContainer
 }
 
 // Add appends the specified object to the items this container manages.

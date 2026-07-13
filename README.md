@@ -249,7 +249,7 @@ amd64, as I do not have time/access to other architectures for testing easily.
 - Taskfile (https://taskfile.dev/#/installation)
 - Build-dependencies:
   ```shell
-  sudo apt-get update && sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev scdoc
+  sudo apt-get update && sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev scdoc
   ```
 
 ### Building locally
@@ -257,6 +257,7 @@ amd64, as I do not have time/access to other architectures for testing easily.
 The following command will build a binary in the `bin` directory:
 
 ```bash
+./scripts/generate-wayland-protocols.sh # required once after cloning (Linux only)
 task build # results in bin/linkquisition-linux-amd64
 ```
 

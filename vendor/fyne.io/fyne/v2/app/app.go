@@ -4,13 +4,16 @@
 package app // import "fyne.io/fyne/v2/app"
 
 import (
+	"log"
 	"strconv"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/internal"
 	"fyne.io/fyne/v2/internal/app"
+	"fyne.io/fyne/v2/internal/build"
 	intRepo "fyne.io/fyne/v2/internal/repository"
+	"fyne.io/fyne/v2/internal/scheduler"
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/storage/repository"
 )
@@ -24,11 +27,13 @@ type fyneApp struct {
 	icon      fyne.Resource
 	uniqueID  string
 
+	cache     fyne.Cache
 	cloud     fyne.CloudProvider
 	lifecycle app.Lifecycle
 	settings  *settings
 	storage   fyne.Storage
 	prefs     fyne.Preferences
+	scheduler *scheduler.Scheduler
 }
 
 func (a *fyneApp) CloudProvider() fyne.CloudProvider {
@@ -74,6 +79,11 @@ func (a *fyneApp) Run() {
 		a.settings.watchSettings()
 	}
 
+	if !build.MigratedToFyneDo() {
+		log.Println("*** This application has not been migrated to the fyne.Do threading model ***")
+		log.Println("*** The next major Fyne release will remove this safety! ***")
+		log.Println("*** Read more at https://docs.fyne.io/started/goroutines ***")
+	}
 	a.driver.Run()
 }
 
@@ -116,6 +126,10 @@ func (a *fyneApp) newDefaultPreferences() *preferences {
 		p.load()
 	}
 	return p
+}
+
+func (a *fyneApp) Cache() fyne.Cache {
+	return a.cache
 }
 
 func (a *fyneApp) Clipboard() fyne.Clipboard {
@@ -171,6 +185,9 @@ func newAppWithDriver(d fyne.Driver, clipboard fyne.Clipboard, id string) fyne.A
 	})
 
 	newApp.registerRepositories() // for web this may provide docs / settings
+	newApp.cache = makeCache(newApp)
+	newApp.scheduler = scheduler.New(newApp.cache, newApp.SendNotification)
+	newApp.scheduler.Start()
 	newApp.settings = loadSettings()
 	store := &store{a: newApp}
 	store.Docs = makeStoreDocs(id, store)

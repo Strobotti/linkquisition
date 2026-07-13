@@ -22,6 +22,7 @@ new_window(Display *x_dpy, EGLDisplay e_dpy, int w, int h, EGLContext *ctx, EGLS
 		EGL_BLUE_SIZE, 8,
 		EGL_GREEN_SIZE, 8,
 		EGL_RED_SIZE, 8,
+		EGL_ALPHA_SIZE, 8,
 		EGL_DEPTH_SIZE, 16,
 		EGL_CONFIG_CAVEAT, EGL_NONE,
 		EGL_NONE
@@ -111,7 +112,7 @@ createWindow(void) {
 		exit(1);
 	}
 	eglBindAPI(EGL_OPENGL_ES_API);
-	win = new_window(x_dpy, e_dpy, 600, 800, &e_ctx, &e_surf);
+	win = new_window(x_dpy, e_dpy, 500, 1000, &e_ctx, &e_surf);
 
 	wm_delete_window = XInternAtom(x_dpy, "WM_DELETE_WINDOW", True);
 	if (wm_delete_window != None) {
