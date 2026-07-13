@@ -19,6 +19,13 @@ const (
 	ThreatLevelDangerous
 )
 
+const (
+	// ProviderNameGoogleSafeBrowsing is the display name for Google Safe Browsing.
+	ProviderNameGoogleSafeBrowsing = "Google Safe Browsing"
+	// ProviderNameVirusTotal is the display name for VirusTotal.
+	ProviderNameVirusTotal = "VirusTotal"
+)
+
 // CheckResult holds the outcome of a URL safety check.
 type CheckResult struct {
 	Level     ThreatLevel

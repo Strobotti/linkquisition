@@ -24,7 +24,7 @@ func newVirusTotal(apiKey string) *virusTotal {
 }
 
 func (v *virusTotal) Name() string {
-	return "VirusTotal"
+	return ProviderNameVirusTotal
 }
 
 func (v *virusTotal) TestCredentials(ctx context.Context) error {

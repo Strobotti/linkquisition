@@ -14,7 +14,7 @@ func TestCache_PutAndGet(t *testing.T) {
 
 	result := &CheckResult{
 		Level:     ThreatLevelSafe,
-		Provider:  "Google Safe Browsing",
+		Provider:  ProviderNameGoogleSafeBrowsing,
 		Details:   nil,
 		ReportURL: "https://example.com/report",
 		CheckedAt: time.Now(),
@@ -26,7 +26,7 @@ func TestCache_PutAndGet(t *testing.T) {
 	cached, ok := cache.Get("https://example.com")
 	require.True(t, ok)
 	assert.Equal(t, ThreatLevelSafe, cached.Level)
-	assert.Equal(t, "Google Safe Browsing", cached.Provider)
+	assert.Equal(t, ProviderNameGoogleSafeBrowsing, cached.Provider)
 	assert.Equal(t, "https://example.com/report", cached.ReportURL)
 }
 
@@ -46,8 +46,8 @@ func TestCache_Expired(t *testing.T) {
 
 	result := &CheckResult{
 		Level:    ThreatLevelDangerous,
-		Provider: "Google Safe Browsing",
-		Details:  []string{"MALWARE"},
+		Provider: ProviderNameGoogleSafeBrowsing,
+		Details:  []string{threatTypeMalware},
 	}
 
 	err := cache.Put("https://malware.example.com", result)
@@ -68,11 +68,11 @@ func TestCache_SeparateProviders(t *testing.T) {
 
 	googleResult := &CheckResult{
 		Level:    ThreatLevelSafe,
-		Provider: "Google Safe Browsing",
+		Provider: ProviderNameGoogleSafeBrowsing,
 	}
 	vtResult := &CheckResult{
 		Level:    ThreatLevelDangerous,
-		Provider: "VirusTotal",
+		Provider: ProviderNameVirusTotal,
 		Details:  []string{"3 engine(s) flagged as malicious"},
 	}
 
@@ -96,7 +96,7 @@ func TestCache_Clear(t *testing.T) {
 	cacheDir := t.TempDir()
 	cache := NewCache(cacheDir, "virustotal", 24*time.Hour)
 
-	result := &CheckResult{Level: ThreatLevelSafe, Provider: "VirusTotal"}
+	result := &CheckResult{Level: ThreatLevelSafe, Provider: ProviderNameVirusTotal}
 	require.NoError(t, cache.Put("https://example.com", result))
 
 	// Verify it's cached
@@ -133,7 +133,7 @@ func TestCache_PruneExpired(t *testing.T) {
 	// Use a very short TTL
 	cache := NewCache(cacheDir, "google_safe_browsing", 1*time.Millisecond)
 
-	result := &CheckResult{Level: ThreatLevelSafe, Provider: "Google Safe Browsing"}
+	result := &CheckResult{Level: ThreatLevelSafe, Provider: ProviderNameGoogleSafeBrowsing}
 
 	// Store multiple entries
 	require.NoError(t, cache.Put("https://a.com", result))

@@ -113,7 +113,15 @@ func (c *Configurator) getSecurityTab() fyne.CanvasObject {
 		widget.NewLabel(""), container.NewHBox(testButton, testStatus),
 	)
 
-	// Cache section
+	return container.NewVBox(
+		enabledCheck,
+		form,
+		widget.NewSeparator(),
+		c.buildSecurityCacheSection(settings),
+	)
+}
+
+func (c *Configurator) buildSecurityCacheSection(settings *linkquisition.Settings) fyne.CanvasObject {
 	cacheCheck := widget.NewCheck(i18n.T("config.security_cache_enabled"), nil)
 	cacheCheck.Checked = settings.Security.Cache.Enabled
 
@@ -171,9 +179,6 @@ func (c *Configurator) getSecurityTab() fyne.CanvasObject {
 	}
 
 	return container.NewVBox(
-		enabledCheck,
-		form,
-		widget.NewSeparator(),
 		cacheCheck,
 		cacheForm,
 		clearCacheButton,

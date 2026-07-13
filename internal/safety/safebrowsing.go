@@ -15,6 +15,11 @@ const (
 	safeBrowsingLookupURL = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
 	safeBrowsingTestURL   = "https://safebrowsing.googleapis.com/v4/threatLists"
 	safeBrowsingReportURL = "https://transparencyreport.google.com/safe-browsing/search?url="
+
+	threatTypeMalware            = "MALWARE"
+	threatTypeSocialEngineering  = "SOCIAL_ENGINEERING"
+	threatTypeUnwantedSoftware   = "UNWANTED_SOFTWARE"
+	threatTypePotentiallyHarmful = "POTENTIALLY_HARMFUL_APPLICATION"
 )
 
 type googleSafeBrowsing struct {
@@ -26,7 +31,7 @@ func newGoogleSafeBrowsing(apiKey string) *googleSafeBrowsing {
 }
 
 func (g *googleSafeBrowsing) Name() string {
-	return "Google Safe Browsing"
+	return ProviderNameGoogleSafeBrowsing
 }
 
 func (g *googleSafeBrowsing) TestCredentials(ctx context.Context) error {
@@ -61,7 +66,7 @@ func (g *googleSafeBrowsing) Check(ctx context.Context, targetURL string) (*Chec
 			ClientVersion: "1.0.0",
 		},
 		ThreatInfo: sbThreatInfo{
-			ThreatTypes:      []string{"MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"},
+			ThreatTypes:      []string{threatTypeMalware, threatTypeSocialEngineering, threatTypeUnwantedSoftware, threatTypePotentiallyHarmful},
 			PlatformTypes:    []string{"ANY_PLATFORM"},
 			ThreatEntryTypes: []string{"URL"},
 			ThreatEntries:    []sbThreatEntry{{URL: targetURL}},

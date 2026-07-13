@@ -11,13 +11,13 @@ func TestNewChecker(t *testing.T) {
 	t.Run("google safe browsing", func(t *testing.T) {
 		checker, err := NewChecker("google_safe_browsing", "test-key")
 		require.NoError(t, err)
-		assert.Equal(t, "Google Safe Browsing", checker.Name())
+		assert.Equal(t, ProviderNameGoogleSafeBrowsing, checker.Name())
 	})
 
 	t.Run("virustotal", func(t *testing.T) {
 		checker, err := NewChecker("virustotal", "test-key")
 		require.NoError(t, err)
-		assert.Equal(t, "VirusTotal", checker.Name())
+		assert.Equal(t, ProviderNameVirusTotal, checker.Name())
 	})
 
 	t.Run("unknown provider", func(t *testing.T) {
