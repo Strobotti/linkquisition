@@ -32,7 +32,7 @@ tasks:
     cmds:
       - task: setup-test
       - task: test-cobertura
-      - go test -covermode=atomic -coverprofile="{{.COVERAGE_DIR_LATEST}}/coverage.txt" -v ./...
+      - go test -tags x11 -covermode=atomic -coverprofile="{{.COVERAGE_DIR_LATEST}}/coverage.txt" -v ./...
       - gocover-cobertura < {{.COVERAGE_DIR_LATEST}}/coverage.txt > {{.COVERAGE_XML}}
       - go tool cover -html="{{.COVERAGE_DIR_LATEST}}/coverage.txt" -o {{.COVERAGE_HTML}}
       - task: coverage-test-result
