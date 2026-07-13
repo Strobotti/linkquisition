@@ -257,6 +257,7 @@ amd64, as I do not have time/access to other architectures for testing easily.
 The following command will build a binary in the `bin` directory:
 
 ```bash
+./scripts/generate-wayland-protocols.sh # required once after cloning (Linux only)
 task build # results in bin/linkquisition-linux-amd64
 ```
 

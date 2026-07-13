@@ -125,6 +125,13 @@ When making changes, ensure ALL relevant documentation is updated:
 - `task package:app:install` — build + install to `/Applications`
 - The `PLUGINS` var in `Taskfile.build.yml` is the single source of truth for which plugins are built
 
+### Wayland protocol generation (Linux only)
+
+GLFW v3.4 compiles with both X11 and Wayland support by default on Linux. The Wayland
+backend requires generated protocol headers that are not in the vendored source tree.
+Run `./scripts/generate-wayland-protocols.sh` once after cloning (requires `libwayland-dev`
+which provides `wayland-scanner`). CI workflows do this automatically.
+
 ## Linting
 
 The project uses `golangci-lint`. The full rule configuration is in `.golangci.yml` — refer to
