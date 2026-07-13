@@ -23,7 +23,7 @@ func TestIsNewerVersion(t *testing.T) {
 		{"minor newer", "2.14.0", "2.13.0", true},
 		{"major newer", "3.0.0", "2.13.0", true},
 		{"current is newer", "2.12.0", "2.13.0", false},
-		{"dev build", "2.13.0", "dev", false},
+		{"dev build", "2.13.0", VersionDev, false},
 		{"empty current", "2.13.0", "", false},
 		{"pre-release suffix", "2.14.0-rc1", "2.13.0", true},
 	}

@@ -12,6 +12,9 @@ import (
 
 const requestTimeout = 10 * time.Second
 
+// VersionDev is the version string used during development builds.
+const VersionDev = "dev"
+
 //nolint:gochecknoglobals // mutable for testing
 var githubReleasesURL = "https://api.github.com/repos/Strobotti/linkquisition/releases/latest"
 
@@ -86,7 +89,7 @@ func Check(ctx context.Context, currentVersion string) (*CheckResult, error) {
 // Falls back to string comparison if parsing fails.
 func isNewerVersion(latest, current string) bool {
 	// Don't report updates for dev builds
-	if current == "dev" || current == "" {
+	if current == VersionDev || current == "" {
 		return false
 	}
 
