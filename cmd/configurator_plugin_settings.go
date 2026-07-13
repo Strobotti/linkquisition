@@ -14,6 +14,7 @@ import (
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
+	"github.com/strobotti/linkquisition/internal/ui"
 )
 
 // buildDefaultSettingsFromMetadata constructs a settings map populated with default values
@@ -38,6 +39,44 @@ func buildDefaultSettingsFromMetadata(meta *linkquisition.PluginMetadata) map[st
 		}
 	}
 	return defaults
+}
+
+// buildPluginMetadataHeader creates a header section displaying plugin description,
+// author, and homepage URL. Empty optional fields are omitted.
+func (c *Configurator) buildPluginMetadataHeader(
+	meta *linkquisition.PluginMetadata, parentWindow fyne.Window,
+) fyne.CanvasObject {
+	items := make([]fyne.CanvasObject, 0, 4) //nolint:mnd
+
+	// Description (always shown if available)
+	if meta.Description != "" {
+		desc := widget.NewLabel(meta.Description)
+		desc.Wrapping = fyne.TextWrapWord
+		items = append(items, desc)
+	}
+
+	// Author (optional)
+	if meta.Author != "" {
+		authorLabel := widget.NewRichTextFromMarkdown("**" + i18n.T("config.plugins_author") + ":** " + meta.Author)
+		items = append(items, authorLabel)
+	}
+
+	// Homepage URL (optional)
+	if meta.URL != "" {
+		homepageRow := container.NewHBox(
+			ui.NewLinkWithCopy(meta.URL, meta.URL, parentWindow),
+		)
+		items = append(items, homepageRow)
+	}
+
+	if len(items) == 0 {
+		return nil
+	}
+
+	// Add a separator after the metadata section
+	items = append(items, widget.NewSeparator())
+
+	return container.NewVBox(items...)
 }
 
 func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Container) {
@@ -89,7 +128,15 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 		return
 	}
 
-	scrollContent := container.NewVScroll(formContainer)
+	// Build scrollable content with optional metadata header
+	var scrollBody fyne.CanvasObject
+	if header := c.buildPluginMetadataHeader(&meta, parentWindow); header != nil {
+		scrollBody = container.NewVBox(header, formContainer)
+	} else {
+		scrollBody = formContainer
+	}
+
+	scrollContent := container.NewVScroll(scrollBody)
 	scrollContent.SetMinSize(fyne.NewSize(740, 380)) //nolint:mnd
 
 	var d dialog.Dialog
@@ -163,7 +210,15 @@ func (c *Configurator) showAddPluginSettings(
 		return
 	}
 
-	scrollContent := container.NewVScroll(formContainer)
+	// Build scrollable content with optional metadata header
+	var scrollBody fyne.CanvasObject
+	if header := c.buildPluginMetadataHeader(meta, parentWindow); header != nil {
+		scrollBody = container.NewVBox(header, formContainer)
+	} else {
+		scrollBody = formContainer
+	}
+
+	scrollContent := container.NewVScroll(scrollBody)
 	scrollContent.SetMinSize(fyne.NewSize(740, 380)) //nolint:mnd
 
 	var d dialog.Dialog

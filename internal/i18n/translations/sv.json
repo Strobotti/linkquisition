@@ -511,5 +511,8 @@
   },
   "config.plugins_reset_defaults": {
     "other": "Återställ standardvärden"
+  },
+  "config.plugins_author": {
+    "other": "Författare"
   }
 }

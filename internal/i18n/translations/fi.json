@@ -511,5 +511,8 @@
   },
   "config.plugins_reset_defaults": {
     "other": "Palauta oletusarvot"
+  },
+  "config.plugins_author": {
+    "other": "Tekijä"
   }
 }

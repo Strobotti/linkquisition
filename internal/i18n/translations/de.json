@@ -511,5 +511,8 @@
   },
   "config.plugins_reset_defaults": {
     "other": "Auf Standardwerte zurücksetzen"
+  },
+  "config.plugins_author": {
+    "other": "Autor"
   }
 }

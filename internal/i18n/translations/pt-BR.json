@@ -511,5 +511,8 @@
   },
   "config.plugins_reset_defaults": {
     "other": "Restaurar padrões"
+  },
+  "config.plugins_author": {
+    "other": "Autor"
   }
 }

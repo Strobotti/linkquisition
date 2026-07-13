@@ -511,5 +511,8 @@
   },
   "config.plugins_reset_defaults": {
     "other": "Réinitialiser aux valeurs par défaut"
+  },
+  "config.plugins_author": {
+    "other": "Auteur"
   }
 }

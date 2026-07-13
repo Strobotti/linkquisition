@@ -511,5 +511,8 @@
   },
   "config.plugins_reset_defaults": {
     "other": "Скинути до стандартних"
+  },
+  "config.plugins_author": {
+    "other": "Автор"
   }
 }
