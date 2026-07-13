@@ -394,6 +394,7 @@ func (c *Configurator) scanBrowsersAndRebuild(listContainer *fyne.Container, btn
 		}
 		fyne.Do(func() {
 			btn.SetText(i18n.T("config.scan_browsers_done"))
+			c.hideNoBrowsersWarning()
 		})
 		time.AfterFunc(time.Second, func() {
 			fyne.Do(func() { c.rebuildBrowsersList(listContainer) })
