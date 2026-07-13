@@ -186,6 +186,7 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 	parentWindow := windows[0]
 
 	regexPanel := newRegexPanel(parentWindow)
+	regexPanel.update(linkquisition.BrowserMatchTypeSite, "")
 
 	typeSelect.OnChanged = func(selected string) {
 		regexPanel.update(selected, valueEntry.Text)
