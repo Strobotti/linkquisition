@@ -508,5 +508,8 @@
   },
   "config.plugins_kv_add_row": {
     "other": "Add rule"
+  },
+  "config.plugins_reset_defaults": {
+    "other": "Reset to defaults"
   }
 }

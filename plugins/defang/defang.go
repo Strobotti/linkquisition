@@ -74,6 +74,7 @@ func (p *defang) Metadata() linkquisition.PluginMetadata {
 				Label:       "Blocklist Sources",
 				Description: "URLs to download hosts-format blocklists from",
 				Type:        linkquisition.SettingTypeStringList,
+				Default:     defaultSources,
 			},
 			{
 				Key:         "updateInterval",

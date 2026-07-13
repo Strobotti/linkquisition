@@ -508,5 +508,8 @@
   },
   "config.plugins_kv_add_row": {
     "other": "Adicionar regra"
+  },
+  "config.plugins_reset_defaults": {
+    "other": "Restaurar padrões"
   }
 }

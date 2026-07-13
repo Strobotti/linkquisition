@@ -8,11 +8,37 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
 )
+
+// buildDefaultSettingsFromMetadata constructs a settings map populated with default values
+// from the plugin's metadata descriptors.
+func buildDefaultSettingsFromMetadata(meta *linkquisition.PluginMetadata) map[string]interface{} {
+	defaults := make(map[string]interface{})
+	for _, desc := range meta.Settings {
+		if desc.Default == nil {
+			continue
+		}
+		switch desc.Type {
+		case linkquisition.SettingTypeStringList:
+			if list := convertToStringList(desc.Default); list != nil {
+				asIface := make([]interface{}, len(list))
+				for i, s := range list {
+					asIface[i] = s
+				}
+				defaults[desc.Key] = asIface
+			}
+		default:
+			defaults[desc.Key] = desc.Default
+		}
+	}
+	return defaults
+}
 
 func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Container) {
 	settings := c.settingsService.GetSettings()
@@ -34,8 +60,27 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 		editors[desc.Key] = getValue
 	}
 
-	// Build the form
+	// Build the form inside a container we can swap out
 	form := widget.NewForm(formItems...)
+	formContainer := container.NewStack(form)
+
+	// "Reset to defaults" button
+	resetBtn := widget.NewButton(i18n.T("config.plugins_reset_defaults"), func() {
+		defaultSettings := buildDefaultSettingsFromMetadata(&meta)
+		newEditors := make(map[string]func() interface{})
+		newFormItems := make([]*widget.FormItem, 0, len(meta.Settings))
+		for i := range meta.Settings {
+			desc := &meta.Settings[i]
+			item, getValue := c.buildSettingWidget(desc, defaultSettings)
+			newFormItems = append(newFormItems, item)
+			newEditors[desc.Key] = getValue
+		}
+		editors = newEditors
+		newForm := widget.NewForm(newFormItems...)
+		formContainer.RemoveAll()
+		formContainer.Add(newForm)
+		formContainer.Refresh()
+	})
 
 	title := i18n.T("config.plugins_settings_title", map[string]interface{}{templateKeyName: meta.Name})
 
@@ -44,23 +89,25 @@ func (c *Configurator) showPluginSettings(pluginIdx int, listContainer *fyne.Con
 		return
 	}
 
-	scrollContent := container.NewVScroll(form)
-	scrollContent.SetMinSize(fyne.NewSize(700, 350)) //nolint:mnd
+	scrollContent := container.NewVScroll(formContainer)
+	scrollContent.SetMinSize(fyne.NewSize(740, 380)) //nolint:mnd
 
-	d := dialog.NewCustomConfirm(
-		title,
-		i18n.T("config.plugins_save"),
-		i18n.T("config.plugins_cancel"),
-		scrollContent,
-		func(save bool) {
-			if !save {
-				return
-			}
-			c.savePluginSettings(pluginIdx, editors, listContainer)
-		},
-		parentWindow,
-	)
-	d.Resize(fyne.NewSize(780, 500)) //nolint:mnd
+	var d dialog.Dialog
+
+	saveBtn := widget.NewButton(i18n.T("config.plugins_save"), func() {
+		c.savePluginSettings(pluginIdx, editors, listContainer)
+		d.Hide()
+	})
+	saveBtn.Importance = widget.HighImportance
+	cancelBtn := widget.NewButton(i18n.T("config.plugins_cancel"), func() {
+		d.Hide()
+	})
+
+	buttonRow := container.NewHBox(resetBtn, layout.NewSpacer(), cancelBtn, saveBtn)
+	content := container.NewBorder(nil, buttonRow, nil, nil, scrollContent)
+
+	d = dialog.NewCustomWithoutButtons(title, content, parentWindow)
+	d.Resize(fyne.NewSize(820, 540)) //nolint:mnd
 	d.Show()
 }
 
@@ -76,8 +123,8 @@ func (c *Configurator) showAddPluginSettings(
 		return
 	}
 
-	// Build form items from metadata setting descriptors using defaults
-	defaultSettings := make(map[string]interface{})
+	// Pre-populate with default values from metadata descriptors
+	defaultSettings := buildDefaultSettingsFromMetadata(meta)
 	editors := make(map[string]func() interface{})
 	formItems := make([]*widget.FormItem, 0, len(meta.Settings))
 
@@ -89,6 +136,25 @@ func (c *Configurator) showAddPluginSettings(
 	}
 
 	form := widget.NewForm(formItems...)
+	formContainer := container.NewStack(form)
+
+	// "Reset to defaults" button
+	resetBtn := widget.NewButton(i18n.T("config.plugins_reset_defaults"), func() {
+		freshDefaults := buildDefaultSettingsFromMetadata(meta)
+		newEditors := make(map[string]func() interface{})
+		newFormItems := make([]*widget.FormItem, 0, len(meta.Settings))
+		for i := range meta.Settings {
+			desc := &meta.Settings[i]
+			item, getValue := c.buildSettingWidget(desc, freshDefaults)
+			newFormItems = append(newFormItems, item)
+			newEditors[desc.Key] = getValue
+		}
+		editors = newEditors
+		newForm := widget.NewForm(newFormItems...)
+		formContainer.RemoveAll()
+		formContainer.Add(newForm)
+		formContainer.Refresh()
+	})
 
 	title := i18n.T("config.plugins_settings_title", map[string]interface{}{templateKeyName: meta.Name})
 
@@ -97,30 +163,32 @@ func (c *Configurator) showAddPluginSettings(
 		return
 	}
 
-	scrollContent := container.NewVScroll(form)
-	scrollContent.SetMinSize(fyne.NewSize(700, 350)) //nolint:mnd
+	scrollContent := container.NewVScroll(formContainer)
+	scrollContent.SetMinSize(fyne.NewSize(740, 380)) //nolint:mnd
 
-	d := dialog.NewCustomConfirm(
-		title,
-		i18n.T("config.plugins_save"),
-		i18n.T("config.plugins_cancel"),
-		scrollContent,
-		func(save bool) {
-			if !save {
-				return
+	var d dialog.Dialog
+
+	saveBtn := widget.NewButton(i18n.T("config.plugins_save"), func() {
+		// Collect settings from editors
+		pluginSettings := make(map[string]interface{})
+		for key, getValue := range editors {
+			if val := getValue(); val != nil {
+				pluginSettings[key] = val
 			}
-			// Collect settings from editors
-			pluginSettings := make(map[string]interface{})
-			for key, getValue := range editors {
-				if val := getValue(); val != nil {
-					pluginSettings[key] = val
-				}
-			}
-			c.addPluginWithSettings(pluginName, pluginSettings, listContainer)
-		},
-		parentWindow,
-	)
-	d.Resize(fyne.NewSize(780, 500)) //nolint:mnd
+		}
+		c.addPluginWithSettings(pluginName, pluginSettings, listContainer)
+		d.Hide()
+	})
+	saveBtn.Importance = widget.HighImportance
+	cancelBtn := widget.NewButton(i18n.T("config.plugins_cancel"), func() {
+		d.Hide()
+	})
+
+	buttonRow := container.NewHBox(resetBtn, layout.NewSpacer(), cancelBtn, saveBtn)
+	content := container.NewBorder(nil, buttonRow, nil, nil, scrollContent)
+
+	d = dialog.NewCustomWithoutButtons(title, content, parentWindow)
+	d.Resize(fyne.NewSize(820, 540)) //nolint:mnd
 	d.Show()
 }
 
@@ -256,7 +324,7 @@ func (c *Configurator) buildStringSetting(
 func (c *Configurator) buildStringListSetting(
 	desc *linkquisition.PluginSettingDescriptor, currentSettings map[string]interface{},
 ) (item *widget.FormItem, getValue func() interface{}) {
-	current := getSettingStringList(currentSettings, desc.Key)
+	current := getSettingStringList(currentSettings, desc.Key, desc.Default)
 	entry := widget.NewMultiLineEntry()
 	entry.SetText(strings.Join(current, "\n"))
 	entry.SetMinRowsVisible(3) //nolint:mnd
@@ -318,26 +386,19 @@ func (c *Configurator) buildKeyValueListSetting(
 		headerKey.TextStyle.Bold = true
 		headerVal := widget.NewLabel(valueLabel)
 		headerVal.TextStyle.Bold = true
-		headerRow := container.NewGridWithColumns(
-			3, //nolint:mnd
-			headerKey,
-			headerVal,
-			widget.NewLabel(""),
+		headerRow := container.NewBorder(nil, nil, nil, widget.NewLabel(""),
+			container.NewGridWithColumns(2, headerKey, headerVal), //nolint:mnd
 		)
 		listContainer.Add(headerRow)
 
 		for i := range rows {
 			idx := i
-			removeBtn := widget.NewButton("✕", func() {
+			removeBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
 				rows = append(rows[:idx], rows[idx+1:]...)
 				rebuildList()
 			})
-			row := container.NewGridWithColumns(
-				3, //nolint:mnd
-				rows[idx].keyEntry,
-				rows[idx].valueEntry,
-				removeBtn,
-			)
+			entries := container.NewGridWithColumns(2, rows[idx].keyEntry, rows[idx].valueEntry) //nolint:mnd
+			row := container.NewBorder(nil, nil, nil, removeBtn, entries)
 			listContainer.Add(row)
 		}
 	}
@@ -417,12 +478,19 @@ func getSettingBool(settings map[string]interface{}, key string, defaultVal inte
 	return false
 }
 
-func getSettingStringList(settings map[string]interface{}, key string) []string {
+func getSettingStringList(settings map[string]interface{}, key string, defaultVal interface{}) []string {
 	v, ok := settings[key]
 	if !ok {
+		if defaultVal != nil {
+			return convertToStringList(defaultVal)
+		}
 		return nil
 	}
 
+	return convertToStringList(v)
+}
+
+func convertToStringList(v interface{}) []string {
 	switch list := v.(type) {
 	case []interface{}:
 		result := make([]string, 0, len(list))

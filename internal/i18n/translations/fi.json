@@ -508,5 +508,8 @@
   },
   "config.plugins_kv_add_row": {
     "other": "Lisää sääntö"
+  },
+  "config.plugins_reset_defaults": {
+    "other": "Palauta oletusarvot"
   }
 }
