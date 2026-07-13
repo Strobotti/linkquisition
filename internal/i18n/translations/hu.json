@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "Nem sikerült lekérdezni a domain információkat:\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "Nem sikerült lekérdezni a domain információkat"
+  },
+  "picker.whois_error_timeout": {
+    "other": "A WHOIS lekérdezés időtúllépés miatt megszakadt"
+  },
+  "picker.whois_error_connection": {
+    "other": "Nem sikerült csatlakozni a WHOIS szerverhez"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "Nem sikerült meghatározni a domaint az URL-ből"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "Egy tűzfal vagy VPN blokkolhatja a kimenő kapcsolatokat a 43-as porton"
+  },
   "config.tab_security": {
     "other": "Biztonság"
   },

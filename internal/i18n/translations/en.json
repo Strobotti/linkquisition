@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "Failed to look up domain information:\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "Failed to look up domain information"
+  },
+  "picker.whois_error_timeout": {
+    "other": "The WHOIS lookup timed out"
+  },
+  "picker.whois_error_connection": {
+    "other": "Could not connect to the WHOIS server"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "Could not determine the domain from the URL"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "A firewall or VPN may be blocking outbound connections on port 43"
+  },
   "config.tab_security": {
     "other": "Security"
   },

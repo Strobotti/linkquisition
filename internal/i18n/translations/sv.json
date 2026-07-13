@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "Kunde inte hämta domäninformation:\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "Kunde inte hämta domäninformation"
+  },
+  "picker.whois_error_timeout": {
+    "other": "WHOIS-förfrågan tog för lång tid"
+  },
+  "picker.whois_error_connection": {
+    "other": "Kunde inte ansluta till WHOIS-servern"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "Kunde inte avgöra domänen från URL:en"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "En brandvägg eller VPN kan blockera utgående anslutningar på port 43"
+  },
   "config.tab_security": {
     "other": "Säkerhet"
   },

@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "No se pudo obtener la información del dominio:\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "No se pudo obtener la información del dominio"
+  },
+  "picker.whois_error_timeout": {
+    "other": "La consulta WHOIS ha expirado"
+  },
+  "picker.whois_error_connection": {
+    "other": "No se pudo conectar al servidor WHOIS"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "No se pudo determinar el dominio a partir de la URL"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "Un cortafuegos o VPN puede estar bloqueando las conexiones salientes en el puerto 43"
+  },
   "config.tab_security": {
     "other": "Seguridad"
   },

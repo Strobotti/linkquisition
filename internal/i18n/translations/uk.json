@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "Не вдалося отримати інформацію про домен:\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "Не вдалося отримати інформацію про домен"
+  },
+  "picker.whois_error_timeout": {
+    "other": "Час очікування WHOIS-запиту минув"
+  },
+  "picker.whois_error_connection": {
+    "other": "Не вдалося підключитися до WHOIS-сервера"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "Не вдалося визначити домен з URL-адреси"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "Брандмауер або VPN може блокувати вихідні з'єднання на порту 43"
+  },
   "config.tab_security": {
     "other": "Безпека"
   },

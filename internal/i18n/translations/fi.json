@@ -368,6 +368,21 @@
   "picker.whois_error": {
     "other": "Verkkotunnuksen tietojen haku epäonnistui:\n{{.Error}}"
   },
+  "picker.whois_error_generic": {
+    "other": "Verkkotunnuksen tietojen haku epäonnistui"
+  },
+  "picker.whois_error_timeout": {
+    "other": "WHOIS-haku aikakatkaistiin"
+  },
+  "picker.whois_error_connection": {
+    "other": "Yhteyttä WHOIS-palvelimeen ei voitu muodostaa"
+  },
+  "picker.whois_error_invalid_url": {
+    "other": "Verkkotunnusta ei voitu määrittää URL-osoitteesta"
+  },
+  "picker.whois_error_hint_network": {
+    "other": "Palomuuri tai VPN saattaa estää yhteydet porttiin 43"
+  },
   "config.tab_security": {
     "other": "Turvallisuus"
   },

@@ -613,10 +613,34 @@ func (picker *BrowserPicker) buildWhoisContent(
 }
 
 func (picker *BrowserPicker) buildWhoisError(err error, w fyne.Window) fyne.CanvasObject {
-	errLabel := widget.NewLabel(i18n.T("picker.whois_error", map[string]interface{}{
-		"Error": err.Error(),
-	}))
+	errorMsg := i18n.T("picker.whois_error_generic")
+	hint := ""
+
+	errText := err.Error()
+	switch {
+	case strings.Contains(errText, "timed out") || strings.Contains(errText, "deadline exceeded"):
+		errorMsg = i18n.T("picker.whois_error_timeout")
+		hint = i18n.T("picker.whois_error_hint_network")
+	case strings.Contains(errText, "connection refused") || strings.Contains(errText, "no route"):
+		errorMsg = i18n.T("picker.whois_error_connection")
+		hint = i18n.T("picker.whois_error_hint_network")
+	case strings.Contains(errText, "no host") || strings.Contains(errText, "parse"):
+		errorMsg = i18n.T("picker.whois_error_invalid_url")
+	}
+
+	errLabel := widget.NewLabel(errorMsg)
 	errLabel.Wrapping = fyne.TextWrapWord
+	errLabel.Alignment = fyne.TextAlignCenter
+
+	content := container.NewVBox(errLabel)
+
+	if hint != "" {
+		hintLabel := widget.NewLabel(hint)
+		hintLabel.Wrapping = fyne.TextWrapWord
+		hintLabel.Alignment = fyne.TextAlignCenter
+		hintLabel.Importance = widget.MediumImportance
+		content.Add(hintLabel)
+	}
 
 	closeButton := widget.NewButtonWithIcon(
 		i18n.T("picker.whois_close"),
@@ -624,10 +648,9 @@ func (picker *BrowserPicker) buildWhoisError(err error, w fyne.Window) fyne.Canv
 		func() { w.Close() },
 	)
 
-	return container.NewVBox(
-		container.NewCenter(errLabel),
-		container.NewCenter(closeButton),
-	)
+	content.Add(container.NewCenter(closeButton))
+
+	return content
 }
 
 func (picker *BrowserPicker) whoisValue(value string) *widget.Label {
