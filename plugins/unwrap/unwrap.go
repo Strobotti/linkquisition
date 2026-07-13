@@ -45,10 +45,14 @@ func (p *unwrap) Metadata() linkquisition.PluginMetadata {
 		URL:         "https://github.com/Strobotti/linkquisition",
 		Settings: []linkquisition.PluginSettingDescriptor{
 			{
-				Key:         "rules",
-				Label:       "Unwrap Rules",
-				Description: "List of match/parameter pairs defining which URLs to unwrap",
-				Type:        linkquisition.SettingTypeStringList,
+				Key:             "rules",
+				Label:           "Unwrap Rules",
+				Description:     "List of match/parameter pairs defining which URLs to unwrap",
+				Type:            linkquisition.SettingTypeKeyValueList,
+				KeyField:        "match",
+				KeyFieldLabel:   "Match (regex)",
+				ValueField:      "parameter",
+				ValueFieldLabel: "URL Parameter",
 			},
 			{
 				Key:         "requireBrowserMatchToUnwrap",

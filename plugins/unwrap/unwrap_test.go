@@ -208,6 +208,20 @@ func TestUnwrap_ProcessURL(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Outlook SafeLinks (safelinks.protection.outlook.com) are unwrapped",
+			config: map[string]interface{}{
+				"requireBrowserMatchToUnwrap": false,
+				"rules": []map[string]interface{}{
+					{
+						"match":     `^https://[a-z0-9]+\.safelinks\.protection\.outlook\.com/`,
+						"parameter": "url",
+					},
+				},
+			},
+			inputURL:    "https://eur02.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedium.com%2F%40user%2Farticle-123&data=05%7C02%7Cuser%40example.com%7Cabc123&sdata=xyz&reserved=0",
+			expectedURL: "https://medium.com/@user/article-123",
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			testedPlugin := Plugin
