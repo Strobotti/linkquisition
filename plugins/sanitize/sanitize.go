@@ -110,13 +110,13 @@ func (p *sanitize) Metadata() linkquisition.PluginMetadata {
 			{
 				Key:         "extraParams",
 				Label:       "Extra Parameters",
-				Description: "Additional exact parameter names to strip",
+				Description: "Additional exact parameter names to strip (e.g. source, ref, igshid)",
 				Type:        linkquisition.SettingTypeStringList,
 			},
 			{
 				Key:         "extraPatterns",
 				Label:       "Extra Patterns",
-				Description: "Regex patterns to match parameter names against (e.g. ^_ga)",
+				Description: "Regex patterns to match parameter names against (e.g. ^_ga matches _ga, _gac, etc.)",
 				Type:        linkquisition.SettingTypeStringList,
 			},
 			{
