@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.0.0](https://github.com/Strobotti/linkquisition/compare/v2.14.0...v3.0.0) (2026-07-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* None — existing Linux and macOS behavior unchanged.
+
+### Features
+
+* add Windows support (portable + installer) ([#153](https://github.com/Strobotti/linkquisition/issues/153)) ([58b067e](https://github.com/Strobotti/linkquisition/commit/58b067e25b1ba91c11e55f821f350595ce97e40c))
+
+
+### Bug Fixes
+
+* **ci:** stage generated Wayland protocol headers before GoReleaser ([b28ba2f](https://github.com/Strobotti/linkquisition/commit/b28ba2f929d96876c76e4f2dea675a6da7161d5f))
+
 ## [2.14.0](https://github.com/Strobotti/linkquisition/compare/v2.13.0...v2.14.0) (2026-07-13)
 
 
