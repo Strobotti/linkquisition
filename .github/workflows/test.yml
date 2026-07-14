@@ -76,6 +76,10 @@ jobs:
       - name: Build application
         run: task build:${{ matrix.target }}
 
+      - name: Run tests (Windows)
+        if: matrix.target == 'windows-amd64'
+        run: go test ./...
+
       - name: Build plugins
         if: matrix.target == 'linux-amd64'
         run: task build:plugins
