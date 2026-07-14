@@ -225,6 +225,10 @@ func TestFileSettingsService_ScanBrowsers_ReturnsErrorWhenGetAvailableBrowsersFa
 }
 
 func TestFileSettingsService_ScanBrowsers_ReturnsErrorWhenWriteFails(t *testing.T) {
+	if os.Getenv("OS") == "Windows_NT" {
+		t.Skip("Unix file permissions are not enforced on Windows")
+	}
+
 	// Use a path that cannot be written to (non-existent nested directory with read-only parent)
 	tmpDir := t.TempDir()
 	readOnlyDir := filepath.Join(tmpDir, "readonly")
@@ -284,6 +288,10 @@ func TestFileSettingsService_ScanBrowsers_PersistsIconPath(t *testing.T) {
 }
 
 func TestFileSettingsService_WriteSettings_ReturnsErrorForUnwritablePath(t *testing.T) {
+	if os.Getenv("OS") == "Windows_NT" {
+		t.Skip("Unix file permissions are not enforced on Windows")
+	}
+
 	tmpDir := t.TempDir()
 	readOnlyDir := filepath.Join(tmpDir, "readonly")
 	require.NoError(t, os.MkdirAll(readOnlyDir, 0555))
