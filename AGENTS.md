@@ -152,7 +152,11 @@ it for the authoritative list of enabled linters and their settings. The linter 
 
 - `cmd/application_linux.go` — Linux-specific setup (build tag `//go:build linux`)
 - `cmd/application_darwin.go` — macOS-specific setup (build tag `//go:build darwin`)
-- Both must stay in sync for shared patterns (e.g. `NewPluginServiceProvider` call)
+- `cmd/application_windows.go` — Windows-specific setup (build tag `//go:build windows`)
+- `cmd/plugins_loader.go` — plugin loading logic (build tag `//go:build !windows`)
+- `cmd/plugins_loader_windows.go` — no-op plugin stub for Windows
+- Linux and macOS must stay in sync for shared plugin patterns
+- Windows does NOT support plugins (Go `plugin` package limitation)
 
 ## The `cmd` package
 
@@ -218,12 +222,12 @@ The app has two UI modes, both in `cmd/`:
 
 ## Paths on each platform
 
-| What                  | Linux                             | macOS                                                 |
-|-----------------------|-----------------------------------|-------------------------------------------------------|
-| Config                | `~/.config/linkquisition/`        | `~/Library/Application Support/linkquisition/`        |
-| Logs                  | `~/.local/state/linkquisition/`   | `~/Library/Logs/linkquisition/`                       |
-| Plugins (system)      | `/usr/lib/linkquisition/plugins/` | `Linkquisition.app/Contents/Resources/plugins/`       |
-| Plugin cache (defang) | `~/.config/linkquisition/defang/` | `~/Library/Application Support/linkquisition/defang/` |
+| What                  | Linux                             | macOS                                                 | Windows                              |
+|-----------------------|-----------------------------------|-------------------------------------------------------|--------------------------------------|
+| Config                | `~/.config/linkquisition/`        | `~/Library/Application Support/linkquisition/`        | `%APPDATA%\linkquisition\`           |
+| Logs                  | `~/.local/state/linkquisition/`   | `~/Library/Logs/linkquisition/`                       | `%LOCALAPPDATA%\linkquisition\logs\` |
+| Plugins (system)      | `/usr/lib/linkquisition/plugins/` | `Linkquisition.app/Contents/Resources/plugins/`       | N/A (plugins not supported)          |
+| Plugin cache (defang) | `~/.config/linkquisition/defang/` | `~/Library/Application Support/linkquisition/defang/` | N/A (plugins not supported)          |
 
 ## Localization
 

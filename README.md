@@ -6,7 +6,7 @@
 [![Coverage](https://raw.githubusercontent.com/Strobotti/linkquisition/gh-pages/.badges/main/coverage.svg)](https://github.com/Strobotti/linkquisition)
 [![Homebrew](https://img.shields.io/badge/homebrew-available-blue?logo=homebrew)](https://github.com/strobotti/homebrew-tap)
 
-Linkquisition is a fast, configurable browser-picker for Linux and macOS written in Go.
+Linkquisition is a fast, configurable browser-picker for Linux, macOS, and Windows written in Go.
 
 ...as nobody expects the Linkquisition!
 
@@ -98,6 +98,30 @@ Since the app is not notarized with Apple, macOS will block it on first launch. 
 ```bash
 xattr -cr /Applications/Linkquisition.app
 ```
+
+### Windows
+
+Download the latest `Linkquisition_Windows_amd64.zip` (portable) or
+`Linkquisition-*-setup.exe` (installer) from
+the [releases page](https://github.com/Strobotti/linkquisition/releases).
+
+#### Installer
+
+The installer registers Linkquisition as a URL handler and creates Start Menu
+shortcuts. After installation, open Windows Settings → Default Apps to select
+Linkquisition as your default browser.
+
+Since the app is not code-signed, Windows SmartScreen may show a warning on
+first launch. Click "More info" → "Run anyway" to proceed.
+
+#### Portable
+
+Extract `linkquisition.exe` from the .zip and run it directly. To register as
+the default browser, run `linkquisition set-default` from the directory
+containing the executable.
+
+**Note:** Plugins are not supported on Windows. The plugin tab and plugin-related
+CLI commands are not available on this platform.
 
 ## Configuration
 
@@ -368,7 +392,7 @@ See [plugins](./plugins/README.md) for more information.
 - [X] Add support for plugins
 - [X] Add support for translations
 - [X] Add support for browser icons
-- [ ] Add support for more platforms
+- [X] Add support for more platforms
 - [ ] Add support for more architectures
 - [X] Add support for more package-formats
 

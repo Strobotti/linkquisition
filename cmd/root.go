@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
 	Short: "A fast, configurable browser-picker",
 	Long: fmt.Sprintf(`Linkquisition - Nobody expects the Linkquisition!
 
-A fast, configurable browser-picker for Linux and macOS.
+A fast, configurable browser-picker for Linux, macOS, and Windows.
 Automatically chooses a browser based on domain, site, or regex rules.
 
 Author:  %s

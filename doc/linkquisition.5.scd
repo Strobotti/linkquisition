@@ -6,7 +6,9 @@ linkquisition - configuration file format
 
 # SYNOPSIS
 
-_~/.config/linkquisition/config.json_
+_~/.config/linkquisition/config.json_ (Linux)++
+_~/Library/Application Support/linkquisition/config.json_ (macOS)++
+_%APPDATA%\\linkquisition\\config.json_ (Windows)
 
 # DESCRIPTION
 

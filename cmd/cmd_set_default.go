@@ -13,7 +13,9 @@ var setDefaultCmd = &cobra.Command{
 
 On Linux, this sets the default-web-browser via xdg-settings.
 On macOS, this registers Linkquisition as the handler for http/https
-URLs (the OS may show a confirmation dialog).`,
+URLs (the OS may show a confirmation dialog).
+On Windows, this registers Linkquisition as a URL handler and opens
+the Default Apps settings page for the user to confirm.`,
 	RunE: runSetDefault,
 }
 
