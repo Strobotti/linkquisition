@@ -4,6 +4,7 @@ package windows
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -264,11 +265,9 @@ func (b *BrowserService) GetIconForBrowser(_ linkquisition.Browser) ([]byte, err
 
 // selfExePath returns the full path to the currently running executable.
 func selfExePath() (string, error) {
-	// Use os/exec to find ourselves — works even if moved after installation
-	path, err := exec.LookPath("linkquisition")
+	path, err := os.Executable()
 	if err != nil {
-		// Fall back to argv[0] resolution
-		return exec.LookPath("linkquisition.exe")
+		return "", fmt.Errorf("failed to determine executable path: %w", err)
 	}
 	return path, nil
 }
