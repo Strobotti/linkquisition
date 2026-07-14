@@ -126,6 +126,10 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
 
+      - name: Install NSIS
+        if: matrix.target == 'windows-amd64'
+        run: choco install nsis -y
+
       - name: Build Windows installer (NSIS)
         if: matrix.target == 'windows-amd64'
         shell: pwsh
