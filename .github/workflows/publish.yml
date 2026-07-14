@@ -47,6 +47,9 @@ jobs:
           - target: darwin-universal
             os: macos-latest
             artifact: Linkquisition_macOS_universal.zip
+          - target: windows-amd64
+            os: windows-latest
+            artifact: linkquisition-windows-amd64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -109,6 +112,17 @@ jobs:
           task package:app
           codesign --force --deep --sign - dist/Linkquisition.app
           cd dist && ditto -c -k --keepParent Linkquisition.app Linkquisition_macOS_universal.zip
+        env:
+          VERSION: ${{ github.ref_name }}
+
+      - name: Package Windows .zip
+        if: matrix.target == 'windows-amd64'
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          New-Item -ItemType Directory -Path dist -Force
+          Copy-Item bin/linkquisition-windows-amd64.exe dist/linkquisition.exe
+          Compress-Archive -Path dist/linkquisition.exe -DestinationPath "dist/Linkquisition_Windows_amd64.zip"
         env:
           VERSION: ${{ github.ref_name }}
 
@@ -177,6 +191,12 @@ jobs:
           name: linux-amd64
           path: artifacts/
 
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-amd64
+          path: artifacts/
+
       - name: Upload all assets to release
         env:
           GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
@@ -214,6 +234,10 @@ jobs:
           # AppImage
           echo "Uploading AppImage"
           gh release upload "$TAG" artifacts/Linkquisition-*.AppImage --clobber
+
+          # Windows
+          echo "Uploading Windows artifact"
+          gh release upload "$TAG" artifacts/Linkquisition_Windows_amd64.zip --clobber
 
   update-homebrew:
     name: Update Homebrew Tap

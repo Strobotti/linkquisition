@@ -56,6 +56,14 @@ tasks:
       - lipo -create -output bin/linkquisition-darwin-universal bin/linkquisition-darwin-arm64 bin/linkquisition-darwin-amd64
       - echo "bin/linkquisition-darwin-universal created successfully"
 
+  windows-amd64:
+    cmds:
+      - task: binary
+        vars:
+          OUTPUT: "linkquisition-windows-amd64"
+          TARGET: "windows"
+          ARCH: "amd64"
+
   plugins:
     cmds:
       - task: build-plugins
