@@ -257,10 +257,21 @@ func registerURLCapabilities() error {
 	return nil
 }
 
-func (b *BrowserService) GetIconForBrowser(_ linkquisition.Browser) ([]byte, error) {
-	// TODO: Extract icons from .exe resources using shell32 APIs or a Go library.
-	// For now, return an error so the UI falls back to a default icon.
-	return nil, fmt.Errorf("icon extraction not yet implemented on Windows")
+func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byte, error) {
+	exePath := browser.Command
+
+	// Strip any quotes and arguments from the command path
+	exePath = strings.Trim(exePath, `"`)
+	if idx := strings.Index(exePath, `" `); idx > 0 {
+		exePath = exePath[:idx]
+	}
+
+	// Verify the file exists
+	if _, err := os.Stat(exePath); err != nil {
+		return nil, fmt.Errorf("browser executable not found: %s", exePath)
+	}
+
+	return getIconCached(exePath)
 }
 
 // selfExePath returns the full path to the currently running executable.
