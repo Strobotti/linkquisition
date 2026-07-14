@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
 	Short: "A fast, configurable browser-picker",
 	Long: fmt.Sprintf(`Linkquisition - Nobody expects the Linkquisition!
 
-A fast, configurable browser-picker for Linux and macOS.
+A fast, configurable browser-picker for Linux, macOS, and Windows.
 Automatically chooses a browser based on domain, site, or regex rules.
 
 Author:  %s
@@ -78,24 +78,21 @@ func initRootCmd() {
 	rootCmd.Version = version
 	rootCmd.SetVersionTemplate("Version: {{.Version}}\n")
 
-	rootCmd.Flags().StringArrayVar(&pluginOpts, "plugin-opt", nil,
-		`override plugin settings at runtime (format: plugin.key=value, e.g. shenanigans.effect=matrix)`)
-	rootCmd.Flags().BoolVar(&noPlugins, "no-plugins", false,
-		`disable all plugin loading (for debugging)`)
 	rootCmd.Flags().StringVar(&logLevelOverride, "log-level", "",
 		`override log level for this run without changing config (debug, info, warn, error)`)
 
 	initConfigCmd()
-	initPluginCmd()
 	initBrowsersCmd()
 	initRuleCmd()
 
 	rootCmd.AddCommand(configCmd)
-	rootCmd.AddCommand(pluginCmd)
 	rootCmd.AddCommand(browsersCmd)
 	rootCmd.AddCommand(setDefaultCmd)
 	rootCmd.AddCommand(ruleCmd)
 	rootCmd.AddCommand(testURLCmd)
+
+	// Register plugin-related commands and flags (no-op on Windows)
+	initPluginSupport()
 }
 
 func execute() int {

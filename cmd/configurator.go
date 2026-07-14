@@ -62,14 +62,23 @@ func (c *Configurator) parentWindow() fyne.Window {
 func (c *Configurator) Run() error {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))
 
-	tabs := container.NewAppTabs(
+	tabItems := []*container.TabItem{
 		container.NewTabItem(i18n.T("config.tab_general"), c.getGeneralTab()),
 		container.NewTabItem(i18n.T("config.tab_browsers"), c.getBrowsersTab()),
 		container.NewTabItem(i18n.T("config.tab_rules"), c.getRulesTab()),
-		container.NewTabItem(i18n.T("config.tab_plugins"), c.getPluginsTab()),
+	}
+
+	// Plugins tab is only shown on platforms that support plugins
+	if pluginsContent := c.getPluginsTab(); pluginsContent != nil {
+		tabItems = append(tabItems, container.NewTabItem(i18n.T("config.tab_plugins"), pluginsContent))
+	}
+
+	tabItems = append(tabItems,
 		container.NewTabItem(i18n.T("config.tab_security"), c.getSecurityTab(w)),
 		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab(w)),
 	)
+
+	tabs := container.NewAppTabs(tabItems...)
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	w.SetContent(tabs)

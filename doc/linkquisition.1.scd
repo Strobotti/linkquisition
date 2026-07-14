@@ -2,7 +2,7 @@ linkquisition(1)
 
 # NAME
 
-linkquisition - a fast, configurable browser-picker for Linux and macOS
+linkquisition - a fast, configurable browser-picker for Linux, macOS, and Windows
 
 # SYNOPSIS
 
@@ -162,6 +162,10 @@ before they are opened. See the project documentation for details.
 Plugin locations:
 - Linux: _/usr/lib/linkquisition/plugins/_
 - macOS: _Linkquisition.app/Contents/Resources/plugins/_
+
+*Note:* Plugins are not supported on Windows. Go's _plugin_ package does not
+support Windows, so all plugin-related commands and the Plugins tab in the
+configurator are hidden on that platform.
 
 # URL SAFETY CHECKING
 

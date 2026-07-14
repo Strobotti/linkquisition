@@ -46,6 +46,8 @@ jobs:
             os: ubuntu-latest
           - target: darwin-arm64
             os: macos-latest
+          - target: windows-amd64
+            os: windows-latest
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -73,6 +75,10 @@ jobs:
 
       - name: Build application
         run: task build:${{ matrix.target }}
+
+      - name: Run tests (Windows)
+        if: matrix.target == 'windows-amd64'
+        run: go test ./...
 
       - name: Build plugins
         if: matrix.target == 'linux-amd64'
