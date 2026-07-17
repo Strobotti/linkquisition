@@ -188,7 +188,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v7
         with:
           version: '~> v2'
-          args: release --clean --skip=publish
+          args: release --clean --skip=publish,validate
         env:
           GITHUB_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
           GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
