@@ -537,10 +537,10 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 	// Update check section
 	updateSection := c.buildUpdateCheckSection(w)
 
-	// Bug reporting section
+	// Bug reporting section (pinned to bottom)
 	bugReportSection := c.buildBugReportSection(w)
 
-	return container.NewVBox(
+	topContent := container.NewVBox(
 		container.NewHBox(icon, title),
 		widget.NewSeparator(),
 		description,
@@ -548,9 +548,9 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 		details,
 		widget.NewSeparator(),
 		updateSection,
-		widget.NewSeparator(),
-		bugReportSection,
 	)
+
+	return container.NewBorder(topContent, bugReportSection, nil, nil)
 }
 
 func (c *Configurator) buildUpdateCheckSection(w fyne.Window) fyne.CanvasObject {
