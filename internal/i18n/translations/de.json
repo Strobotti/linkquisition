@@ -519,7 +519,7 @@
     "other": "Fehler melden"
   },
   "about.bug_report_description": {
-    "other": "Einen Fehler gefunden? Es würde sehr helfen, wenn Sie das Log-Level im Tab \"Allgemein\" auf \"debug\" setzen, das Problem reproduzieren und die relevanten Log-Zeilen an Ihren Fehlerbericht auf GitHub anhängen."
+    "other": "Einen Fehler gefunden? Es würde sehr helfen, wenn Sie das Log-Level im Tab \"Allgemein\" auf \"debug\" setzen, das Problem reproduzieren und die relevanten Log-Zeilen an Ihren Fehlerbericht auf GitHub anhängen. Bitte entfernen Sie sensible Informationen (Passwörter, API-Schlüssel, private URLs) aus der Log-Ausgabe, bevor Sie den Bericht einreichen."
   },
   "about.bug_report_open_log": {
     "other": "Log-Datei öffnen"

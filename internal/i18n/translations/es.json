@@ -519,7 +519,7 @@
     "other": "Reportar problemas"
   },
   "about.bug_report_description": {
-    "other": "¿Encontraste un error? Sería de gran ayuda si pudieras configurar el nivel de log a \"debug\" en la pestaña General, reproducir el problema y adjuntar las líneas relevantes del log a tu reporte en GitHub."
+    "other": "¿Encontraste un error? Sería de gran ayuda si pudieras configurar el nivel de log a \"debug\" en la pestaña General, reproducir el problema y adjuntar las líneas relevantes del log a tu reporte en GitHub. Por favor, recuerda eliminar cualquier información sensible (contraseñas, claves API, URLs privadas) del log antes de enviarlo."
   },
   "about.bug_report_open_log": {
     "other": "Abrir archivo de log"

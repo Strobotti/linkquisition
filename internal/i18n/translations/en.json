@@ -519,7 +519,7 @@
     "other": "Reporting issues"
   },
   "about.bug_report_description": {
-    "other": "Found a bug? It would help a lot if you could set the log level to \"debug\" in the General tab, reproduce the issue, and then attach the relevant log lines to your bug report on GitHub."
+    "other": "Found a bug? It would help a lot if you could set the log level to \"debug\" in the General tab, reproduce the issue, and then attach the relevant log lines to your bug report on GitHub. Please remember to remove any sensitive information (passwords, API keys, private URLs) from the log output before submitting."
   },
   "about.bug_report_open_log": {
     "other": "Open log file"

@@ -519,7 +519,7 @@
     "other": "Signaler un problème"
   },
   "about.bug_report_description": {
-    "other": "Vous avez trouvé un bug ? Cela nous aiderait beaucoup si vous pouviez régler le niveau de log sur « debug » dans l'onglet Général, reproduire le problème, puis joindre les lignes de log pertinentes à votre rapport sur GitHub."
+    "other": "Vous avez trouvé un bug ? Cela nous aiderait beaucoup si vous pouviez régler le niveau de log sur « debug » dans l'onglet Général, reproduire le problème, puis joindre les lignes de log pertinentes à votre rapport sur GitHub. Pensez à supprimer toute information sensible (mots de passe, clés API, URLs privées) du log avant de soumettre votre rapport."
   },
   "about.bug_report_open_log": {
     "other": "Ouvrir le fichier de log"
