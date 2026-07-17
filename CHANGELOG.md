@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.4](https://github.com/Strobotti/linkquisition/compare/v3.0.3...v3.0.4) (2026-07-17)
+
+
+### Bug Fixes
+
+* **ci:** use /NOCD flag so makensis resolves paths from repo root ([#160](https://github.com/Strobotti/linkquisition/issues/160)) ([e697ac3](https://github.com/Strobotti/linkquisition/commit/e697ac3c7d74277b516bbf5a03dd0ba7a08c9a51))
+
 ## [3.0.3](https://github.com/Strobotti/linkquisition/compare/v3.0.2...v3.0.3) (2026-07-17)
 
 
