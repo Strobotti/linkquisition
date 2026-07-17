@@ -26,6 +26,9 @@ import (
 // templateKeyName is the template data key used for name substitution in i18n strings.
 const templateKeyName = "Name"
 
+// osDarwin is the runtime.GOOS value for macOS, extracted to satisfy goconst.
+const osDarwin = "darwin"
+
 type Configurator struct {
 	fapp            fyne.App
 	browserService  linkquisition.BrowserService
@@ -669,12 +672,14 @@ func openExternalURLWithService(rawURL string, browserService linkquisition.Brow
 
 // openFileInEditor opens a file in the system's default text editor.
 func openFileInEditor(path string) error {
+	ctx := context.Background()
+
 	switch runtime.GOOS {
-	case "darwin":
-		return exec.Command("open", "-t", path).Start() //nolint:gosec
+	case osDarwin:
+		return exec.CommandContext(ctx, "open", "-t", path).Start()
 	case "windows":
-		return exec.Command("cmd", "/c", "start", "", path).Start() //nolint:gosec
+		return exec.CommandContext(ctx, "cmd", "/c", "start", "", path).Start()
 	default: // Linux and other Unix-like systems
-		return exec.Command("xdg-open", path).Start() //nolint:gosec
+		return exec.CommandContext(ctx, "xdg-open", path).Start()
 	}
 }

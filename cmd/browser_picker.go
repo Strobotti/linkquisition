@@ -734,7 +734,7 @@ func (picker *BrowserPicker) buildRememberCheck(
 
 func (picker *BrowserPicker) buildKeyboardGuide() []fyne.CanvasObject {
 	copyShortcut := "Ctrl+C"
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == osDarwin {
 		copyShortcut = "⌘+C"
 	}
 
