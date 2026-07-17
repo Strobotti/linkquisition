@@ -514,5 +514,17 @@
   },
   "config.plugins_author": {
     "other": "Auteur"
+  },
+  "about.bug_report_title": {
+    "other": "Signaler un problème"
+  },
+  "about.bug_report_description": {
+    "other": "Vous avez trouvé un bug ? Cela nous aiderait beaucoup si vous pouviez régler le niveau de log sur « debug » dans l'onglet Général, reproduire le problème, puis joindre les lignes de log pertinentes à votre rapport sur GitHub."
+  },
+  "about.bug_report_open_log": {
+    "other": "Ouvrir le fichier de log"
+  },
+  "about.bug_report_issues_link": {
+    "other": "Signaler un problème sur GitHub"
   }
 }

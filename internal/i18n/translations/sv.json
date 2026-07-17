@@ -514,5 +514,17 @@
   },
   "config.plugins_author": {
     "other": "Författare"
+  },
+  "about.bug_report_title": {
+    "other": "Rapportera problem"
+  },
+  "about.bug_report_description": {
+    "other": "Hittat en bugg? Det skulle hjälpa mycket om du kunde ställa in loggnivån på \"debug\" i fliken Allmänt, reproducera problemet och bifoga de relevanta loggraderna till din felrapport på GitHub."
+  },
+  "about.bug_report_open_log": {
+    "other": "Öppna loggfil"
+  },
+  "about.bug_report_issues_link": {
+    "other": "Rapportera ett problem på GitHub"
   }
 }

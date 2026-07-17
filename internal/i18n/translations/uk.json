@@ -514,5 +514,17 @@
   },
   "config.plugins_author": {
     "other": "Автор"
+  },
+  "about.bug_report_title": {
+    "other": "Повідомлення про помилки"
+  },
+  "about.bug_report_description": {
+    "other": "Знайшли помилку? Буде дуже корисно, якщо ви встановите рівень логування на \"debug\" у вкладці Загальні, відтворите проблему та прикріпите відповідні рядки логу до звіту на GitHub."
+  },
+  "about.bug_report_open_log": {
+    "other": "Відкрити файл логу"
+  },
+  "about.bug_report_issues_link": {
+    "other": "Повідомити про проблему на GitHub"
   }
 }

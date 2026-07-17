@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -534,6 +537,9 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 	// Update check section
 	updateSection := c.buildUpdateCheckSection(w)
 
+	// Bug reporting section
+	bugReportSection := c.buildBugReportSection(w)
+
 	return container.NewVBox(
 		container.NewHBox(icon, title),
 		widget.NewSeparator(),
@@ -542,6 +548,8 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 		details,
 		widget.NewSeparator(),
 		updateSection,
+		widget.NewSeparator(),
+		bugReportSection,
 	)
 }
 
@@ -589,6 +597,37 @@ func (c *Configurator) buildUpdateCheckSection(w fyne.Window) fyne.CanvasObject 
 	return container.NewHBox(checkButton, statusLabel, releaseLink)
 }
 
+func (c *Configurator) buildBugReportSection(w fyne.Window) fyne.CanvasObject {
+	const issuesURL = "https://github.com/Strobotti/linkquisition/issues"
+
+	titleLabel := widget.NewLabel(i18n.T("about.bug_report_title"))
+	titleLabel.TextStyle = fyne.TextStyle{Bold: true}
+
+	description := widget.NewLabel(i18n.T("about.bug_report_description"))
+	description.Wrapping = fyne.TextWrapWord
+
+	openLogButton := widget.NewButtonWithIcon(
+		i18n.T("about.bug_report_open_log"),
+		theme.FileIcon(),
+		func() {
+			logPath := c.settingsService.GetLogFilePath()
+			c.logger.Debug("Opening log file in editor", "path", logPath)
+
+			if err := openFileInEditor(logPath); err != nil {
+				c.logger.Error("Failed to open log file", "path", logPath, "error", err)
+			}
+		},
+	)
+
+	issuesLink := ui.NewLinkWithCopy(i18n.T("about.bug_report_issues_link"), issuesURL, w, c.urlOpener())
+
+	return container.NewVBox(
+		titleLabel,
+		description,
+		container.NewHBox(openLogButton, issuesLink),
+	)
+}
+
 // openExternalURL opens a URL in a real browser, bypassing Linkquisition if it is
 // the default browser (which would otherwise cause a circular loop).
 func (c *Configurator) openExternalURL(rawURL string) error {
@@ -626,4 +665,16 @@ func openExternalURLWithService(rawURL string, browserService linkquisition.Brow
 	slog.Debug("Opening URL with first available browser", "url", rawURL, "browser", browsers[0].Name)
 
 	return browserService.OpenUrlWithBrowser(rawURL, &browsers[0])
+}
+
+// openFileInEditor opens a file in the system's default text editor.
+func openFileInEditor(path string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", "-t", path).Start() //nolint:gosec
+	case "windows":
+		return exec.Command("cmd", "/c", "start", "", path).Start() //nolint:gosec
+	default: // Linux and other Unix-like systems
+		return exec.Command("xdg-open", path).Start() //nolint:gosec
+	}
 }

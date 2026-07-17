@@ -514,5 +514,17 @@
   },
   "config.plugins_author": {
     "other": "Autor"
+  },
+  "about.bug_report_title": {
+    "other": "Reportar problemas"
+  },
+  "about.bug_report_description": {
+    "other": "Encontrou um erro? Seria muito útil se pudesse definir o nível de log para \"debug\" no separador Geral, reproduzir o problema e anexar as linhas de log relevantes ao seu relatório no GitHub."
+  },
+  "about.bug_report_open_log": {
+    "other": "Abrir ficheiro de log"
+  },
+  "about.bug_report_issues_link": {
+    "other": "Reportar um problema no GitHub"
   }
 }

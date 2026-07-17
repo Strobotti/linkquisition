@@ -514,5 +514,17 @@
   },
   "config.plugins_author": {
     "other": "Szerző"
+  },
+  "about.bug_report_title": {
+    "other": "Hibajelentés"
+  },
+  "about.bug_report_description": {
+    "other": "Hibát találtál? Nagyon sokat segítene, ha a naplózási szintet \"debug\"-ra állítanád az Általános fülön, reprodukálnád a problémát, majd a vonatkozó naplósorokat csatolnád a hibajelentésedhez a GitHubon."
+  },
+  "about.bug_report_open_log": {
+    "other": "Naplófájl megnyitása"
+  },
+  "about.bug_report_issues_link": {
+    "other": "Hiba jelentése a GitHubon"
   }
 }
