@@ -156,7 +156,7 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 	// of the last things before the process exits in the URL-opening path.
 	defer rotateLogFile(a.SettingsService)
 
-	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with URL: `%s`", urlToOpen))
+	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with input: `%s`", urlToOpen))
 
 	ctx, cancel := context.WithTimeout(context.Background(), pluginProcessTimeout)
 	defer cancel()

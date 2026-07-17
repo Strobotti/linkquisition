@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -52,9 +54,7 @@ func runRoot(cmd *cobra.Command, args []string) error {
 	}
 
 	if urlToOpen != "" {
-		if _, err := url.ParseRequestURI(urlToOpen); err != nil {
-			return fmt.Errorf("invalid URL: %s", urlToOpen)
-		}
+		urlToOpen = normalizeInputURL(urlToOpen)
 	}
 
 	// GUI path — needs full application with fyne
@@ -72,6 +72,47 @@ func runRoot(cmd *cobra.Command, args []string) error {
 	<-ctx.Done()
 
 	return nil
+}
+
+// normalizeInputURL converts raw file paths to file:// URLs and validates the input.
+// It accepts:
+// - http:// and https:// URLs (passed through)
+// - file:// URLs (passed through)
+// - Absolute file paths (converted to file:// URLs)
+// - Relative file paths (resolved to absolute, then converted to file:// URLs)
+func normalizeInputURL(input string) string {
+	// Already a valid URL with a scheme — pass through.
+	// On Windows, drive letters like "C:\path" parse as scheme "C" — reject single-letter schemes.
+	if parsed, err := url.ParseRequestURI(input); err == nil && parsed.Scheme != "" && len(parsed.Scheme) > 1 {
+		return input
+	}
+
+	// Looks like a file path — convert to file:// URL
+	if filepath.IsAbs(input) || strings.HasPrefix(input, "~") || isRelativePath(input) {
+		absPath, err := filepath.Abs(input)
+		if err != nil {
+			return input
+		}
+		return "file://" + absPath
+	}
+
+	return input
+}
+
+// isRelativePath returns true if the input looks like a relative file path
+// (contains path separators or common file extensions, and doesn't look like a URL).
+func isRelativePath(input string) bool {
+	// If it contains a scheme-like prefix, it's not a path
+	if strings.Contains(input, "://") {
+		return false
+	}
+
+	// If the file exists on disk, it's definitely a path
+	if _, err := os.Stat(input); err == nil {
+		return true
+	}
+
+	return false
 }
 
 func initRootCmd() {

@@ -158,6 +158,18 @@ it for the authoritative list of enabled linters and their settings. The linter 
 - Linux and macOS must stay in sync for shared plugin patterns
 - Windows does NOT support plugins (Go `plugin` package limitation)
 
+### Cross-platform path and URL handling
+
+- Use `filepath.IsAbs()` instead of checking for `/` prefix to detect absolute paths
+  (Windows uses `C:\` style paths)
+- `url.ParseRequestURI` treats Windows drive letters (e.g. `C:`) as URL schemes —
+  reject single-letter schemes when distinguishing paths from URLs
+- Use `filepath.Abs()` + `filepath.Join()` for path construction, never hardcode `/`
+- In tests, use `t.TempDir()` for platform-appropriate temp paths — never hardcode
+  `/tmp/...` (macOS resolves `/tmp` → `/private/tmp`, Windows uses `%TEMP%`)
+- File permissions in tests must be `0600` or less (`gosec` G306 rule)
+- The CI matrix runs tests on Linux, macOS, and Windows — all three must pass
+
 ## The `cmd` package
 
 The `cmd/` directory is `package main` — it cannot be imported by other packages.
