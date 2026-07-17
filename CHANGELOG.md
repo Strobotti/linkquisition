@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/Strobotti/linkquisition/compare/v3.0.7...v3.1.0) (2026-07-17)
+
+
+### Features
+
+* support opening local files via browser picker ([#168](https://github.com/Strobotti/linkquisition/issues/168)) ([ae7aa11](https://github.com/Strobotti/linkquisition/commit/ae7aa115fec57aed1de4ce4c44fcf1642c671fe3))
+
 ## [3.0.7](https://github.com/Strobotti/linkquisition/compare/v3.0.6...v3.0.7) (2026-07-17)
 
 
