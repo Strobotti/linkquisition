@@ -304,6 +304,28 @@ func TestGetAvailableBrowsers_ReturnsNonEmptyList(t *testing.T) {
 	assert.NotEmpty(t, browsers, "expected at least one browser on macOS")
 }
 
+func TestGetAvailableBrowsers_FindsSafari(t *testing.T) {
+	// Safari.app is a system app that os.ReadDir reports as a non-directory
+	// (firmlinked). Verify the scanner still detects it.
+	if _, err := os.Stat("/Applications/Safari.app/Contents/Info.plist"); err != nil {
+		t.Skip("Safari.app not found — skipping")
+	}
+
+	svc := &BrowserService{}
+	browsers, err := svc.GetAvailableBrowsers()
+	require.NoError(t, err)
+
+	found := false
+	for _, b := range browsers {
+		if b.Command == "com.apple.Safari" {
+			found = true
+			assert.Equal(t, "Safari", b.Name)
+			break
+		}
+	}
+	assert.True(t, found, "Safari should be detected in the browser list")
+}
+
 func TestParseBrowserPlist_CaseInsensitiveSchemes(t *testing.T) {
 	dir := t.TempDir()
 	plistPath := filepath.Join(dir, "Info.plist")
