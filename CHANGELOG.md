@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.3](https://github.com/Strobotti/linkquisition/compare/v3.0.2...v3.0.3) (2026-07-17)
+
+
+### Bug Fixes
+
+* **ci:** convert Icon.png to .ico for NSIS installer ([#158](https://github.com/Strobotti/linkquisition/issues/158)) ([1e19cbf](https://github.com/Strobotti/linkquisition/commit/1e19cbf2bfeef07ea0fb025d44745cecf7bdb02b))
+
 ## [3.0.2](https://github.com/Strobotti/linkquisition/compare/v3.0.1...v3.0.2) (2026-07-17)
 
 
