@@ -31,7 +31,7 @@ RequestExecutionLevel admin
 
 ; --- MUI Settings ---
 !define MUI_ABORTWARNING
-!define MUI_ICON "Icon.png"
+!define MUI_ICON "Icon.ico"
 
 ; --- Pages ---
 !insertmacro MUI_PAGE_WELCOME
