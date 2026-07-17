@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.7](https://github.com/Strobotti/linkquisition/compare/v3.0.6...v3.0.7) (2026-07-17)
+
+
+### Bug Fixes
+
+* **ci:** skip GoReleaser validate to allow generated Wayland headers ([#166](https://github.com/Strobotti/linkquisition/issues/166)) ([c60621b](https://github.com/Strobotti/linkquisition/commit/c60621bf09f791045e70708637e1bf8c1f2d9fe9))
+
 ## [3.0.6](https://github.com/Strobotti/linkquisition/compare/v3.0.5...v3.0.6) (2026-07-17)
 
 
