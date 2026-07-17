@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/Strobotti/linkquisition/compare/v3.0.0...v3.0.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* safety report link and add bug reporting section to About tab ([#154](https://github.com/Strobotti/linkquisition/issues/154)) ([2b1b31a](https://github.com/Strobotti/linkquisition/commit/2b1b31a212ce18e242fd8c4c398b7424df82a5f9))
+
 ## [3.0.0](https://github.com/Strobotti/linkquisition/compare/v2.14.0...v3.0.0) (2026-07-14)
 
 
