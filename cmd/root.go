@@ -87,7 +87,7 @@ func normalizeInputURL(input string) string {
 	}
 
 	// Looks like a file path — convert to file:// URL
-	if strings.HasPrefix(input, "/") || strings.HasPrefix(input, "~") || isRelativePath(input) {
+	if filepath.IsAbs(input) || strings.HasPrefix(input, "~") || isRelativePath(input) {
 		absPath, err := filepath.Abs(input)
 		if err != nil {
 			return input

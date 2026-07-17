@@ -61,29 +61,16 @@ func TestNormalizeInputURL_FileURLs(t *testing.T) {
 }
 
 func TestNormalizeInputURL_AbsolutePaths(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "absolute path is converted to file:// URL",
-			input:    "/tmp/test.html",
-			expected: "file:///tmp/test.html",
-		},
-		{
-			name:     "absolute path with spaces is converted",
-			input:    "/tmp/my file.html",
-			expected: "file:///tmp/my file.html",
-		},
-	}
+	// Use a real temp directory to get a valid absolute path on any OS
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "test.html")
+	spaceFile := filepath.Join(tmpDir, "my file.html")
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := normalizeInputURL(tt.input)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
+	result := normalizeInputURL(testFile)
+	assert.Equal(t, "file://"+testFile, result)
+
+	result = normalizeInputURL(spaceFile)
+	assert.Equal(t, "file://"+spaceFile, result)
 }
 
 func TestNormalizeInputURL_RelativePaths(t *testing.T) {
