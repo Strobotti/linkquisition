@@ -183,7 +183,7 @@ func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Con
 		return
 	}
 
-	regexPanel := newRegexPanel(parentWindow)
+	regexPanel := newRegexPanel(parentWindow, c.urlOpener())
 	regexPanel.update(linkquisition.BrowserMatchTypeSite, "")
 
 	typeSelect.OnChanged = func(selected string) {
@@ -256,7 +256,7 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 		return
 	}
 
-	regexPanel := newRegexPanel(parentWindow)
+	regexPanel := newRegexPanel(parentWindow, c.urlOpener())
 	regexPanel.update(rule.Type, rule.Value)
 
 	typeSelect.OnChanged = func(selected string) {
@@ -373,7 +373,7 @@ type regexPanel struct {
 	pattern       string
 }
 
-func newRegexPanel(w fyne.Window) *regexPanel {
+func newRegexPanel(w fyne.Window, opener ui.URLOpener) *regexPanel {
 	// Indicator next to value entry
 	indicator := canvas.NewText("✓", ui.ColorSuccess)
 	indicator.TextSize = 18
@@ -401,7 +401,7 @@ func newRegexPanel(w fyne.Window) *regexPanel {
 	regexHelpLabel := widget.NewLabel(i18n.T("config.rules_regex_help"))
 	regexHelpLabel.TextStyle = fyne.TextStyle{Italic: true}
 	regexDocsURL := "https://pkg.go.dev/regexp/syntax"
-	regexHelpLink := ui.NewLinkWithCopy(i18n.T("config.rules_regex_help_link"), regexDocsURL, w)
+	regexHelpLink := ui.NewLinkWithCopy(i18n.T("config.rules_regex_help_link"), regexDocsURL, w, opener)
 	regexHelpRow := container.NewHBox(regexHelpLabel, regexHelpLink)
 	regexHelpRow.Hide()
 

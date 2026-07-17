@@ -187,9 +187,37 @@ Design principles:
 
 The app has two UI modes, both in `cmd/`:
 
-- **Configurator** (`cmd/configurator.go`) — settings screen, shown when launched with no args.
+- **Configurator** (`cmd/configurator.go`) — settings screen, shown when launched with **no
+  arguments** (or with a subcommand like `config`, `plugin`, etc.).
   The General tab is composed of `build*Section()` methods. Add new sections there.
-- **BrowserPicker** (`cmd/browser_picker.go`) — the URL picker, shown when launched with a URL.
+- **BrowserPicker** (`cmd/browser_picker.go`) — the URL picker, shown when launched with a
+  **URL argument** (e.g. `linkquisition "https://example.com"`).
+
+To test the configurator (settings UI):
+
+```bash
+# macOS (after task package:app:install-dev)
+/Applications/Linkquisition.app/Contents/MacOS/linkquisition
+
+# Linux (after task build)
+./bin/linkquisition-linux-amd64
+```
+
+To test the picker (URL handling):
+
+```bash
+# macOS
+/Applications/Linkquisition.app/Contents/MacOS/linkquisition "https://example.com"
+
+# Linux
+./bin/linkquisition-linux-amd64 "https://example.com"
+```
+
+Useful flags for debugging:
+
+- `--log-level=debug` — verbose logging
+- `--plugin-opt=<plugin>.<key>=<value>` — override plugin settings at runtime
+- `--no-plugins` — disable all plugins
 
 ### UI helpers (`internal/ui/`)
 

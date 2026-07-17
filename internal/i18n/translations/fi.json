@@ -514,5 +514,17 @@
   },
   "config.plugins_author": {
     "other": "Tekijä"
+  },
+  "about.bug_report_title": {
+    "other": "Virheiden raportointi"
+  },
+  "about.bug_report_description": {
+    "other": "Löysitkö bugin? Olisi todella avuksi, jos asettaisit lokitason \"debug\"-tilaan Yleiset-välilehdellä, toistaisit ongelman ja liittäisit oleelliset lokirivit virheraporttiin GitHubissa. Muista poistaa arkaluonteiset tiedot (salasanat, API-avaimet, yksityiset URL-osoitteet) lokitulosteesta ennen lähettämistä."
+  },
+  "about.bug_report_open_log": {
+    "other": "Avaa lokitiedosto"
+  },
+  "about.bug_report_issues_link": {
+    "other": "Raportoi ongelma GitHubissa"
   }
 }

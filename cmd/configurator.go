@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -22,6 +25,9 @@ import (
 
 // templateKeyName is the template data key used for name substitution in i18n strings.
 const templateKeyName = "Name"
+
+// osDarwin is the runtime.GOOS value for macOS, extracted to satisfy goconst.
+const osDarwin = "darwin"
 
 type Configurator struct {
 	fapp            fyne.App
@@ -523,7 +529,7 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 	description := widget.NewLabel(i18n.T("about.description"))
 	description.Wrapping = fyne.TextWrapWord
 
-	githubLink := ui.NewLinkWithCopy("github.com/Strobotti/linkquisition", githubURL, w)
+	githubLink := ui.NewLinkWithCopy("github.com/Strobotti/linkquisition", githubURL, w, c.urlOpener())
 
 	details := container.NewVBox(
 		container.NewHBox(widget.NewLabel(i18n.T("about.author_label")), widget.NewLabel("Juha Jantunen")),
@@ -534,7 +540,10 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 	// Update check section
 	updateSection := c.buildUpdateCheckSection(w)
 
-	return container.NewVBox(
+	// Bug reporting section (pinned to bottom)
+	bugReportSection := c.buildBugReportSection(w)
+
+	topContent := container.NewVBox(
 		container.NewHBox(icon, title),
 		widget.NewSeparator(),
 		description,
@@ -543,6 +552,8 @@ func (c *Configurator) getAboutTab(w fyne.Window) fyne.CanvasObject {
 		widget.NewSeparator(),
 		updateSection,
 	)
+
+	return container.NewBorder(topContent, bugReportSection, nil, nil)
 }
 
 func (c *Configurator) buildUpdateCheckSection(w fyne.Window) fyne.CanvasObject {
@@ -577,7 +588,7 @@ func (c *Configurator) buildUpdateCheckSection(w fyne.Window) fyne.CanvasObject 
 					}))
 
 					releaseLink.RemoveAll()
-					releaseLink.Add(ui.NewLinkWithCopy(i18n.T("about.view_release"), result.ReleaseURL, w))
+					releaseLink.Add(ui.NewLinkWithCopy(i18n.T("about.view_release"), result.ReleaseURL, w, c.urlOpener()))
 					releaseLink.Show()
 				} else {
 					statusLabel.SetText(i18n.T("about.up_to_date"))
@@ -589,25 +600,86 @@ func (c *Configurator) buildUpdateCheckSection(w fyne.Window) fyne.CanvasObject 
 	return container.NewHBox(checkButton, statusLabel, releaseLink)
 }
 
+func (c *Configurator) buildBugReportSection(w fyne.Window) fyne.CanvasObject {
+	const issuesURL = "https://github.com/Strobotti/linkquisition/issues"
+
+	titleLabel := widget.NewLabel(i18n.T("about.bug_report_title"))
+	titleLabel.TextStyle = fyne.TextStyle{Bold: true}
+
+	description := widget.NewLabel(i18n.T("about.bug_report_description"))
+	description.Wrapping = fyne.TextWrapWord
+
+	openLogButton := widget.NewButtonWithIcon(
+		i18n.T("about.bug_report_open_log"),
+		theme.FileIcon(),
+		func() {
+			logPath := c.settingsService.GetLogFilePath()
+			c.logger.Debug("Opening log file in editor", "path", logPath)
+
+			if err := openFileInEditor(logPath); err != nil {
+				c.logger.Error("Failed to open log file", "path", logPath, "error", err)
+			}
+		},
+	)
+
+	issuesLink := ui.NewLinkWithCopy(i18n.T("about.bug_report_issues_link"), issuesURL, w, c.urlOpener())
+
+	return container.NewVBox(
+		titleLabel,
+		description,
+		container.NewHBox(openLogButton, issuesLink),
+	)
+}
+
 // openExternalURL opens a URL in a real browser, bypassing Linkquisition if it is
 // the default browser (which would otherwise cause a circular loop).
 func (c *Configurator) openExternalURL(rawURL string) error {
 	return openExternalURLWithService(rawURL, c.browserService)
 }
 
+// urlOpener returns a URLOpener function for use with UI link widgets.
+func (c *Configurator) urlOpener() ui.URLOpener {
+	return func(rawURL string) error {
+		c.logger.Debug("Opening external URL from configurator", "url", rawURL)
+
+		return c.openExternalURL(rawURL)
+	}
+}
+
 // openExternalURLWithService opens a URL using the given browser service, choosing
 // a real browser if we are the default (to avoid a circular loop).
 func openExternalURLWithService(rawURL string, browserService linkquisition.BrowserService) error {
 	if !browserService.AreWeTheDefaultBrowser() {
+		slog.Debug("Opening URL with system default browser", "url", rawURL)
+
 		return browserService.OpenUrlWithDefaultBrowser(rawURL)
 	}
 
 	// We are the default browser, so we need to pick a real browser to open with
+	slog.Debug("We are the default browser, picking a real browser to open URL", "url", rawURL)
+
 	browsers, err := browserService.GetAvailableBrowsers()
 	if err != nil || len(browsers) == 0 {
+		slog.Debug("No browsers available, falling back to default handler", "url", rawURL, "error", err)
 		// Last resort: try anyway
 		return browserService.OpenUrlWithDefaultBrowser(rawURL)
 	}
 
+	slog.Debug("Opening URL with first available browser", "url", rawURL, "browser", browsers[0].Name)
+
 	return browserService.OpenUrlWithBrowser(rawURL, &browsers[0])
+}
+
+// openFileInEditor opens a file in the system's default text editor.
+func openFileInEditor(path string) error {
+	ctx := context.Background()
+
+	switch runtime.GOOS {
+	case osDarwin:
+		return exec.CommandContext(ctx, "open", "-t", path).Start()
+	case "windows":
+		return exec.CommandContext(ctx, "cmd", "/c", "start", "", path).Start()
+	default: // Linux and other Unix-like systems
+		return exec.CommandContext(ctx, "xdg-open", path).Start()
+	}
 }

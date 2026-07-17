@@ -67,6 +67,16 @@ func NewBrowserPicker(
 	}
 }
 
+// urlOpener returns a URLOpener function that opens URLs using the browser service,
+// avoiding circular loops when Linkquisition is the default browser.
+func (picker *BrowserPicker) urlOpener() ui.URLOpener {
+	return func(rawURL string) error {
+		picker.logger.Debug("Opening external URL from picker", "url", rawURL)
+
+		return openExternalURLWithService(rawURL, picker.browserService)
+	}
+}
+
 //nolint:cyclop
 func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	var buttons []fyne.CanvasObject
@@ -391,7 +401,8 @@ func (picker *BrowserPicker) showSafetyReport(result *safety.CheckResult, w fyne
 
 	var reportLink fyne.CanvasObject
 	if result.ReportURL != "" {
-		reportLink = ui.NewLinkWithCopy(i18n.T("picker.safety_view_report"), result.ReportURL, w)
+		opener := picker.urlOpener()
+		reportLink = ui.NewLinkWithCopy(i18n.T("picker.safety_view_report"), result.ReportURL, w, opener)
 	}
 
 	closeButton := widget.NewButtonWithIcon(
@@ -723,7 +734,7 @@ func (picker *BrowserPicker) buildRememberCheck(
 
 func (picker *BrowserPicker) buildKeyboardGuide() []fyne.CanvasObject {
 	copyShortcut := "Ctrl+C"
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == osDarwin {
 		copyShortcut = "⌘+C"
 	}
 
