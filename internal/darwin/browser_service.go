@@ -69,7 +69,10 @@ func (b *BrowserService) getHTTPHandlers() ([]lsRegisterEntry, error) {
 		}
 
 		for _, entry := range dirEntries {
-			if !entry.IsDir() || !strings.HasSuffix(entry.Name(), ".app") {
+			// Note: we intentionally do NOT check entry.IsDir() here. On modern macOS,
+			// system apps like Safari are "firmlinked" and os.ReadDir reports them as
+			// non-directories despite being valid .app bundles.
+			if !strings.HasSuffix(entry.Name(), ".app") {
 				continue
 			}
 
