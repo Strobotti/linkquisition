@@ -90,7 +90,7 @@ func TestNormalizeInputURL_RelativePaths(t *testing.T) {
 	// Create a temp file so os.Stat succeeds
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.html")
-	err := os.WriteFile(testFile, []byte("<html></html>"), 0644)
+	err := os.WriteFile(testFile, []byte("<html></html>"), 0600)
 	assert.NoError(t, err)
 
 	// Change to the temp directory so relative path resolves
@@ -149,7 +149,7 @@ func TestIsRelativePath(t *testing.T) {
 func TestIsRelativePath_ExistingFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "exists.html")
-	err := os.WriteFile(testFile, []byte("<html></html>"), 0644)
+	err := os.WriteFile(testFile, []byte("<html></html>"), 0600)
 	assert.NoError(t, err)
 
 	// Change to the temp dir so relative stat works
