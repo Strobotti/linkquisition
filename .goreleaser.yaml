@@ -1,5 +1,10 @@
 version: 2
 
+git:
+  # Allow dirty state because Wayland protocol headers are generated in CI
+  # and not committed to the repository.
+  allow_dirty: true
+
 builds:
   - id: "application"
     binary: "linkquisition"
