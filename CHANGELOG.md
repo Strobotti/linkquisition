@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.2](https://github.com/Strobotti/linkquisition/compare/v3.0.1...v3.0.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **ci:** add NSIS to PATH after Chocolatey install ([#156](https://github.com/Strobotti/linkquisition/issues/156)) ([00209ba](https://github.com/Strobotti/linkquisition/commit/00209ba8f499b6a95c15ea2776755f34d23c8679))
+
 ## [3.0.1](https://github.com/Strobotti/linkquisition/compare/v3.0.0...v3.0.1) (2026-07-17)
 
 
