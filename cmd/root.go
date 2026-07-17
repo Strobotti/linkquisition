@@ -81,8 +81,9 @@ func runRoot(cmd *cobra.Command, args []string) error {
 // - Absolute file paths (converted to file:// URLs)
 // - Relative file paths (resolved to absolute, then converted to file:// URLs)
 func normalizeInputURL(input string) string {
-	// Already a valid URL with a scheme — pass through
-	if parsed, err := url.ParseRequestURI(input); err == nil && parsed.Scheme != "" {
+	// Already a valid URL with a scheme — pass through.
+	// On Windows, drive letters like "C:\path" parse as scheme "C" — reject single-letter schemes.
+	if parsed, err := url.ParseRequestURI(input); err == nil && parsed.Scheme != "" && len(parsed.Scheme) > 1 {
 		return input
 	}
 
