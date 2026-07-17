@@ -173,11 +173,6 @@ jobs:
       - name: Generate Wayland protocol headers
         run: ./scripts/generate-wayland-protocols.sh
 
-      - name: Commit generated protocol headers for clean git state
-        run: |
-          git add vendor/github.com/go-gl/glfw/v3.4/glfw/glfw/src/*-client-protocol*.h
-          git -c user.name="CI" -c user.email="ci@localhost" commit -m "chore: generated wayland protocol headers" --allow-empty
-
       - name: Install syft
         run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
