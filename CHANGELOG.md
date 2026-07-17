@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.1](https://github.com/Strobotti/linkquisition/compare/v3.1.0...v3.1.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* Safari detection on macOS and speed up Windows CI builds ([#170](https://github.com/Strobotti/linkquisition/issues/170)) ([14c4461](https://github.com/Strobotti/linkquisition/commit/14c446155d3713ebbd8e0eba6b6adbac6493b455))
+
 ## [3.1.0](https://github.com/Strobotti/linkquisition/compare/v3.0.7...v3.1.0) (2026-07-17)
 
 
