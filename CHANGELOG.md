@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.6](https://github.com/Strobotti/linkquisition/compare/v3.0.5...v3.0.6) (2026-07-17)
+
+
+### Bug Fixes
+
+* **ci:** allow dirty git state in GoReleaser for generated Wayland headers ([#164](https://github.com/Strobotti/linkquisition/issues/164)) ([43acb96](https://github.com/Strobotti/linkquisition/commit/43acb96cdf480d9b9e4fa0d5339eea9849b910a0))
+
 ## [3.0.5](https://github.com/Strobotti/linkquisition/compare/v3.0.4...v3.0.5) (2026-07-17)
 
 
