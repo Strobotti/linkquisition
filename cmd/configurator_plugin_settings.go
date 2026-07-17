@@ -69,7 +69,7 @@ func (c *Configurator) buildPluginMetadataHeader(
 	// Homepage URL (optional)
 	if meta.URL != "" {
 		homepageRow := container.NewHBox(
-			ui.NewLinkWithCopy(meta.URL, meta.URL, parentWindow),
+			ui.NewLinkWithCopy(meta.URL, meta.URL, parentWindow, c.urlOpener()),
 		)
 		items = append(items, homepageRow)
 	}

@@ -54,7 +54,7 @@ func (c *Configurator) getSecurityTab(w fyne.Window) fyne.CanvasObject {
 	}
 
 	providerLinkContainer := container.NewStack(
-		ui.NewLinkWithCopy(i18n.T("config.security_get_key"), initialLinkURL, w),
+		ui.NewLinkWithCopy(i18n.T("config.security_get_key"), initialLinkURL, w, c.urlOpener()),
 	)
 
 	updateProviderLink := func() {
@@ -65,7 +65,7 @@ func (c *Configurator) getSecurityTab(w fyne.Window) fyne.CanvasObject {
 			linkURL = googleSafeBrowsingURL
 		}
 		providerLinkContainer.Objects = []fyne.CanvasObject{
-			ui.NewLinkWithCopy(i18n.T("config.security_get_key"), linkURL, w),
+			ui.NewLinkWithCopy(i18n.T("config.security_get_key"), linkURL, w, c.urlOpener()),
 		}
 		providerLinkContainer.Refresh()
 	}
