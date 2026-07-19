@@ -4,6 +4,7 @@
 package favicon
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -296,6 +297,16 @@ func isImageContentType(contentType string) bool {
 	return strings.HasPrefix(ct, "image/")
 }
 
+// imageMagic holds known image format signatures for magic byte detection.
+var imageMagic = [][]byte{
+	{0x89, 0x50, 0x4E, 0x47}, // PNG
+	{0xFF, 0xD8, 0xFF},       // JPEG
+	[]byte("GIF87a"),         // GIF87a
+	[]byte("GIF89a"),         // GIF89a
+	{0x00, 0x00, 0x01, 0x00}, // ICO
+	{0x42, 0x4D},             // BMP
+}
+
 // isImageData checks the first bytes of data for known image magic bytes.
 // Supports PNG, JPEG, GIF, ICO, BMP, WebP, and SVG.
 func isImageData(data []byte) bool {
@@ -303,33 +314,14 @@ func isImageData(data []byte) bool {
 		return false
 	}
 
-	// PNG: 89 50 4E 47
-	if data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 {
-		return true
+	for _, magic := range imageMagic {
+		if bytes.HasPrefix(data, magic) {
+			return true
+		}
 	}
 
-	// JPEG: FF D8 FF
-	if data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF {
-		return true
-	}
-
-	// GIF: GIF87a or GIF89a
-	if len(data) >= 6 && string(data[:6]) == "GIF87a" || string(data[:6]) == "GIF89a" {
-		return true
-	}
-
-	// ICO: 00 00 01 00
-	if data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x01 && data[3] == 0x00 {
-		return true
-	}
-
-	// BMP: 42 4D
-	if data[0] == 0x42 && data[1] == 0x4D {
-		return true
-	}
-
-	// WebP: RIFF....WEBP
-	if len(data) >= 12 && string(data[:4]) == "RIFF" && string(data[8:12]) == "WEBP" {
+	// WebP: RIFF....WEBP (bytes 8-12 must be "WEBP")
+	if len(data) >= 12 && bytes.HasPrefix(data, []byte("RIFF")) && string(data[8:12]) == "WEBP" {
 		return true
 	}
 
@@ -338,10 +330,6 @@ func isImageData(data []byte) bool {
 	if checkLen > 512 { //nolint:mnd
 		checkLen = 512
 	}
-	header := strings.ToLower(string(data[:checkLen]))
-	if strings.Contains(header, "<svg") {
-		return true
-	}
 
-	return false
+	return strings.Contains(strings.ToLower(string(data[:checkLen])), "<svg")
 }
