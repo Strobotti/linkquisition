@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.2](https://github.com/Strobotti/linkquisition/compare/v3.1.1...v3.1.2) (2026-07-19)
+
+
+### Bug Fixes
+
+* crash when favicon endpoint returns non-image response ([#173](https://github.com/Strobotti/linkquisition/issues/173)) ([b505329](https://github.com/Strobotti/linkquisition/commit/b50532930c1470110f8ffec4829f46390b2b512b))
+
 ## [3.1.1](https://github.com/Strobotti/linkquisition/compare/v3.1.0...v3.1.1) (2026-07-17)
 
 
