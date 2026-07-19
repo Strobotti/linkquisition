@@ -168,6 +168,8 @@ func (f *Fetcher) fetchGoogle(ctx context.Context, rawURL string) ([]byte, error
 }
 
 // download performs the actual HTTP GET and returns the body bytes.
+// It validates that the response contains image data (by content-type header
+// and magic bytes) to avoid passing HTML or other non-image content to the renderer.
 func (f *Fetcher) download(ctx context.Context, fetchURL string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fetchURL, http.NoBody)
 	if err != nil {
@@ -186,6 +188,12 @@ func (f *Fetcher) download(ctx context.Context, fetchURL string) ([]byte, error)
 		return nil, fmt.Errorf("favicon returned HTTP %d", resp.StatusCode)
 	}
 
+	// Reject responses that are clearly not images based on Content-Type
+	contentType := resp.Header.Get("Content-Type")
+	if contentType != "" && !isImageContentType(contentType) {
+		return nil, fmt.Errorf("non-image content type: %s", contentType)
+	}
+
 	data, err := io.ReadAll(io.LimitReader(resp.Body, maxFaviconBytes))
 	if err != nil {
 		return nil, fmt.Errorf("reading favicon: %w", err)
@@ -193,6 +201,11 @@ func (f *Fetcher) download(ctx context.Context, fetchURL string) ([]byte, error)
 
 	if len(data) == 0 {
 		return nil, fmt.Errorf("empty favicon response")
+	}
+
+	// Double-check with magic bytes — some servers send wrong Content-Type
+	if !isImageData(data) {
+		return nil, fmt.Errorf("response data is not a recognized image format")
 	}
 
 	return data, nil
@@ -220,7 +233,19 @@ func (f *Fetcher) readCache(host string) ([]byte, error) {
 		return nil, fmt.Errorf("cache expired")
 	}
 
-	return os.ReadFile(path)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate cached data is still a recognized image format
+	// (protects against previously cached invalid responses)
+	if !isImageData(data) {
+		_ = os.Remove(path)
+		return nil, fmt.Errorf("cached data is not a valid image, evicting")
+	}
+
+	return data, nil
 }
 
 // writeCache writes favicon bytes to the cache directory.
@@ -257,4 +282,66 @@ func resolveIconURL(href string, base *url.URL) string {
 	}
 
 	return base.ResolveReference(ref).String()
+}
+
+// isImageContentType checks if a Content-Type header value indicates an image.
+func isImageContentType(contentType string) bool {
+	ct := strings.ToLower(strings.TrimSpace(contentType))
+
+	// Split on ";" to ignore charset and other parameters
+	if idx := strings.IndexByte(ct, ';'); idx >= 0 {
+		ct = strings.TrimSpace(ct[:idx])
+	}
+
+	return strings.HasPrefix(ct, "image/")
+}
+
+// isImageData checks the first bytes of data for known image magic bytes.
+// Supports PNG, JPEG, GIF, ICO, BMP, WebP, and SVG.
+func isImageData(data []byte) bool {
+	if len(data) < 4 { //nolint:mnd
+		return false
+	}
+
+	// PNG: 89 50 4E 47
+	if data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 {
+		return true
+	}
+
+	// JPEG: FF D8 FF
+	if data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF {
+		return true
+	}
+
+	// GIF: GIF87a or GIF89a
+	if len(data) >= 6 && string(data[:6]) == "GIF87a" || string(data[:6]) == "GIF89a" {
+		return true
+	}
+
+	// ICO: 00 00 01 00
+	if data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x01 && data[3] == 0x00 {
+		return true
+	}
+
+	// BMP: 42 4D
+	if data[0] == 0x42 && data[1] == 0x4D {
+		return true
+	}
+
+	// WebP: RIFF....WEBP
+	if len(data) >= 12 && string(data[:4]) == "RIFF" && string(data[8:12]) == "WEBP" {
+		return true
+	}
+
+	// SVG: look for an <svg tag in the first 512 bytes (XML preamble may precede it)
+	checkLen := len(data)
+	if checkLen > 512 { //nolint:mnd
+		checkLen = 512
+	}
+	header := strings.ToLower(string(data[:checkLen]))
+	if strings.Contains(header, "<svg") {
+		return true
+	}
+
+	return false
 }
