@@ -675,9 +675,11 @@ func (picker *BrowserPicker) fetchAndUpdateFavicon(
 		return
 	}
 
-	res := fyne.NewStaticResource("favicon.png", data)
-	img.Resource = res
-	img.Refresh()
+	res := fyne.NewStaticResource("favicon", data)
+	fyne.Do(func() {
+		img.Resource = res
+		img.Refresh()
+	})
 }
 
 func (picker *BrowserPicker) buildRememberCheck(
