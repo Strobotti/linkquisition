@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.3](https://github.com/Strobotti/linkquisition/compare/v3.1.2...v3.1.3) (2026-07-29)
+
+
+### Bug Fixes
+
+* set Windows binary subsystem to GUI to prevent console-app error ([#176](https://github.com/Strobotti/linkquisition/issues/176)) ([9be1251](https://github.com/Strobotti/linkquisition/commit/9be12513dfd9f02c73720217416aa8777de72373))
+
 ## [3.1.2](https://github.com/Strobotti/linkquisition/compare/v3.1.1...v3.1.2) (2026-07-19)
 
 
