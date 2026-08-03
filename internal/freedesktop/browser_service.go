@@ -97,6 +97,7 @@ func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
 
 func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 	cmd := exec.Command("xdg-open", url)
+	cmd.Env = sanitizeEnviron(cmd.Environ())
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to open URL `%s` with default browser: %v", url, err)
@@ -114,6 +115,7 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 
 	// now just execute the damn command
 	cmd := exec.Command("sh", "-c", command)
+	cmd.Env = sanitizeEnviron(cmd.Environ())
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to open URL `%s` with browser `%s`: %v", u, browser.Name, err)
 	}
