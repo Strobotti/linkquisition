@@ -11,6 +11,7 @@ import (
 	"golang.org/x/sys/windows/registry"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/launchenv"
 )
 
 var _ linkquisition.BrowserService = (*BrowserService)(nil)
@@ -149,6 +150,7 @@ func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
 func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 	// Use rundll32 to open with system default — avoids shell injection
 	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to open URL `%s` with default browser: %v", url, err)
 	}
@@ -168,10 +170,12 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 			return fmt.Errorf("empty browser command for %s", browser.Name)
 		}
 		cmd := exec.Command(parts[0], parts[1:]...)
+		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 		return cmd.Start()
 	}
 
 	cmd := exec.Command(command, url)
+	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to open URL `%s` with browser `%s`: %v", url, browser.Name, err)
 	}
