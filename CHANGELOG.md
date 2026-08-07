@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.4](https://github.com/Strobotti/linkquisition/compare/v3.1.3...v3.1.4) (2026-08-07)
+
+
+### Bug Fixes
+
+* strip instance specific env vars from launched processes ([#178](https://github.com/Strobotti/linkquisition/issues/178)) ([74b66ff](https://github.com/Strobotti/linkquisition/commit/74b66ff92a7debd7159d4aa1156670ca0da748c3))
+* Windows Start Menu icon and CLI output ([#179](https://github.com/Strobotti/linkquisition/issues/179)) ([8a9a5e3](https://github.com/Strobotti/linkquisition/commit/8a9a5e34ee1958e1ddda0786223ecbdccae65efd))
+
 ## [3.1.3](https://github.com/Strobotti/linkquisition/compare/v3.1.2...v3.1.3) (2026-07-29)
 
 
