@@ -15,6 +15,7 @@ import (
 	"howett.net/plist"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/launchenv"
 )
 
 var _ linkquisition.BrowserService = (*BrowserService)(nil)
@@ -187,6 +188,7 @@ func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
 
 func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 	cmd := exec.Command("open", url)
+	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to open URL `%s` with default browser: %v", url, err)
 	}
@@ -195,6 +197,7 @@ func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 
 func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.Browser) error {
 	cmd := exec.Command("open", "-b", browser.Command, url)
+	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to open URL `%s` with browser `%s`: %v", url, browser.Name, err)
 	}
