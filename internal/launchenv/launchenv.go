@@ -19,7 +19,7 @@ var launcherPrivateEnv = []string{
 }
 
 // Returns a copy of the passed environment stripping some special values that
-// were inherited from linkquistion's own caller.
+// were inherited from linkquisition's own caller.
 //
 // This is done to prevent an edge case where clicking a link in one electron
 // app can cause the one the link should be opened in to retain instance
