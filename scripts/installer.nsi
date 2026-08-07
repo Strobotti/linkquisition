@@ -49,8 +49,9 @@ RequestExecutionLevel admin
 Section "Install"
     SetOutPath $INSTDIR
 
-    ; Install the binary
+    ; Install the binary and icon
     File "dist\linkquisition.exe"
+    File "Icon.ico"
 
     ; Store install directory
     WriteRegStr HKCU "Software\${APPNAME}" "InstallDir" "$INSTDIR"
@@ -58,10 +59,8 @@ Section "Install"
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
 
-    ; Start Menu shortcuts
-    CreateDirectory "$SMPROGRAMS\${APPNAME}"
-    CreateShortCut "$SMPROGRAMS\${APPNAME}\${APPNAME}.lnk" "$INSTDIR\linkquisition.exe"
-    CreateShortCut "$SMPROGRAMS\${APPNAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+    ; Start Menu shortcut (directly in Start Menu for Windows 10/11 visibility)
+    CreateShortCut "$SMPROGRAMS\${APPNAME}.lnk" "$INSTDIR\linkquisition.exe" "" "$INSTDIR\Icon.ico"
 
     ; Register as URL handler
     ; -- URL Class
@@ -83,6 +82,7 @@ Section "Install"
     ; Add/Remove Programs entry
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME}"
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" '"$INSTDIR\uninstall.exe"'
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayIcon" "$INSTDIR\Icon.ico"
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "InstallLocation" "$INSTDIR"
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "Publisher" "${COMPANYNAME}"
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayVersion" "${VERSION}"
@@ -95,13 +95,12 @@ SectionEnd
 Section "Uninstall"
     ; Remove files
     Delete "$INSTDIR\linkquisition.exe"
+    Delete "$INSTDIR\Icon.ico"
     Delete "$INSTDIR\uninstall.exe"
     RMDir "$INSTDIR"
 
-    ; Remove Start Menu shortcuts
-    Delete "$SMPROGRAMS\${APPNAME}\${APPNAME}.lnk"
-    Delete "$SMPROGRAMS\${APPNAME}\Uninstall.lnk"
-    RMDir "$SMPROGRAMS\${APPNAME}"
+    ; Remove Start Menu shortcut
+    Delete "$SMPROGRAMS\${APPNAME}.lnk"
 
     ; Remove registry entries
     DeleteRegKey HKCU "Software\Classes\LinkquisitionURL"
