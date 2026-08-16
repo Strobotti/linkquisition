@@ -121,6 +121,12 @@ jobs:
         run: |
           Set-MpPreference -DisableRealtimeMonitoring $true
 
+      - name: Download Mesa3D OpenGL fallback
+        if: matrix.target == 'windows-amd64'
+        shell: pwsh
+        run: |
+          .\scripts\download-mesa-opengl.ps1 -OutDir dist
+
       - name: Package Windows .zip
         if: matrix.target == 'windows-amd64'
         shell: pwsh
@@ -128,7 +134,8 @@ jobs:
           $version = "${{ github.ref_name }}" -replace '^v', ''
           New-Item -ItemType Directory -Path dist -Force
           Copy-Item bin/linkquisition-windows-amd64.exe dist/linkquisition.exe
-          Compress-Archive -Path dist/linkquisition.exe -DestinationPath "dist/Linkquisition_Windows_amd64.zip"
+          Copy-Item NOTICE-MESA.txt dist/NOTICE-MESA.txt
+          Compress-Archive -Path dist/linkquisition.exe,dist/opengl32.dll,dist/NOTICE-MESA.txt -DestinationPath "dist/Linkquisition_Windows_amd64.zip"
         env:
           VERSION: ${{ github.ref_name }}
 

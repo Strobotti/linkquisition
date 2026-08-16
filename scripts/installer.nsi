@@ -20,7 +20,7 @@
   !define VERSION "0.0.0"
 !endif
 
-!define INSTALLSIZE 15000 ; Approximate size in KB
+!define INSTALLSIZE 35000 ; Approximate size in KB (includes Mesa OpenGL fallback)
 
 ; --- General ---
 Name "${APPNAME}"
@@ -49,9 +49,11 @@ RequestExecutionLevel admin
 Section "Install"
     SetOutPath $INSTDIR
 
-    ; Install the binary and icon
+    ; Install the binary, icon, and Mesa OpenGL fallback
     File "dist\linkquisition.exe"
     File "Icon.ico"
+    File "dist\opengl32.dll"
+    File "NOTICE-MESA.txt"
 
     ; Store install directory
     WriteRegStr HKCU "Software\${APPNAME}" "InstallDir" "$INSTDIR"
@@ -96,6 +98,8 @@ Section "Uninstall"
     ; Remove files
     Delete "$INSTDIR\linkquisition.exe"
     Delete "$INSTDIR\Icon.ico"
+    Delete "$INSTDIR\opengl32.dll"
+    Delete "$INSTDIR\NOTICE-MESA.txt"
     Delete "$INSTDIR\uninstall.exe"
     RMDir "$INSTDIR"
 
