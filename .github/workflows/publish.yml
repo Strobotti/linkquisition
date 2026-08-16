@@ -14,7 +14,7 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.5'
+          go-version: '1.26.6'
 
       - name: Install build dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
@@ -57,7 +57,7 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.5'
+          go-version: '1.26.6'
 
       - name: Install Linux build dependencies (cached)
         if: runner.os == 'Linux'
@@ -168,7 +168,7 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.5'
+          go-version: '1.26.6'
 
       - name: Install build dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
