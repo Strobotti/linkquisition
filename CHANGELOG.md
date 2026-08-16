@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.6](https://github.com/Strobotti/linkquisition/compare/v3.1.5...v3.1.6) (2026-08-16)
+
+
+### Bug Fixes
+
+* bundle Mesa3D OpenGL fallback for Windows without GPU drivers ([#186](https://github.com/Strobotti/linkquisition/issues/186)) ([a0cedf6](https://github.com/Strobotti/linkquisition/commit/a0cedf6450c8c72a77fb795e4bef63fa3b0cc4d1))
+
 ## [3.1.5](https://github.com/Strobotti/linkquisition/compare/v3.1.4...v3.1.5) (2026-08-16)
 
 
