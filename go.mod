@@ -1,6 +1,6 @@
 module github.com/strobotti/linkquisition
 
-go 1.26.5
+go 1.26.6
 
 require (
 	fyne.io/fyne/v2 v2.8.0
