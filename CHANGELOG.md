@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.5](https://github.com/Strobotti/linkquisition/compare/v3.1.4...v3.1.5) (2026-08-16)
+
+
+### Bug Fixes
+
+* Windows crash logging and console flash on file open ([#183](https://github.com/Strobotti/linkquisition/issues/183)) ([166f996](https://github.com/Strobotti/linkquisition/commit/166f996ae1a0603964427a2be76435d21f62cd92))
+
 ## [3.1.4](https://github.com/Strobotti/linkquisition/compare/v3.1.3...v3.1.4) (2026-08-07)
 
 
