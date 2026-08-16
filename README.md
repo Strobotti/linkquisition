@@ -38,12 +38,11 @@ Motivation behind this project is:
 - Optional favicon display next to the URL in the picker (lazy-loaded, no startup delay)
     - Three retrieval strategies: direct (`/favicon.ico`), parsed (HTML link tag), or Google's service
 - URL safety checking via [Google Safe Browsing](https://safebrowsing.google.com/) or
-  [VirusTotal](https://www.virustotal.com/) — shows a color-coded indicator in the picker
-  with a clickable link to the full provider report
+  [VirusTotal](https://www.virustotal.com/) — shows a color-coded indicator in the picker with a clickable link to the
+  full provider report
 - WHOIS lookup — view domain registration details (registrar, age, expiry, DNSSEC status)
   directly from the picker's context menu
-- QR code generation — generate a scannable QR code for the URL to quickly open it on a
-  mobile device
+- QR code generation — generate a scannable QR code for the URL to quickly open it on a mobile device
 - Manual update check in the About tab — see if a newer release is available on GitHub
 
 ## Installation
@@ -56,8 +55,7 @@ the [releases page](https://github.com/Strobotti/linkquisition/releases).
 #### .deb package (Ubuntu/Debian)
 
 The `.deb` package contains everything needed to launch the application using the desktop-environment, e.g. you should
-be
-able to press `Super`-key in Ubuntu and type "Linkquisition" to see the launcher. To do the same in terminal just run
+be able to press `Super`-key in Ubuntu and type "Linkquisition" to see the launcher. To do the same in terminal just run
 `linkquisition` command. Launching the application without any arguments will show the configuration screen which allows
 you to set it as the default browser and scan for installed browsers for faster startup and easier configuration.
 
@@ -102,26 +100,27 @@ xattr -cr /Applications/Linkquisition.app
 ### Windows
 
 Download the latest `Linkquisition_Windows_amd64.zip` (portable) or
-`Linkquisition-*-setup.exe` (installer) from
-the [releases page](https://github.com/Strobotti/linkquisition/releases).
+`Linkquisition-*-setup.exe` (installer) from the [releases page](https://github.com/Strobotti/linkquisition/releases).
 
 #### Installer
 
-The installer registers Linkquisition as a URL handler and creates Start Menu
-shortcuts. After installation, open Windows Settings → Default Apps to select
-Linkquisition as your default browser.
+The installer registers Linkquisition as a URL handler and creates Start Menu shortcuts. After installation, open
+Windows Settings → Default Apps to select Linkquisition as your default browser.
 
-Since the app is not code-signed, Windows SmartScreen may show a warning on
-first launch. Click "More info" → "Run anyway" to proceed.
+Since the app is not code-signed, Windows SmartScreen may show a warning on first launch. Click "More info" → "Run
+anyway" to proceed.
 
 #### Portable
 
-Extract `linkquisition.exe` from the .zip and run it directly. To register as
-the default browser, run `linkquisition set-default` from the directory
-containing the executable.
+Extract `linkquisition.exe` from the .zip and run it directly. To register as the default browser, run
+`linkquisition set-default` from the directory containing the executable.
 
-**Note:** Plugins are not supported on Windows. The plugin tab and plugin-related
-CLI commands are not available on this platform.
+**Note:** Plugins are not supported on Windows. The plugin tab and plugin-related CLI commands are not available on this
+platform.
+
+**OpenGL fallback:** The release includes Mesa3D's software OpenGL renderer (`opengl32.dll`) for systems without a
+hardware GPU driver (virtual machines, RDP sessions, basic display adapters). If your system has a proper GPU driver,
+you can safely delete `opengl32.dll` — the app will use the hardware driver instead.
 
 ## Configuration
 
@@ -137,8 +136,8 @@ The configuration file is located at `~/.config/linkquisition/config.json` and c
 create one if it does not exist, or update it with the currently installed browsers. Re-scanning later will not remove
 any manually added browsers or rules to existing browsers.
 
-If adding a browser-entry manually to the config.json be sure to mark it as "manual" to prevent it from being removed
-on next scan. Also, if you want to hide a browser from the list, you can have it's "hidden" -attribute with value
+If adding a browser-entry manually to the config.json be sure to mark it as "manual" to prevent it from being removed on
+next scan. Also, if you want to hide a browser from the list, you can have it's "hidden" -attribute with value
 `true`.
 
 Please note that the scan will use the "command" -attribute as the identifier for the browser, so if change the command
@@ -210,18 +209,17 @@ Currently supported languages:
 - Swedish (sv)
 - Ukrainian (uk)
 
-To contribute a new translation, add a JSON file to `internal/i18n/translations/` following the
-format of the existing files (e.g. `en.json`). The filename should be the locale code (e.g. `de.json` for German).
+To contribute a new translation, add a JSON file to `internal/i18n/translations/` following the format of the existing
+files (e.g. `en.json`). The filename should be the locale code (e.g. `de.json` for German).
 
 ### Picker context menu
 
 The browser picker has a context menu (⋯ button) next to the URL with these features:
 
 - **Copy URL** — copy the (possibly plugin-modified) URL to clipboard
-- **QR Code** — generates a scannable QR code for the URL, useful for quickly opening it on a
-  mobile device
-- **WHOIS** — performs a live WHOIS lookup and shows domain registration details: registrar,
-  creation/expiry dates, domain age, DNSSEC status, name servers, and EPP status codes
+- **QR Code** — generates a scannable QR code for the URL, useful for quickly opening it on a mobile device
+- **WHOIS** — performs a live WHOIS lookup and shows domain registration details: registrar, creation/expiry dates,
+  domain age, DNSSEC status, name servers, and EPP status codes
 
 ### URL safety checking
 
@@ -231,8 +229,8 @@ When enabled, the picker shows a color-coded dot next to the URL that indicates 
 - **Yellow** — check failed or URL is suspicious
 - **Red** — URL is flagged as malicious
 
-Clicking the dot opens a popup with the provider name, threat level, details, and a link to view
-the full report on the provider's website.
+Clicking the dot opens a popup with the provider name, threat level, details, and a link to view the full report on the
+provider's website.
 
 To enable safety checking, add a `security` section to your `config.json`:
 
@@ -257,8 +255,8 @@ Supported providers:
 | `google_safe_browsing` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) — enable the Safe Browsing API, then create an API key. Free tier: 10,000 requests/day. |
 | `virustotal`           | [VirusTotal](https://www.virustotal.com/gui/my-apikey) — sign up for a free account. Free tier: 4 requests/minute, 500/day.                                       |
 
-The check runs asynchronously — it never blocks the picker from appearing. Results are cached
-locally (when `cache.enabled` is `true`) to reduce API calls on repeated URLs.
+The check runs asynchronously — it never blocks the picker from appearing. Results are cached locally (when
+`cache.enabled` is `true`) to reduce API calls on repeated URLs.
 
 ### Favicon
 
@@ -334,8 +332,8 @@ linkquisition --log-level debug "https://example.com"
 linkquisition --no-plugins "https://example.com"
 ```
 
-On macOS, the binary is located at `/Applications/Linkquisition.app/Contents/MacOS/linkquisition`.
-You can create a symlink for convenience:
+On macOS, the binary is located at `/Applications/Linkquisition.app/Contents/MacOS/linkquisition`. You can create a
+symlink for convenience:
 
 ```bash
 ln -s /Applications/Linkquisition.app/Contents/MacOS/linkquisition /usr/local/bin/linkquisition
@@ -373,8 +371,8 @@ task build --watch # results in bin/linkquisition-linux-amd64 (rebuilds on any r
 
 ### Packaging locally
 
-Packaging locally is for testing purposes only, actual packaging should be done in a CI/CD pipeline,
-which currently is Github.com Actions.
+Packaging locally is for testing purposes only, actual packaging should be done in a CI/CD pipeline, which currently is
+Github.com Actions.
 
 The following command will build a `.deb` package in the `dist` directory:
 
@@ -398,13 +396,12 @@ See [plugins](./plugins/README.md) for more information.
 
 <img src="Icon.png" width="142" height="142" alt="Linkquisition" align="left"/>
 
-With the above list the most interesting feature for me personally is the plugins -feature, as it would allow for
-doing some more complex processing of the URL before opening it in a browser. ~~For example, I could write a plugin that
+With the above list the most interesting feature for me personally is the plugins -feature, as it would allow for doing
+some more complex processing of the URL before opening it in a browser. ~~For example, I could write a plugin that
 strips any tracking parameters from the URL before opening it in the browser.~~ See
 [Sanitize](./plugins/sanitize/sanitize.go) -plugin for more information.
 
 ~~I also would like to have a plugin that checks if the opened url is a Microsoft Defender (Evergreen) URL and then,
-with
-matching rules, opens the actual url (baked in the "evergreen-assets URL") in a browser. This way all the internal
+with matching rules, opens the actual url (baked in the "evergreen-assets URL") in a browser. This way all the internal
 links in my company could be opened directly in the browser, but the external links would still go through the Defender
 URL.~~ See [Unwrap](./plugins/unwrap/unwrap.go) -plugin for more information.
