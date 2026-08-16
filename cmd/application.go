@@ -140,6 +140,8 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 	i18n.Init(a.SettingsService.GetSettings().Locale)
 
 	if urlToOpen == "" {
+		a.Logger.Debug("Starting configurator (no URL argument)")
+
 		// Start watching for URLs arriving via platform events (macOS Apple Events)
 		// while the configurator is open.
 		watchCtx, watchCancel := context.WithCancel(context.Background())
@@ -148,6 +150,8 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService, a.Logger)
 		err := configurator.Run()
 		watchCancel()
+
+		a.Logger.Debug("Configurator closed", "error", err)
 
 		return err
 	}

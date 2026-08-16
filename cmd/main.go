@@ -14,6 +14,7 @@ var version = "dev"
 const exitCodePanic = 2
 
 func main() {
+	redirectPanicLog()
 	attachParentConsoleIfCLI()
 	os.Exit(run())
 }

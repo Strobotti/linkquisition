@@ -678,7 +678,8 @@ func openFileInEditor(path string) error {
 	case osDarwin:
 		return exec.CommandContext(ctx, "open", "-t", path).Start()
 	case "windows":
-		return exec.CommandContext(ctx, "cmd", "/c", "start", "", path).Start()
+		// Use rundll32 to avoid a console window flash (cmd.exe is a console app).
+		return exec.CommandContext(ctx, "rundll32", "url.dll,FileProtocolHandler", path).Start()
 	default: // Linux and other Unix-like systems
 		return exec.CommandContext(ctx, "xdg-open", path).Start()
 	}
