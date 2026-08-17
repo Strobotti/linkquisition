@@ -16,9 +16,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 $MesaVersion = "26.2.0"
-$DownloadUrl = "https://github.com/mmozeiko/build-mesa/releases/download/$MesaVersion/mesa-llvmpipe-x64.7z"
+$DownloadUrl = "https://github.com/mmozeiko/build-mesa/releases/download/$MesaVersion/mesa-llvmpipe-x64-$MesaVersion.7z"
 $TempDir = Join-Path $env:TEMP "mesa-download"
-$ArchivePath = Join-Path $TempDir "mesa-llvmpipe-x64.7z"
+$ArchivePath = Join-Path $TempDir "mesa-llvmpipe-x64-$MesaVersion.7z"
 
 Write-Host "Downloading Mesa3D llvmpipe $MesaVersion..."
 
