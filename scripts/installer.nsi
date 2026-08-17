@@ -62,6 +62,9 @@ Section "Install"
     WriteUninstaller "$INSTDIR\uninstall.exe"
 
     ; Start Menu shortcut (directly in Start Menu for Windows 10/11 visibility)
+    ; SetOutPath sets the "Start in" directory for the shortcut — required so
+    ; Windows finds opengl32.dll (Mesa fallback) next to the exe on launch.
+    SetOutPath $INSTDIR
     CreateShortCut "$SMPROGRAMS\${APPNAME}.lnk" "$INSTDIR\linkquisition.exe" "" "$INSTDIR\Icon.ico"
 
     ; Register as URL handler
