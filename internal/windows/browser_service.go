@@ -55,6 +55,23 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 		}
 	}
 
+	// Also check RegisteredApplications for browsers not found via StartMenuInternet.
+	// Modern Firefox and some other browsers register here instead.
+	for _, entry := range readRegisteredApplicationBrowsers() {
+		lowerCmd := strings.ToLower(entry.Command)
+		if seen[lowerCmd] {
+			continue
+		}
+		if strings.Contains(lowerCmd, "linkquisition") {
+			continue
+		}
+		seen[lowerCmd] = true
+		browsers = append(browsers, linkquisition.Browser{
+			Name:    entry.Name,
+			Command: entry.Command,
+		})
+	}
+
 	return browsers, nil
 }
 
@@ -127,6 +144,137 @@ func readBrowserEntry(rootKey registry.Key, keyPath string) (registryBrowser, er
 		Name:    name,
 		Command: command,
 	}, nil
+}
+
+// readRegisteredApplicationBrowsers discovers browsers via the RegisteredApplications
+// registry key. Modern Firefox and some other browsers register their capabilities here
+// with URL associations but may not have a traditional StartMenuInternet\shell\open\command
+// entry. This function looks up each registered app's Capabilities\URLAssociations for
+// http/https support and resolves the executable from the ProgID's shell\open\command.
+func readRegisteredApplicationBrowsers() []registryBrowser {
+	var results []registryBrowser
+
+	for _, rootKey := range []registry.Key{registry.LOCAL_MACHINE, registry.CURRENT_USER} {
+		k, err := registry.OpenKey(rootKey, `SOFTWARE\RegisteredApplications`, registry.QUERY_VALUE)
+		if err != nil {
+			continue
+		}
+
+		values, err := k.ReadValueNames(-1)
+		k.Close()
+
+		if err != nil {
+			continue
+		}
+
+		for _, appName := range values {
+			entry, ok := resolveRegisteredApp(rootKey, appName)
+			if ok {
+				results = append(results, entry)
+			}
+		}
+	}
+
+	return results
+}
+
+// resolveRegisteredApp checks if a RegisteredApplications entry is a browser
+// (has http or https URL association) and resolves its executable path.
+func resolveRegisteredApp(rootKey registry.Key, appName string) (registryBrowser, bool) {
+	// Read the capabilities path from RegisteredApplications
+	regAppsKey, err := registry.OpenKey(rootKey, `SOFTWARE\RegisteredApplications`, registry.QUERY_VALUE)
+	if err != nil {
+		return registryBrowser{}, false
+	}
+
+	capPath, _, err := regAppsKey.GetStringValue(appName)
+	regAppsKey.Close()
+
+	if err != nil || capPath == "" {
+		return registryBrowser{}, false
+	}
+
+	// Check if it has http or https URL associations
+	urlAssocPath := capPath + `\URLAssociations`
+	urlAssocKey, err := registry.OpenKey(rootKey, urlAssocPath, registry.QUERY_VALUE)
+	if err != nil {
+		return registryBrowser{}, false
+	}
+
+	httpsProgID, _, httpsErr := urlAssocKey.GetStringValue("https")
+	if httpsErr != nil {
+		httpsProgID, _, httpsErr = urlAssocKey.GetStringValue("http")
+	}
+	urlAssocKey.Close()
+
+	if httpsErr != nil || httpsProgID == "" {
+		return registryBrowser{}, false
+	}
+
+	// Resolve the ProgID to an executable command
+	command := resolveProgIDCommand(httpsProgID)
+	if command == "" {
+		return registryBrowser{}, false
+	}
+
+	// Get a friendly name from Capabilities\ApplicationName or fall back to appName
+	name := appName
+	capKey, err := registry.OpenKey(rootKey, capPath, registry.QUERY_VALUE)
+	if err == nil {
+		if appDisplayName, _, nameErr := capKey.GetStringValue("ApplicationName"); nameErr == nil && appDisplayName != "" {
+			name = appDisplayName
+		}
+		capKey.Close()
+	}
+
+	return registryBrowser{Name: name, Command: command}, true
+}
+
+// resolveProgIDCommand looks up a ProgID's shell\open\command to get the executable path.
+func resolveProgIDCommand(progID string) string {
+	cmdPath := `SOFTWARE\Classes\` + progID + `\shell\open\command`
+
+	// Try HKCU first, then HKLM
+	for _, rootKey := range []registry.Key{registry.CURRENT_USER, registry.LOCAL_MACHINE} {
+		k, err := registry.OpenKey(rootKey, cmdPath, registry.QUERY_VALUE)
+		if err != nil {
+			continue
+		}
+
+		command, _, err := k.GetStringValue("")
+		k.Close()
+
+		if err != nil || command == "" {
+			continue
+		}
+
+		// Extract the executable path from the command string
+		command = extractExePath(command)
+		if command != "" {
+			return command
+		}
+	}
+
+	return ""
+}
+
+// extractExePath extracts the executable path from a registry command string.
+// Handles formats like: "C:\path\to\browser.exe" -arg "%1"
+func extractExePath(command string) string {
+	if strings.HasPrefix(command, `"`) {
+		// Quoted path — find the closing quote
+		end := strings.Index(command[1:], `"`)
+		if end > 0 {
+			return command[1 : end+1]
+		}
+	}
+
+	// Unquoted — take everything up to the first space (if path has no spaces)
+	if idx := strings.Index(command, " "); idx > 0 {
+		return command[:idx]
+	}
+
+	return command
 }
 
 func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
