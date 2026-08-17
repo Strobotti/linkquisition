@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.7](https://github.com/Strobotti/linkquisition/compare/v3.1.6...v3.1.7) (2026-08-17)
+
+
+### Bug Fixes
+
+* correct Mesa download URL filename to include version ([#188](https://github.com/Strobotti/linkquisition/issues/188)) ([79b3010](https://github.com/Strobotti/linkquisition/commit/79b3010e01537b7b80fed6ca75f1e475738d326f))
+
 ## [3.1.6](https://github.com/Strobotti/linkquisition/compare/v3.1.5...v3.1.6) (2026-08-16)
 
 
