@@ -18,10 +18,13 @@ import (
 	"github.com/strobotti/linkquisition/internal/i18n"
 )
 
-func (c *Configurator) getPluginsTab() fyne.CanvasObject {
+func (c *Configurator) pluginTabItems() []*container.TabItem {
 	content := container.NewVBox()
 	c.rebuildPluginsList(content)
-	return container.NewVScroll(content)
+
+	return []*container.TabItem{
+		container.NewTabItem(i18n.T("config.tab_plugins"), container.NewVScroll(content)),
+	}
 }
 
 func (c *Configurator) rebuildPluginsList(content *fyne.Container) {

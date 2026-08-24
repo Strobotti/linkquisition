@@ -2,10 +2,9 @@
 
 package main
 
-import "fyne.io/fyne/v2"
+import "fyne.io/fyne/v2/container"
 
-// getPluginsTab returns nil on Windows — plugins are not supported.
-// The configurator will skip this tab when building the tab list.
-func (c *Configurator) getPluginsTab() fyne.CanvasObject {
+// pluginTabItems returns no tab items on Windows — plugins are not supported.
+func (c *Configurator) pluginTabItems() []*container.TabItem {
 	return nil
 }

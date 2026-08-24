@@ -64,8 +64,7 @@ func (c *Configurator) parentWindow() fyne.Window {
 	return windows[0]
 }
 
-//nolint:unparam
-func (c *Configurator) Run() error {
+func (c *Configurator) Run() {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))
 
 	tabItems := []*container.TabItem{
@@ -75,9 +74,8 @@ func (c *Configurator) Run() error {
 	}
 
 	// Plugins tab is only shown on platforms that support plugins
-	if pluginsContent := c.getPluginsTab(); pluginsContent != nil {
-		tabItems = append(tabItems, container.NewTabItem(i18n.T("config.tab_plugins"), pluginsContent))
-	}
+	// (pluginTabItems returns nil on Windows).
+	tabItems = append(tabItems, c.pluginTabItems()...)
 
 	tabItems = append(tabItems,
 		container.NewTabItem(i18n.T("config.tab_security"), c.getSecurityTab(w)),
@@ -99,8 +97,6 @@ func (c *Configurator) Run() error {
 	w.CenterOnScreen()
 
 	w.ShowAndRun()
-
-	return nil
 }
 
 func (c *Configurator) getGeneralTab() fyne.CanvasObject {
