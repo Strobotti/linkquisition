@@ -148,12 +148,12 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 		a.startURLWatcher(watchCtx)
 
 		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService, a.Logger)
-		err := configurator.Run()
+		configurator.Run()
 		watchCancel()
 
-		a.Logger.Debug("Configurator closed", "error", err)
+		a.Logger.Debug("Configurator closed")
 
-		return err
+		return nil
 	}
 
 	// Rotate the log file if it has grown too large. Deferred so it runs as one
