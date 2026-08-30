@@ -87,9 +87,6 @@ func (o *overlayStack) Remove(overlay fyne.CanvasObject) {
 	o.OverlayStack.Remove(overlay)
 	overlayCount := len(o.List())
 
-	for i := overlayCount; i < len(o.renderCaches); i++ {
-		o.renderCaches[i] = nil // release memory reference to removed element
-	}
-
+	clear(o.renderCaches[overlayCount:])
 	o.renderCaches = o.renderCaches[:overlayCount]
 }

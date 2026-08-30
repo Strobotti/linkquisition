@@ -2,6 +2,7 @@ package layout
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/internal"
 	"fyne.io/fyne/v2/theme"
 )
 
@@ -30,7 +31,7 @@ func (l paddedLayout) MinSize(objects []fyne.CanvasObject) (min fyne.Size) {
 			continue
 		}
 
-		min = min.Max(child.MinSize())
+		min = internal.MaxSizes(min, child.MinSize())
 	}
 	min = min.Add(fyne.NewSquareSize(2 * theme.Padding()))
 	return min

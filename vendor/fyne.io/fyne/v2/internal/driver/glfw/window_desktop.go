@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/internal"
 	"fyne.io/fyne/v2/internal/async"
 	"fyne.io/fyne/v2/internal/build"
 	"fyne.io/fyne/v2/internal/cache"
@@ -133,6 +134,12 @@ func (w *window) SetFullScreen(full bool) {
 
 func (w *window) RequestAlwaysOnTop() {
 	w.onTop = true
+
+	if w.view() != nil {
+		async.EnsureMain(func() {
+			w.view().SetAttrib(glfw.Floating, glfw.True)
+		})
+	}
 }
 
 func (w *window) RequestFullScreenSecondary() {
@@ -194,6 +201,9 @@ func (w *window) doCenterOnScreen() {
 	// get window dimensions in pixels
 	monitor := w.getMonitorForWindow()
 	monMode := monitor.GetVideoMode()
+	if monMode == nil { // monitor was disconnected
+		return
+	}
 
 	// these come into play when dealing with multiple monitors
 	monX, monY := monitor.GetPos()
@@ -294,13 +304,21 @@ func getMonitorScale(monitor *glfw.Monitor) float32 {
 	if runtime.GOOS == "linux" && widthMm == 60 && heightMm == 60 { // Steam Deck incorrectly reports 6cm square!
 		return 1.0
 	}
-	widthPx := monitor.GetVideoMode().Width
-	return calculateDetectedScale(widthMm, widthPx)
+
+	videoMode := monitor.GetVideoMode()
+	if videoMode == nil { // monitor was disconnected
+		return 1.0
+	}
+	return calculateDetectedScale(widthMm, videoMode.Width)
 }
 
 // getScaledMonitorSize returns the monitor dimensions adjusted for scaling
 func getScaledMonitorSize(monitor *glfw.Monitor) fyne.Size {
 	videoMode := monitor.GetVideoMode()
+	if videoMode == nil { // monitor was disconnected
+		return fyne.NewSize(0, 0)
+	}
+
 	scale := getMonitorScale(monitor)
 
 	scaledWidth := float32(videoMode.Width) / scale
@@ -653,8 +671,18 @@ func keyToName(code glfw.Key, scancode int) fyne.KeyName {
 		return ret
 	}
 
-	keyName := glfw.GetKeyName(code, scancode)
+	keyName := safeGetKeyName(code, scancode)
 	return keyCodeToKeyName(keyName)
+}
+
+func safeGetKeyName(key glfw.Key, scancode int) string {
+	defer func() {
+		if r := recover(); r != nil {
+			err, _ := r.(error)
+			fyne.LogError("Failed to get GLFW key name", err)
+		}
+	}()
+	return glfw.GetKeyName(key, scancode)
 }
 
 func convertAction(action glfw.Action) action {
@@ -762,7 +790,7 @@ func (w *window) RescaleContext() {
 		return
 	}
 
-	size := w.canvas.size.Max(w.canvas.MinSize())
+	size := internal.MaxSizes(w.canvas.size, w.canvas.MinSize())
 	newWidth, newHeight := w.screenSize(size)
 	w.viewport.SetSize(newWidth, newHeight)
 
@@ -774,10 +802,8 @@ func (w *window) RescaleContext() {
 }
 
 func (w *window) create() {
-	if !build.IsWayland {
-		// make the window hidden, we will set it up and then show it later
-		glfw.WindowHint(glfw.Visible, glfw.False)
-	}
+	// make the window hidden, we will set it up and then show it later
+	glfw.WindowHint(glfw.Visible, glfw.False)
 	if w.decorate {
 		glfw.WindowHint(glfw.Decorated, glfw.True)
 	} else {
@@ -795,6 +821,9 @@ func (w *window) create() {
 	}
 	glfw.WindowHint(glfw.AutoIconify, glfw.False)
 	initWindowHints()
+	if build.IsWayland {
+		glfw.WindowHintString(glfw.WaylandAppID, fyne.CurrentApp().UniqueID())
+	}
 
 	pixWidth, pixHeight := w.screenSize(w.canvas.size)
 	pixWidth = int(fyne.Max(float32(pixWidth), float32(w.width)))
@@ -821,10 +850,12 @@ func (w *window) create() {
 	// default new windows onto the same monitor as a visible sibling when no position was set.
 	if runtime.GOOS == "darwin" && !build.IsWayland && w.xpos == 0 && w.ypos == 0 {
 		if monitor := w.findSiblingMonitor(); monitor != nil {
-			monX, monY := monitor.GetPos()
 			monMode := monitor.GetVideoMode()
-			w.xpos = monX + (monMode.Width-pixWidth)/2
-			w.ypos = monY + (monMode.Height-pixHeight)/2
+			if monMode != nil { // monitor was disconnected
+				monX, monY := monitor.GetPos()
+				w.xpos = monX + (monMode.Width-pixWidth)/2
+				w.ypos = monY + (monMode.Height-pixHeight)/2
+			}
 		}
 	}
 
