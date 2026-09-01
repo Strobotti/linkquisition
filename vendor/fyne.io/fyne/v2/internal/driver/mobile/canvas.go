@@ -4,6 +4,7 @@ import (
 	"context"
 	"image"
 	"math"
+	"slices"
 	"sync"
 	"time"
 
@@ -419,8 +420,9 @@ func (c *canvas) tapUp(pos fyne.Position, tapID int,
 			prevOverlay := c.Overlays().Top()
 			tapAltCallback(wid, ev)
 
-			// if the secondary tap dismissed an overlay, forward the event to the widget underneath
-			if prevOverlay != nil && c.Overlays().Top() != prevOverlay {
+			// if the secondary tap dismissed an overlay (rather than opening a new
+			// one on top), forward the event to the widget underneath
+			if prevOverlay != nil && !slices.Contains(c.Overlays().List(), prevOverlay) {
 				co2, objPos2, _ := c.findObjectAtPositionMatching(pos, func(object fyne.CanvasObject) bool {
 					_, ok := object.(fyne.SecondaryTappable)
 					return ok

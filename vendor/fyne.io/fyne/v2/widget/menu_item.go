@@ -298,6 +298,7 @@ func (r *menuItemRenderer) updateVisuals() {
 		r.background.Hide()
 	}
 	r.background.Refresh()
+	r.text.Text = r.i.Item.Label
 	r.text.Alignment = r.i.alignment
 	r.refreshText(r.text, false)
 	for _, text := range r.shortcutTexts {

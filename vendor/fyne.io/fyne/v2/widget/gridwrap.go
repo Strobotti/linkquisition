@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/internal"
 	"fyne.io/fyne/v2/internal/async"
 	"fyne.io/fyne/v2/internal/widget"
 	"fyne.io/fyne/v2/theme"
@@ -427,7 +428,7 @@ func (l *gridWrapRenderer) Layout(size fyne.Size) {
 }
 
 func (l *gridWrapRenderer) MinSize() fyne.Size {
-	return l.scroller.MinSize().Max(l.list.itemMin)
+	return internal.MaxSizes(l.scroller.MinSize(), l.list.itemMin)
 }
 
 func (l *gridWrapRenderer) Refresh() {
@@ -688,7 +689,7 @@ func (l *gridWrapLayout) updateGrid(newOnly bool) {
 	maxItem := GridWrapItemID(math.Min(float64(maxRow*colCount), float64(length-1)))
 
 	if l.gw.UpdateItem == nil {
-		fyne.LogError("Missing UpdateCell callback required for GridWrap", nil)
+		fyne.LogError("Missing UpdateItem callback required for GridWrap", nil)
 	}
 
 	// l.wasVisible now represents the currently visible items, while
@@ -745,9 +746,7 @@ func (l *gridWrapLayout) updateGrid(newOnly bool) {
 
 	// we don't need wasVisible now until next call to update
 	// nil out all references before truncating slice
-	for i := 0; i < len(l.wasVisible); i++ {
-		l.wasVisible[i].item = nil
-	}
+	clear(l.wasVisible)
 	l.wasVisible = l.wasVisible[:0]
 }
 
@@ -765,7 +764,7 @@ func (l *gridWrapLayout) nilOldSliceData(objs []fyne.CanvasObject, len, oldLen i
 	if oldLen > len {
 		objs = objs[:oldLen] // gain view into old data
 		for i := len; i < oldLen; i++ {
-			objs[i] = nil
+			clear(objs[len:])
 		}
 	}
 }

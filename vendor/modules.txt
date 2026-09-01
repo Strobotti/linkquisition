@@ -1,4 +1,4 @@
-# fyne.io/fyne/v2 v2.8.0
+# fyne.io/fyne/v2 v2.8.1
 ## explicit; go 1.22.0
 fyne.io/fyne/v2
 fyne.io/fyne/v2/app
@@ -51,7 +51,7 @@ fyne.io/fyne/v2/storage/repository
 fyne.io/fyne/v2/test
 fyne.io/fyne/v2/theme
 fyne.io/fyne/v2/widget
-# fyne.io/systray v1.12.2
+# fyne.io/systray v1.12.3-0.20260810170012-af4e8e793ec4
 ## explicit; go 1.19
 fyne.io/systray
 fyne.io/systray/internal/generated/menu
@@ -74,9 +74,6 @@ github.com/anthonynsimon/bild/parallel
 # github.com/clipperhouse/uax29/v2 v2.7.0
 ## explicit; go 1.18
 github.com/clipperhouse/uax29/v2/graphemes
-# github.com/fredbi/uri v1.1.1
-## explicit; go 1.19
-github.com/fredbi/uri
 # github.com/fsnotify/fsnotify v1.10.1
 ## explicit; go 1.23
 github.com/fsnotify/fsnotify
@@ -106,6 +103,7 @@ github.com/go-gl/glfw/v3.4/glfw/glfw/deps
 github.com/go-gl/glfw/v3.4/glfw/glfw/deps/glad
 github.com/go-gl/glfw/v3.4/glfw/glfw/deps/mingw
 github.com/go-gl/glfw/v3.4/glfw/glfw/deps/wayland
+github.com/go-gl/glfw/v3.4/glfw/glfw/include
 github.com/go-gl/glfw/v3.4/glfw/glfw/include/GLFW
 github.com/go-gl/glfw/v3.4/glfw/glfw/src
 # github.com/go-text/render v0.2.1

@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/internal"
 	"fyne.io/fyne/v2/internal/async"
 	"fyne.io/fyne/v2/internal/cache"
 	"fyne.io/fyne/v2/internal/widget"
@@ -307,11 +308,13 @@ func (t *Tree) ScrollTo(uid TreeNodeID) {
 		return
 	}
 
-	t.openBranches(uid)
-
 	y, size, ok := t.offsetAndSize(uid)
 	if !ok {
-		return
+		t.openBranches(uid)
+
+		if y, size, ok = t.offsetAndSize(uid); !ok {
+			return
+		}
 	}
 
 	newY := t.scroller.Offset.Y
@@ -581,11 +584,11 @@ type treeRenderer struct {
 	scroller *widget.Scroll
 }
 
-func (r *treeRenderer) MinSize() (min fyne.Size) {
-	min = r.scroller.MinSize()
-	min = min.Max(r.tree.branchMinSize)
-	min = min.Max(r.tree.leafMinSize)
-	return min
+func (r *treeRenderer) MinSize() fyne.Size {
+	minSize := r.scroller.MinSize()
+	minSize = internal.MaxSizes(minSize, r.tree.branchMinSize)
+	minSize = internal.MaxSizes(minSize, r.tree.leafMinSize)
+	return minSize
 }
 
 func (r *treeRenderer) Layout(size fyne.Size) {
@@ -856,7 +859,7 @@ func (r *treeContentRenderer) Refresh() {
 func (r *treeContentRenderer) refreshForID(toDraw TreeNodeID) {
 	s := r.treeContent.Size()
 	if s.IsZero() {
-		r.treeContent.Resize(r.treeContent.MinSize().Max(r.treeContent.tree.Size()))
+		r.treeContent.Resize(internal.MaxSizes(r.treeContent.MinSize(), r.treeContent.tree.Size()))
 	} else {
 		r.Layout(s)
 	}
