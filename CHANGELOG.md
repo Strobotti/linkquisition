@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.8](https://github.com/Strobotti/linkquisition/compare/v3.1.7...v3.1.8) (2026-09-01)
+
+
+### Bug Fixes
+
+* **windows:** set shortcut working directory and improve browser discovery ([#190](https://github.com/Strobotti/linkquisition/issues/190)) ([6caee1a](https://github.com/Strobotti/linkquisition/commit/6caee1a2060af92021ab477856255026e98c1440))
+
 ## [3.1.7](https://github.com/Strobotti/linkquisition/compare/v3.1.6...v3.1.7) (2026-08-17)
 
 
