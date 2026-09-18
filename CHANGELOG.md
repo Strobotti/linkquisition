@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.9](https://github.com/Strobotti/linkquisition/compare/v3.1.8...v3.1.9) (2026-09-18)
+
+
+### Bug Fixes
+
+* use app.New() to disable Fyne preferences storage ([#198](https://github.com/Strobotti/linkquisition/issues/198)) ([52070a2](https://github.com/Strobotti/linkquisition/commit/52070a250de0173d615044ff927c02709ecfde38)), closes [#194](https://github.com/Strobotti/linkquisition/issues/194)
+
 ## [3.1.8](https://github.com/Strobotti/linkquisition/compare/v3.1.7...v3.1.8) (2026-09-01)
 
 
