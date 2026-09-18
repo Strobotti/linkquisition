@@ -33,7 +33,7 @@ func NewApplication() *Application {
 		Migrations: map[string]bool{"fyneDo": true},
 	})
 
-	fapp := app.NewWithID("com.strobotti.linkquisition")
+	fapp := app.New()
 	browserService, settingsService := newPlatformServices()
 
 	applyTheme(fapp, settingsService)
