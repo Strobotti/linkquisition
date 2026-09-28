@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.10](https://github.com/Strobotti/linkquisition/compare/v3.1.9...v3.1.10) (2026-09-28)
+
+
+### Bug Fixes
+
+* use Ubuntu 22.04 for AppImage builds to fix glibc compatibility ([#200](https://github.com/Strobotti/linkquisition/issues/200)) ([86ac066](https://github.com/Strobotti/linkquisition/commit/86ac0662c4842d0960849c97f39f4a9b189e7b11))
+
 ## [3.1.9](https://github.com/Strobotti/linkquisition/compare/v3.1.8...v3.1.9) (2026-09-18)
 
 
