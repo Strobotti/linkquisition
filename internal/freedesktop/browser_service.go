@@ -101,7 +101,7 @@ func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to open URL `%s` with default browser: %v", url, err)
+		return fmt.Errorf("failed to open URL %#q with default browser: %v", url, err)
 	}
 
 	return nil
@@ -118,7 +118,7 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 	cmd := exec.Command("sh", "-c", command)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to open URL `%s` with browser `%s`: %v", u, browser.Name, err)
+		return fmt.Errorf("failed to open URL %#q with browser %#q: %v", u, browser.Name, err)
 	}
 
 	return nil

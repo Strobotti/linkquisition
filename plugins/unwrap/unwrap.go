@@ -94,7 +94,7 @@ func (p *unwrap) ProcessURL(_ context.Context, u string) linkquisition.PluginRes
 			if parsed.Query().Has(rule.Parameter) {
 				newURL := parsed.Query().Get(rule.Parameter)
 				p.serviceProvider.GetLogger().Debug(
-					fmt.Sprintf("url modified `%s` => `%s`", u, newURL), "plugin", "unwrap",
+					fmt.Sprintf("url modified %#q => %#q", u, newURL), "plugin", "unwrap",
 				)
 
 				if !p.settings.RequireBrowserMatchToUnwrap {
@@ -103,7 +103,7 @@ func (p *unwrap) ProcessURL(_ context.Context, u string) linkquisition.PluginRes
 				} else if browser, err := p.serviceProvider.GetSettings().GetMatchingBrowser(newURL); err == nil && browser != nil {
 					p.serviceProvider.GetLogger().Debug(
 						fmt.Sprintf(
-							"found a matching browser-rule for browser `%s` with URL `%s`",
+							"found a matching browser-rule for browser %#q with URL %#q",
 							browser.Name,
 							newURL,
 						), "plugin", "unwrap",
