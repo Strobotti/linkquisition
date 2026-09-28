@@ -204,7 +204,7 @@ func (p *sanitize) ProcessURL(_ context.Context, address string) linkquisition.P
 
 	newURL := parsed.String()
 	p.serviceProvider.GetLogger().Debug(
-		fmt.Sprintf("url sanitized `%s` => `%s`", address, newURL), "plugin", "sanitize",
+		fmt.Sprintf("url sanitized %#q => %#q", address, newURL), "plugin", "sanitize",
 	)
 
 	return linkquisition.PluginResult{URL: newURL, Action: linkquisition.ActionContinue, ContinueChain: true}

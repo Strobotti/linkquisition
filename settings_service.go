@@ -49,12 +49,12 @@ func (s *FileSettingsService) GetPluginFolderPath() string {
 func (s *FileSettingsService) ReadSettings() (*Settings, error) {
 	data, err := os.ReadFile(s.GetConfigFilePath())
 	if err != nil {
-		return nil, fmt.Errorf("unable to open config-file `%s` for reading: %v", s.GetConfigFilePath(), err)
+		return nil, fmt.Errorf("unable to open config-file %#q for reading: %v", s.GetConfigFilePath(), err)
 	}
 
 	var settings = &Settings{}
 	if err := json.Unmarshal(data, settings); err != nil {
-		return nil, fmt.Errorf("unable to parse the config-file `%s`: %v", s.GetConfigFilePath(), err)
+		return nil, fmt.Errorf("unable to parse the config-file %#q: %v", s.GetConfigFilePath(), err)
 	}
 
 	settings.CompileAllRegexMatches()

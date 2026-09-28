@@ -160,7 +160,7 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 	// of the last things before the process exits in the URL-opening path.
 	defer rotateLogFile(a.SettingsService)
 
-	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with input: `%s`", urlToOpen))
+	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with input: %#q", urlToOpen))
 
 	ctx, cancel := context.WithTimeout(context.Background(), pluginProcessTimeout)
 	defer cancel()
@@ -258,7 +258,7 @@ func (a *Application) openWithBrowserOrPicker(urlToOpen string) error {
 
 	if isConfigured {
 		if browser, matchErr := a.SettingsService.GetSettings().GetMatchingBrowser(urlToOpen); matchErr == nil {
-			a.Logger.Debug(fmt.Sprintf("found a matching browser-rule for browser `%s` with URL `%s`", browser.Name, urlToOpen))
+			a.Logger.Debug(fmt.Sprintf("found a matching browser-rule for browser %#q with URL %#q", browser.Name, urlToOpen))
 			if a.BrowserService.OpenUrlWithBrowser(urlToOpen, browser) == nil {
 				return nil
 			}

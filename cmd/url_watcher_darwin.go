@@ -32,7 +32,7 @@ func (a *Application) startURLWatcher(ctx context.Context) {
 // handleIncomingURL processes a URL received while the app is already running.
 // It runs plugin processing and either opens directly or spawns the browser picker.
 func (a *Application) handleIncomingURL(urlToOpen string) {
-	a.Logger.Debug(fmt.Sprintf("Received URL via Apple Event while configurator is open: `%s`", urlToOpen))
+	a.Logger.Debug(fmt.Sprintf("Received URL via Apple Event while configurator is open: %#q", urlToOpen))
 
 	pluginCtx, cancel := context.WithTimeout(context.Background(), pluginProcessTimeout)
 	defer cancel()

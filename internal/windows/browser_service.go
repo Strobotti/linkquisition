@@ -300,7 +300,7 @@ func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to open URL `%s` with default browser: %v", url, err)
+		return fmt.Errorf("failed to open URL %#q with default browser: %v", url, err)
 	}
 	return nil
 }
@@ -325,7 +325,7 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 	cmd := exec.Command(command, url)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to open URL `%s` with browser `%s`: %v", url, browser.Name, err)
+		return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)
 	}
 	return nil
 }
