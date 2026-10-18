@@ -20,7 +20,10 @@ import (
 	"fyne.io/fyne/v2/theme"
 )
 
-const passwordChar = "•"
+const (
+	ellipsisChar = "…"
+	passwordChar = "•"
+)
 
 var _ fyne.Widget = (*RichText)(nil)
 
@@ -342,6 +345,30 @@ func (t *RichText) lineSizeToColumn(col, row int, textSize, innerPad float32) fy
 	return total.Add(fyne.NewSize(innerPad-t.inset.Width, 0))
 }
 
+// rowAlignOffset returns the horizontal offset of the text in the specified row
+// caused by it being center or trailing aligned within the widget width.
+func (t *RichText) rowAlignOffset(row int, textSize, innerPad float32) float32 {
+	bound := t.rowBoundary(row)
+	if bound == nil {
+		return 0
+	}
+	_, align := rowPaddingAndAlign(*bound, 0, fyne.TextAlignLeading)
+	if align == fyne.TextAlignLeading {
+		return 0
+	}
+
+	xInset := innerPad - t.inset.Width
+	lineWidth := t.Size().Width - xInset*2
+	textWidth := t.lineSizeToColumn(t.rowLength(row), row, textSize, innerPad).Width - xInset
+	if text, ok := bound.segments[len(bound.segments)-1].(*TextSegment); ok && bound.ellipsis {
+		textWidth += fyne.MeasureText(ellipsisChar, text.size(), text.Style.TextStyle).Width
+	}
+	if align == fyne.TextAlignCenter {
+		return (lineWidth - textWidth) / 2
+	}
+	return lineWidth - textWidth
+}
+
 // Row returns the characters in the row specified.
 // The row parameter should be between 0 and t.Rows()-1.
 func (t *RichText) row(row int) []rune {
@@ -659,7 +686,7 @@ func (r *textRenderer) MinSize() fyne.Size {
 			return minBounds
 		}
 		if trunc == fyne.TextTruncateEllipsis {
-			ellipsisSize := fyne.MeasureText("…", th.Size(theme.SizeNameText), fyne.TextStyle{})
+			ellipsisSize := fyne.MeasureText(ellipsisChar, th.Size(theme.SizeNameText), fyne.TextStyle{})
 			return minBounds.AddWidthHeight(ellipsisSize.Width, 0)
 		}
 	}
@@ -771,7 +798,7 @@ func (r *textRenderer) Refresh() {
 				txt = string(runes)
 			}
 			if bound.ellipsis && i == len(bound.segments)-1 {
-				txt = txt + "…"
+				txt = txt + ellipsisChar
 			}
 
 			if concealed(seg) {
@@ -792,12 +819,16 @@ func (r *textRenderer) Refresh() {
 	}
 
 	if r.obj.scr != nil {
-		if isEmptyScroll(r.obj.scr) {
-			r.obj.scr.Content = &fyne.Container{Layout: layout.NewStackLayout(), Objects: []fyne.CanvasObject{
-				r.obj.prop, &fyne.Container{Objects: objs},
-			}}
-			r.obj.scr.Direction = scroll
-			r.SetObjects([]fyne.CanvasObject{r.obj.scr})
+		if inner := scrollInnerContainer(r.obj.scr); inner != nil {
+			if inner.Objects == nil {
+				r.obj.scr.Content = &fyne.Container{Layout: layout.NewStackLayout(), Objects: []fyne.CanvasObject{
+					r.obj.prop, &fyne.Container{Objects: objs},
+				}}
+				r.obj.scr.Direction = scroll
+				r.SetObjects([]fyne.CanvasObject{r.obj.scr})
+			} else {
+				inner.Objects = objs
+			}
 		}
 		r.obj.scr.Refresh()
 	} else {
@@ -933,15 +964,17 @@ func (r *textRenderer) layoutRow(texts []fyne.CanvasObject, align fyne.TextAlign
 	return xPos - initialX, height
 }
 
-func isEmptyScroll(o *widget.Scroll) bool {
+// scrollInnerContainer returns the container holding the visual objects of a RichText
+// scroll content, or nil if the scroll structure is not the expected one.
+func scrollInnerContainer(o *widget.Scroll) *fyne.Container {
 	if c, ok := o.Content.(*fyne.Container); ok {
 		if len(c.Objects) == 2 {
 			if inner, ok := c.Objects[1].(*fyne.Container); ok {
-				return inner.Objects == nil
+				return inner
 			}
 		}
 	}
-	return false
+	return nil
 }
 
 // howManyRunesFit accepts a rune slice, an available width, an average
@@ -993,7 +1026,7 @@ func ellipsisPriorBound(bounds []rowBoundary, trunc fyne.TextTruncation, width f
 
 	prior := bounds[len(bounds)-1]
 	seg := prior.segments[0].(*TextSegment)
-	ellipsisSize := fyne.MeasureText("…", seg.size(), seg.Style.TextStyle)
+	ellipsisSize := fyne.MeasureText(ellipsisChar, seg.size(), seg.Style.TextStyle)
 
 	fitCount := howManyRunesFit([]rune(seg.Text)[prior.begin:prior.end], width-ellipsisSize.Width, charWidth, measurer)
 	prior.end = prior.begin + fitCount

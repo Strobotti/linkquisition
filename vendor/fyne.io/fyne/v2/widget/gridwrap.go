@@ -763,8 +763,6 @@ func (l *gridWrapLayout) searchVisible(visible []gridItemAndID, id GridWrapItemI
 func (l *gridWrapLayout) nilOldSliceData(objs []fyne.CanvasObject, len, oldLen int) {
 	if oldLen > len {
 		objs = objs[:oldLen] // gain view into old data
-		for i := len; i < oldLen; i++ {
-			clear(objs[len:])
-		}
+		clear(objs[len:])
 	}
 }
