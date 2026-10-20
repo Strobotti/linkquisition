@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/internal/ui"
