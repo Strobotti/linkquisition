@@ -169,12 +169,12 @@ func drawLine(c *IconCursor, attrs []xml.Attr) error {
 		}
 	}
 	c.Path.Start(fixed.Point26_6{
-		X: fixed.Int26_6((x1) * 64),
-		Y: fixed.Int26_6((y1) * 64),
+		X: fixed.Int26_6(x1 * 64),
+		Y: fixed.Int26_6(y1 * 64),
 	})
 	c.Path.Line(fixed.Point26_6{
-		X: fixed.Int26_6((x2) * 64),
-		Y: fixed.Int26_6((y2) * 64),
+		X: fixed.Int26_6(x2 * 64),
+		Y: fixed.Int26_6(y2 * 64),
 	})
 	return nil
 }
@@ -195,13 +195,13 @@ func drawPolyline(c *IconCursor, attrs []xml.Attr) error {
 	}
 	if len(c.points) > 4 {
 		c.Path.Start(fixed.Point26_6{
-			X: fixed.Int26_6((c.points[0]) * 64),
-			Y: fixed.Int26_6((c.points[1]) * 64),
+			X: fixed.Int26_6(c.points[0] * 64),
+			Y: fixed.Int26_6(c.points[1] * 64),
 		})
 		for i := 2; i < len(c.points)-1; i += 2 {
 			c.Path.Line(fixed.Point26_6{
-				X: fixed.Int26_6((c.points[i]) * 64),
-				Y: fixed.Int26_6((c.points[i+1]) * 64),
+				X: fixed.Int26_6(c.points[i] * 64),
+				Y: fixed.Int26_6(c.points[i+1] * 64),
 			})
 		}
 	}

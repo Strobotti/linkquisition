@@ -1,4 +1,4 @@
-# fyne.io/fyne/v2 v2.8.1
+# fyne.io/fyne/v2 v2.8.2
 ## explicit; go 1.22.0
 fyne.io/fyne/v2
 fyne.io/fyne/v2/app
@@ -65,8 +65,8 @@ github.com/BurntSushi/toml/internal
 github.com/FyshOS/fancyfs
 # github.com/alessio/shellescape v1.4.2
 ## explicit; go 1.14
-# github.com/anthonynsimon/bild v0.14.0
-## explicit; go 1.21
+# github.com/anthonynsimon/bild v0.17.1
+## explicit; go 1.25.0
 github.com/anthonynsimon/bild/blur
 github.com/anthonynsimon/bild/clone
 github.com/anthonynsimon/bild/convolution
@@ -87,7 +87,7 @@ github.com/fyne-io/glfw-js
 # github.com/fyne-io/image v0.1.1
 ## explicit; go 1.19
 github.com/fyne-io/image/ico
-# github.com/fyne-io/oksvg v0.2.0
+# github.com/fyne-io/oksvg v0.2.1-0.20260918172519-a9af55fa95d9
 ## explicit; go 1.19
 github.com/fyne-io/oksvg
 # github.com/go-gl/gl v0.0.0-20260331235117-4566fea9a276
@@ -96,7 +96,7 @@ github.com/go-gl/gl/v2.1/gl
 github.com/go-gl/gl/v2.1/gl/KHR
 github.com/go-gl/gl/v3.1/gles2
 github.com/go-gl/gl/v3.1/gles2/KHR
-# github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.1.0.20260707082822-2a407d02d01a
+# github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.2
 ## explicit; go 1.19
 github.com/go-gl/glfw/v3.4/glfw
 github.com/go-gl/glfw/v3.4/glfw/glfw/deps
@@ -109,8 +109,9 @@ github.com/go-gl/glfw/v3.4/glfw/glfw/src
 # github.com/go-text/render v0.2.1
 ## explicit; go 1.19
 github.com/go-text/render
-# github.com/go-text/typesetting v0.3.4
+# github.com/go-text/typesetting v0.3.5
 ## explicit; go 1.19
+github.com/go-text/typesetting/bidi
 github.com/go-text/typesetting/di
 github.com/go-text/typesetting/font
 github.com/go-text/typesetting/font/cff
@@ -123,7 +124,7 @@ github.com/go-text/typesetting/internal/unicodedata
 github.com/go-text/typesetting/language
 github.com/go-text/typesetting/segmenter
 github.com/go-text/typesetting/shaping
-# github.com/godbus/dbus/v5 v5.2.2
+# github.com/godbus/dbus/v5 v5.2.4
 ## explicit; go 1.20
 github.com/godbus/dbus/v5
 github.com/godbus/dbus/v5/introspect
@@ -160,8 +161,8 @@ github.com/likexian/whois
 # github.com/likexian/whois-parser v1.24.21
 ## explicit; go 1.24.0
 github.com/likexian/whois-parser
-# github.com/mattn/go-runewidth v0.0.24
-## explicit; go 1.20
+# github.com/mattn/go-runewidth v0.0.31
+## explicit; go 1.23
 github.com/mattn/go-runewidth
 # github.com/mitchellh/mapstructure v1.5.0
 ## explicit; go 1.14
@@ -210,7 +211,7 @@ github.com/stretchr/testify/assert/yaml
 github.com/stretchr/testify/internal/difflib
 github.com/stretchr/testify/internal/spew
 github.com/stretchr/testify/require
-# github.com/yuin/goldmark v1.8.2
+# github.com/yuin/goldmark v1.8.6
 ## explicit; go 1.22
 github.com/yuin/goldmark
 github.com/yuin/goldmark/ast
@@ -224,8 +225,8 @@ github.com/yuin/goldmark/util
 # go.yaml.in/yaml/v3 v3.0.5
 ## explicit; go 1.16
 go.yaml.in/yaml/v3
-# golang.org/x/image v0.44.0
-## explicit; go 1.25.0
+# golang.org/x/image v0.47.0
+## explicit; go 1.26.0
 golang.org/x/image/ccitt
 golang.org/x/image/colornames
 golang.org/x/image/draw
@@ -235,7 +236,7 @@ golang.org/x/image/math/fixed
 golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw
 golang.org/x/image/vector
-# golang.org/x/net v0.59.0
+# golang.org/x/net v0.61.0
 ## explicit; go 1.26.0
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -244,12 +245,13 @@ golang.org/x/net/idna
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.48.0
+# golang.org/x/sys v0.49.0
 ## explicit; go 1.26.0
+golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
-# golang.org/x/text v0.42.0
+# golang.org/x/text v0.43.0
 ## explicit; go 1.26.0
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Generates Wayland protocol headers for GLFW v3.4.
-# Requires: wayland-scanner (from libwayland-dev on Debian/Ubuntu)
+# Requires: wayland-scanner (from libwayland-bin on Debian/Ubuntu)
 #
 # These generated files are committed to the vendor tree so that builds
 # work without wayland-scanner being installed at build time.
