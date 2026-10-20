@@ -35,6 +35,7 @@ const (
 	verticalWindowWidth      = 600
 	verticalWindowMinHeight  = 50
 	faviconDisplaySize       = 16
+	faviconFetchTimeout      = 5 * time.Second
 	safetyCheckTimeout       = 10 * time.Second
 	rememberIndentMultiplier = 4
 )
@@ -666,7 +667,7 @@ func (picker *BrowserPicker) fetchAndUpdateFavicon(
 
 	fetcher := favicon.NewFetcher(strategy, cacheDir)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) //nolint:mnd
+	ctx, cancel := context.WithTimeout(context.Background(), faviconFetchTimeout)
 	defer cancel()
 
 	data, err := fetcher.Fetch(ctx, urlToOpen)
@@ -688,8 +689,19 @@ func (picker *BrowserPicker) buildRememberCheck(
 	rememberMatchType binding.String,
 ) []fyne.CanvasObject {
 	uto := linkquisition.NewURL(urlToOpen)
-	site, _ := uto.GetSite()
-	domain, _ := uto.GetDomain()
+	site, siteErr := uto.GetSite()
+	domain, domainErr := uto.GetDomain()
+	if siteErr != nil || domainErr != nil || site == "" || domain == "" {
+		picker.logger.Warn(
+			"Unable to determine URL match value for remember choice",
+			"url", urlToOpen,
+			"site_error", siteErr,
+			"domain_error", domainErr,
+		)
+		check := widget.NewCheckWithData(i18n.T("picker.remember_choice"), remember)
+		check.Disable()
+		return []fyne.CanvasObject{check}
+	}
 
 	// If site == domain (no subdomain), just show the simple checkbox
 	if site == domain {
@@ -826,21 +838,33 @@ func (picker *BrowserPicker) browserOpenCallback(
 
 		if rem {
 			uto := linkquisition.NewURL(urlToOpen)
-			matchValue, _ := uto.GetDomain()
+			matchValue, matchErr := uto.GetDomain()
 
-			if remType == linkquisition.BrowserMatchTypeSite {
-				matchValue, _ = uto.GetSite()
+			if matchErr == nil && remType == linkquisition.BrowserMatchTypeSite {
+				matchValue, matchErr = uto.GetSite()
 			}
 
-			settings.AddRuleToBrowser(&browser, remType, matchValue)
-			if writeErr := picker.settingsService.WriteSettings(settings); writeErr != nil {
-				picker.logger.Error("Failed to write settings", "error", writeErr)
+			if matchErr != nil || matchValue == "" {
+				picker.logger.Error(
+					"Unable to save browser rule for URL",
+					"url", urlToOpen,
+					"match_type", remType,
+					"error", matchErr,
+				)
+			} else {
+				settings.AddRuleToBrowser(&browser, remType, matchValue)
+				if writeErr := picker.settingsService.WriteSettings(settings); writeErr != nil {
+					picker.logger.Error("Failed to write settings", "error", writeErr)
+				}
 			}
 		}
 
 		go func() {
-			_ = picker.browserService.OpenUrlWithBrowser(urlToOpen, &browser)
+			if err := picker.browserService.OpenUrlWithBrowser(urlToOpen, &browser); err != nil {
+				picker.logger.Error("Failed to open URL in browser", "url", urlToOpen, "browser", browser.Name, "error", err)
+			}
+
+			fyne.Do(picker.fapp.Quit)
 		}()
-		picker.fapp.Quit()
 	}
 }

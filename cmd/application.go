@@ -87,21 +87,32 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 
 // rotateLogFile checks the log file size and rotates it if it exceeds the threshold.
 // Keeps at most one backup (linkquisition.log.1).
-func rotateLogFile(settingsService linkquisition.SettingsService) {
+func rotateLogFile(settingsService linkquisition.SettingsService) error {
 	logPath := settingsService.GetLogFilePath()
 
 	info, err := os.Stat(logPath)
 	if err != nil {
-		return // file doesn't exist yet, nothing to rotate
+		if os.IsNotExist(err) {
+			return nil // file doesn't exist yet, nothing to rotate
+		}
+
+		return fmt.Errorf("stat log file: %w", err)
 	}
 
 	if info.Size() < maxLogFileSize {
-		return
+		return nil
 	}
 
 	backupPath := logPath + ".1"
-	_ = os.Remove(backupPath)
-	_ = os.Rename(logPath, backupPath)
+	if err := os.Remove(backupPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("remove old log backup: %w", err)
+	}
+
+	if err := os.Rename(logPath, backupPath); err != nil {
+		return fmt.Errorf("rotate log file: %w", err)
+	}
+
+	return nil
 }
 
 // processPlugins runs the URL through all plugins and returns the final URL and action.
@@ -158,7 +169,11 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 
 	// Rotate the log file if it has grown too large. Deferred so it runs as one
 	// of the last things before the process exits in the URL-opening path.
-	defer rotateLogFile(a.SettingsService)
+	defer func() {
+		if err := rotateLogFile(a.SettingsService); err != nil {
+			a.Logger.Warn("Failed to rotate log file", "error", err)
+		}
+	}()
 
 	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with input: %#q", urlToOpen))
 
@@ -212,7 +227,9 @@ func (a *Application) showWarnDialog(urlToOpen, message string) {
 	cancelBtn.Importance = widget.HighImportance
 
 	proceedBtn := widget.NewButton(i18n.T("plugin.warn_proceed"), func() {
-		_ = a.openInFirstBrowser(urlToOpen)
+		if err := a.openInFirstBrowser(urlToOpen); err != nil {
+			a.Logger.Error("Failed to open URL in browser", "url", urlToOpen, "error", err)
+		}
 		a.Fapp.Quit()
 	})
 	proceedBtn.Importance = widget.DangerImportance
