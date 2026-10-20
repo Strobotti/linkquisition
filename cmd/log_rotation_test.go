@@ -35,8 +35,10 @@ func newTestSettingsService(t *testing.T) *linkquisition.FileSettingsService {
 func TestRotateLogFile_NoFile(t *testing.T) {
 	svc := newTestSettingsService(t)
 
-	// Should not panic when the log file does not exist
-	rotateLogFile(svc)
+	// A missing log file is not an error.
+	if err := rotateLogFile(svc); err != nil {
+		t.Fatalf("expected no error for missing log file, got: %v", err)
+	}
 }
 
 func TestRotateLogFile_SmallFile(t *testing.T) {
@@ -48,7 +50,9 @@ func TestRotateLogFile_SmallFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rotateLogFile(svc)
+	if err := rotateLogFile(svc); err != nil {
+		t.Fatalf("rotateLogFile() failed: %v", err)
+	}
 
 	// Original file should still exist (not rotated)
 	if _, err := os.Stat(logPath); err != nil {
@@ -75,7 +79,9 @@ func TestRotateLogFile_LargeFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rotateLogFile(svc)
+	if err := rotateLogFile(svc); err != nil {
+		t.Fatalf("rotateLogFile() failed: %v", err)
+	}
 
 	// Original file should have been renamed to .1
 	backupPath := logPath + ".1"
@@ -109,7 +115,9 @@ func TestRotateLogFile_OverwritesOldBackup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rotateLogFile(svc)
+	if err := rotateLogFile(svc); err != nil {
+		t.Fatalf("rotateLogFile() failed: %v", err)
+	}
 
 	// Backup should now be the new large file, not the old content
 	info, err := os.Stat(backupPath)
