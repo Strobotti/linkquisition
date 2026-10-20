@@ -15,6 +15,19 @@ import (
 	"github.com/strobotti/linkquisition"
 )
 
+func TestGetExecutableNameFromApp(t *testing.T) {
+	appPath := filepath.Join(t.TempDir(), "Example.app")
+	require.NoError(t, os.MkdirAll(filepath.Join(appPath, "Contents"), 0700))
+	writePlist(t, filepath.Join(appPath, "Contents", "Info.plist"), map[string]interface{}{
+		"CFBundleExecutable": "ExampleBrowser",
+	})
+
+	name, err := getExecutableNameFromApp(appPath)
+
+	require.NoError(t, err)
+	assert.Equal(t, "ExampleBrowser", name)
+}
+
 func TestParseBrowserPlist_HTTPHandler(t *testing.T) {
 	dir := t.TempDir()
 	plistPath := filepath.Join(dir, "Info.plist")
@@ -277,10 +290,11 @@ func TestGetAvailableBrowsers_NoDuplicates(t *testing.T) {
 
 	seen := make(map[string]bool)
 	for _, b := range browsers {
-		if seen[b.Command] {
-			t.Errorf("duplicate browser bundle ID found: %s (%s)", b.Command, b.Name)
+		key := b.Command + "\x00" + b.ProfilePath
+		if seen[key] {
+			t.Errorf("duplicate browser target found: %s (%s)", b.Command, b.Name)
 		}
-		seen[b.Command] = true
+		seen[key] = true
 	}
 }
 

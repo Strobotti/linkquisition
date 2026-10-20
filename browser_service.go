@@ -1,9 +1,13 @@
 package linkquisition
 
 type Browser struct {
-	Name     string
-	Command  string
-	IconPath string
+	Name             string
+	Command          string
+	IconPath         string
+	ProfileName      string
+	ProfilePath      string
+	ProfileType      string
+	ProfileIsDefault bool
 }
 
 type BrowserService interface {

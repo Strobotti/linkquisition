@@ -13,6 +13,7 @@ import (
 	"gopkg.in/alessio/shellescape.v1"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/browserprofiles"
 	"github.com/strobotti/linkquisition/internal/launchenv"
 )
 
@@ -65,11 +66,29 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 				Command:  desktopEntry.Exec,
 				IconPath: b.BrowserIconLoader.ResolveIconName(desktopEntry.Icon),
 			}
-			browsers = append(browsers, browser)
+			browsers = appendDetectedProfiles(browsers, browser)
 		}
 	}
 
 	return browsers, nil
+}
+
+func appendDetectedProfiles(browsers []linkquisition.Browser, browser linkquisition.Browser) []linkquisition.Browser {
+	profiles := browserprofiles.Detect(browser.Name)
+	if len(profiles) == 0 {
+		return append(browsers, browser)
+	}
+
+	for _, profile := range profiles {
+		profiledBrowser := browser
+		profiledBrowser.Name = browser.Name + " — " + profile.Name
+		profiledBrowser.ProfileName = profile.Name
+		profiledBrowser.ProfilePath = profile.ID
+		profiledBrowser.ProfileType = profile.Type
+		profiledBrowser.ProfileIsDefault = profile.IsDefault
+		browsers = append(browsers, profiledBrowser)
+	}
+	return browsers
 }
 
 func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
@@ -111,6 +130,12 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 	u = shellescape.Quote(u)
 
 	command := browser.Command
+	if browser.ProfileType == browserprofiles.TypeChromium {
+		command = addLaunchArgument(command, "--profile-directory="+shellescape.Quote(browser.ProfilePath))
+	}
+	if browser.ProfileType == browserprofiles.TypeFirefox {
+		command = addLaunchArgument(command, "-P "+shellescape.Quote(browser.ProfileName))
+	}
 	command = strings.ReplaceAll(command, "%u", u)
 	command = strings.ReplaceAll(command, "%U", u)
 
@@ -122,6 +147,15 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 	}
 
 	return nil
+}
+
+func addLaunchArgument(command, argument string) string {
+	for _, placeholder := range []string{"%u", "%U"} {
+		if strings.Contains(command, placeholder) {
+			return strings.Replace(command, placeholder, argument+" "+placeholder, 1)
+		}
+	}
+	return command + " " + argument
 }
 
 func (b *BrowserService) AreWeTheDefaultBrowser() bool {

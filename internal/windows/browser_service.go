@@ -11,6 +11,7 @@ import (
 	"golang.org/x/sys/windows/registry"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/browserprofiles"
 	"github.com/strobotti/linkquisition/internal/launchenv"
 )
 
@@ -48,10 +49,8 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 				continue
 			}
 			seen[lowerCmd] = true
-			browsers = append(browsers, linkquisition.Browser{
-				Name:    entry.Name,
-				Command: entry.Command,
-			})
+			browser := linkquisition.Browser{Name: entry.Name, Command: entry.Command}
+			browsers = appendDetectedProfiles(browsers, browser)
 		}
 	}
 
@@ -66,10 +65,8 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 			continue
 		}
 		seen[lowerCmd] = true
-		browsers = append(browsers, linkquisition.Browser{
-			Name:    entry.Name,
-			Command: entry.Command,
-		})
+		browser := linkquisition.Browser{Name: entry.Name, Command: entry.Command}
+		browsers = appendDetectedProfiles(browsers, browser)
 	}
 
 	return browsers, nil
@@ -277,6 +274,24 @@ func extractExePath(command string) string {
 	return command
 }
 
+func appendDetectedProfiles(browsers []linkquisition.Browser, browser linkquisition.Browser) []linkquisition.Browser {
+	profiles := browserprofiles.Detect(browser.Name)
+	if len(profiles) == 0 {
+		return append(browsers, browser)
+	}
+
+	for _, profile := range profiles {
+		profiledBrowser := browser
+		profiledBrowser.Name = browser.Name + " — " + profile.Name
+		profiledBrowser.ProfileName = profile.Name
+		profiledBrowser.ProfilePath = profile.ID
+		profiledBrowser.ProfileType = profile.Type
+		profiledBrowser.ProfileIsDefault = profile.IsDefault
+		browsers = append(browsers, profiledBrowser)
+	}
+	return browsers
+}
+
 func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
 	// Read the default browser from UserChoice registry key
 	keyPath := `SOFTWARE\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice`
@@ -308,6 +323,13 @@ func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.Browser) error {
 	// The browser command is the path to the executable
 	command := browser.Command
+	profileArgs := make([]string, 0, 2)
+	if browser.ProfileType == browserprofiles.TypeChromium {
+		profileArgs = append(profileArgs, "--profile-directory="+browser.ProfilePath)
+	}
+	if browser.ProfileType == browserprofiles.TypeFirefox {
+		profileArgs = append(profileArgs, "-P", browser.ProfileName)
+	}
 
 	// Handle the "%U" or "%u" placeholder pattern used in config
 	if strings.Contains(command, "%U") || strings.Contains(command, "%u") {
@@ -317,12 +339,14 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 		if len(parts) == 0 {
 			return fmt.Errorf("empty browser command for %s", browser.Name)
 		}
-		cmd := exec.Command(parts[0], parts[1:]...)
+		args := append(profileArgs, parts[1:]...)
+		cmd := exec.Command(parts[0], args...)
 		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 		return cmd.Start()
 	}
 
-	cmd := exec.Command(command, url)
+	args := append(profileArgs, url)
+	cmd := exec.Command(command, args...)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)

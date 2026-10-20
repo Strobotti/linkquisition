@@ -341,6 +341,47 @@ func TestSettings_UpdateWithBrowsers(t *testing.T) {
 	}
 }
 
+func TestSettings_UpdateWithBrowsers_AddsDetectedProfiles(t *testing.T) {
+	settings := (&Settings{}).UpdateWithBrowsers([]Browser{
+		{Name: "Google Chrome — Personal", Command: "chrome", ProfileName: "Personal", ProfilePath: "Default", ProfileType: "chromium", ProfileIsDefault: true},
+		{Name: "Google Chrome — Work", Command: "chrome", ProfileName: "Work", ProfilePath: "Profile 1", ProfileType: "chromium"},
+	})
+
+	require.Len(t, settings.Browsers, 2)
+	require.Equal(t, "Google Chrome — Personal", settings.Browsers[0].Name)
+	require.Equal(t, "Default", settings.Browsers[0].ProfilePath)
+	require.True(t, settings.Browsers[0].ProfileIsDefault)
+	require.Equal(t, "Profile 1", settings.Browsers[1].ProfilePath)
+}
+
+func TestSettings_UpdateWithBrowsers_MigratesLegacyBrowserToDefaultProfile(t *testing.T) {
+	settings := &Settings{Browsers: []BrowserSettings{{
+		Name: "Google Chrome", Command: "chrome", Source: SourceAuto,
+		Matches: []BrowserMatch{{Type: BrowserMatchTypeDomain, Value: "example.com"}},
+	}}}
+
+	settings.UpdateWithBrowsers([]Browser{
+		{Name: "Google Chrome", Command: "chrome"},
+		{Name: "Google Chrome — Personal", Command: "chrome", ProfileName: "Personal", ProfilePath: "Default", ProfileType: "chromium", ProfileIsDefault: true},
+		{Name: "Google Chrome — Work", Command: "chrome", ProfileName: "Work", ProfilePath: "Profile 1", ProfileType: "chromium"},
+	})
+
+	require.Len(t, settings.Browsers, 2)
+	require.Equal(t, "Default", settings.Browsers[0].ProfilePath)
+	require.Equal(t, "example.com", settings.Browsers[0].Matches[0].Value)
+	require.Equal(t, "Profile 1", settings.Browsers[1].ProfilePath)
+}
+
+func TestSettings_UpdateWithBrowsers_DropsRemovedProfileOnly(t *testing.T) {
+	settings := (&Settings{Browsers: []BrowserSettings{
+		{Name: "Chrome — Default", Command: "chrome", ProfilePath: "Default", Source: SourceAuto},
+		{Name: "Chrome — Work", Command: "chrome", ProfilePath: "Profile 1", Source: SourceAuto},
+	}}).UpdateWithBrowsers([]Browser{{Name: "Chrome — Default", Command: "chrome", ProfilePath: "Default"}})
+
+	require.Len(t, settings.Browsers, 1)
+	assert.Equal(t, "Default", settings.Browsers[0].ProfilePath)
+}
+
 func TestSettings_UpdateWithBrowsers_PreservesNonBrowserFields(t *testing.T) {
 	settings := &Settings{
 		LogLevel: "debug",
