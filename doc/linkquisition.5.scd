@@ -50,6 +50,12 @@ and *rule* subcommands).
 *command* (string)
 	Command to execute. Use _%U_ or _%u_ as the URL placeholder.
 
+*profileName*, *profilePath*, *profileType* (strings, optional)
+	Identify a detected browser profile and how it is launched. These fields are
+	managed automatically when browsers are scanned. Chromium-family profiles
+	use the profile directory name (for example, _Default_ or _Profile 1_);
+	Firefox profiles use the profile name and directory path.
+
 *iconPath* (string, optional)
 	Absolute path to the browser icon file (e.g. _.png_). Populated
 	automatically during browser scan from the _.desktop_ file's _Icon=_

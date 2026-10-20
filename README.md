@@ -29,8 +29,9 @@ Motivation behind this project is:
         - site (e.g. `www.example.com`)
         - regular expression (e.g. `.*\.example\.com`)
     - Hide a browser from the list
+    - Detect Chromium-family and Firefox profiles and choose a profile directly in the picker
     - Manually add a browser to the list (for example, to open a URL in a different profile)
-    - Remember the choice for given site
+    - Remember the choice for a given site
 - keyboard-shortcuts
     - `Enter` to open the URL in the default browser
     - `Ctrl+C` to just copy the URL to clipboard and close the window
