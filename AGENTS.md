@@ -5,7 +5,7 @@ It documents conventions, gotchas, and the checklist to follow when making chang
 
 ## Project overview
 
-Linkquisition is a browser-picker for Linux and macOS written in Go. It supports
+Linkquisition is a browser-picker for Linux, macOS, and Windows written in Go. It supports
 a plugin system (`.so` shared objects) that can modify URLs before they're opened.
 
 ## Commit conventions
@@ -32,8 +32,8 @@ Always work on a **feature branch** — never commit directly to `main`. Branch 
 - `chore/<short-description>` — maintenance, CI, docs-only
 - `refactor/<short-description>` — code restructuring
 
-Push the branch and open a **pull request** for review. PRs are merged via GitHub
-(squash or merge commit, depending on the number of meaningful commits). The `main`
+Push the branch and open a **pull request** for review. PRs are merged via GitHub (squash or merge commit, depending on
+the number of meaningful commits). The `main`
 branch is protected and triggers the release-please flow on every push.
 
 ## Release flow (CI)
@@ -135,8 +135,8 @@ which provides `wayland-scanner`). CI workflows do this automatically.
 ## Linting
 
 The project uses `golangci-lint`. The full rule configuration is in `.golangci.yml` — refer to
-it for the authoritative list of enabled linters and their settings. The linter runs in CI only
-(the CI version may differ from what's installed locally). Key rules to watch for:
+it for the authoritative list of enabled linters and their settings. The linter runs in CI only (the CI version may
+differ from what's installed locally). Key rules to watch for:
 
 - **goconst** — extract repeated strings (3+ occurrences) into constants
 - **gosec** — security checks (e.g. `G306`: file permissions must be 0600 or less)
@@ -150,9 +150,11 @@ it for the authoritative list of enabled linters and their settings. The linter 
 
 ## Platform-specific code
 
-- `cmd/application_linux.go` — Linux-specific setup (build tag `//go:build linux`)
-- `cmd/application_darwin.go` — macOS-specific setup (build tag `//go:build darwin`)
-- `cmd/application_windows.go` — Windows-specific setup (build tag `//go:build windows`)
+- `cmd/application.go` — shared Fyne app initialization and `NewApplication()`
+- `cmd/application_linux.go` — Linux services and URL event handling (build tag `//go:build linux`)
+- `cmd/application_darwin.go` — macOS services and Apple Event URL handling (build tag `//go:build darwin`)
+- `cmd/application_windows.go` — Windows services and URL event handling (build tag `//go:build windows`)
+- `cmd/application_plugins.go` / `cmd/application_plugins_windows.go` — platform-specific plugin initialization
 - `cmd/plugins_loader.go` — plugin loading logic (build tag `//go:build !windows`)
 - `cmd/plugins_loader_windows.go` — no-op plugin stub for Windows
 - Linux and macOS must stay in sync for shared plugin patterns
@@ -160,8 +162,7 @@ it for the authoritative list of enabled linters and their settings. The linter 
 
 ### Cross-platform path and URL handling
 
-- Use `filepath.IsAbs()` instead of checking for `/` prefix to detect absolute paths
-  (Windows uses `C:\` style paths)
+- Use `filepath.IsAbs()` instead of checking for `/` prefix to detect absolute paths (Windows uses `C:\` style paths)
 - `url.ParseRequestURI` treats Windows drive letters (e.g. `C:`) as URL schemes —
   reject single-letter schemes when distinguishing paths from URLs
 - Use `filepath.Abs()` + `filepath.Join()` for path construction, never hardcode `/`
@@ -202,8 +203,8 @@ The app has two UI modes, both in `cmd/`:
 - **Configurator** (`cmd/configurator.go`) — settings screen, shown when launched with **no
   arguments** (or with a subcommand like `config`, `plugin`, etc.).
   The General tab is composed of `build*Section()` methods. Add new sections there.
-- **BrowserPicker** (`cmd/browser_picker.go`) — the URL picker, shown when launched with a
-  **URL argument** (e.g. `linkquisition "https://example.com"`).
+- **BrowserPicker** (`cmd/browser_picker.go`) — the URL picker, shown when launched with a **URL argument** (e.g.
+  `linkquisition "https://example.com"`).
 
 To test the configurator (settings UI):
 
@@ -234,8 +235,8 @@ Useful flags for debugging:
 ### UI helpers (`internal/ui/`)
 
 - **`ui.NewLinkWithCopy(text, rawURL, window)`** — creates a clickable hyperlink with a
-  copy-to-clipboard button beside it. Use this whenever displaying a URL or link in the GUI
-  (e.g. reference links, documentation URLs, external resources). Prefer this over a plain
+  copy-to-clipboard button beside it. Use this whenever displaying a URL or link in the GUI (e.g. reference links,
+  documentation URLs, external resources). Prefer this over a plain
   `widget.NewHyperlink` for consistency across the app.
 - **`ui.FormLabel(text)`** / **`ui.FormValue(value)`** — bold label and wrapping value label
   for form-style key-value layouts (grids). `FormValue` substitutes "—" for empty strings.
