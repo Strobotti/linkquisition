@@ -35,6 +35,7 @@ const (
 	verticalWindowWidth      = 600
 	verticalWindowMinHeight  = 50
 	faviconDisplaySize       = 16
+	faviconFetchTimeout      = 5 * time.Second
 	safetyCheckTimeout       = 10 * time.Second
 	rememberIndentMultiplier = 4
 )
@@ -666,7 +667,7 @@ func (picker *BrowserPicker) fetchAndUpdateFavicon(
 
 	fetcher := favicon.NewFetcher(strategy, cacheDir)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) //nolint:mnd
+	ctx, cancel := context.WithTimeout(context.Background(), faviconFetchTimeout)
 	defer cancel()
 
 	data, err := fetcher.Fetch(ctx, urlToOpen)
