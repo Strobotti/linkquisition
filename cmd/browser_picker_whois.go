@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"strings"
-	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -19,7 +18,6 @@ import (
 
 const (
 	whoisWindowWidth          = 450
-	whoisTimeout              = 10 * time.Second
 	whoisLoadingHeight        = 100
 	whoisErrorHeight          = 150
 	whoisContentHeightPadding = 20
