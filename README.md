@@ -341,13 +341,14 @@ ln -s /Applications/Linkquisition.app/Contents/MacOS/linkquisition /usr/local/bi
 
 ## Development
 
-I am using Ubuntu Linux for development, so the instructions are tailored for that. However, the code should work on any
-Freedesktop.org-compliant Linux distribution, although I have not tested it. Also, I have limited the architecture to
-amd64, as I do not have time/access to other architectures for testing easily.
+I primarily use Ubuntu Linux for development, so the instructions are tailored for that. The code should work on any
+Freedesktop.org-compliant Linux distribution, although I have not tested all distributions. CI currently builds Linux
+amd64, macOS arm64 (with universal release packaging), and Windows amd64; other targets may work but are not covered by
+the build matrix.
 
 ### Requirements
 
-- Go 1.26 (https://go.dev/doc/install)
+- Go 1.27.2 (https://go.dev/doc/install)
 - Taskfile (https://taskfile.dev/#/installation)
 - Build-dependencies:
   ```shell
