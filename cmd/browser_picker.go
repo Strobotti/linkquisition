@@ -15,12 +15,11 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/strobotti/linkquisition/internal/safety"
-
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/favicon"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/internal/qrcode"
+	"github.com/strobotti/linkquisition/internal/safety"
 	"github.com/strobotti/linkquisition/internal/ui"
 	"github.com/strobotti/linkquisition/resources"
 )

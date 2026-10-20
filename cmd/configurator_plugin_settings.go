@@ -9,9 +9,8 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/strobotti/linkquisition"
-	"github.com/strobotti/linkquisition/internal/ui"
-
 	"github.com/strobotti/linkquisition/internal/i18n"
+	"github.com/strobotti/linkquisition/internal/ui"
 )
 
 // buildDefaultSettingsFromMetadata constructs a settings map populated with default values
