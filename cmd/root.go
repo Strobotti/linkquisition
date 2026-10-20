@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 
@@ -59,19 +60,7 @@ func runRoot(cmd *cobra.Command, args []string) error {
 
 	// GUI path — needs full application with fyne
 	app := NewApplication()
-	ctx, stop := context.WithCancel(cmd.Context())
-
-	if err := app.RunGUI(ctx, urlToOpen); err != nil {
-		stop()
-		<-ctx.Done()
-
-		return err
-	}
-
-	stop()
-	<-ctx.Done()
-
-	return nil
+	return app.RunGUI(cmd.Context(), urlToOpen)
 }
 
 // normalizeInputURL converts raw file paths to file:// URLs and validates the input.
@@ -139,7 +128,10 @@ func initRootCmd() {
 func execute() int {
 	initRootCmd()
 
-	if err := rootCmd.ExecuteContext(context.Background()); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}

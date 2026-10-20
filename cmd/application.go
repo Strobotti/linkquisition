@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"sync"
-	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -22,9 +21,7 @@ import (
 
 const logDirPerms = 0755
 const logFilePerms = 0644
-const pluginShutdownTimeout = 10 * time.Second
 const maxLogFileSize = 1 << 20 // 1 MB
-const pluginProcessTimeout = 30 * time.Second
 const pluginExtension = ".so"
 
 type Application struct {
@@ -144,8 +141,13 @@ func (a *Application) processPlugins(
 
 // RunGUI launches the GUI mode of the application. If urlToOpen is empty, the
 // configurator is shown; otherwise the browser picker handles the URL.
-func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
-	defer a.shutdownPlugins()
+func (a *Application) RunGUI(ctx context.Context, urlToOpen string) error {
+	defer a.shutdownPlugins(ctx)
+
+	stopOnCancel := context.AfterFunc(ctx, func() {
+		fyne.Do(a.Fapp.Quit)
+	})
+	defer stopOnCancel()
 
 	// Initialize localization before any UI strings are used
 	i18n.Init(a.SettingsService.GetSettings().Locale)
@@ -155,12 +157,15 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 
 		// Start watching for URLs arriving via platform events (macOS Apple Events)
 		// while the configurator is open.
-		watchCtx, watchCancel := context.WithCancel(context.Background())
-		a.startURLWatcher(watchCtx)
+		watchCtx, watchCancel := context.WithCancel(ctx)
+		watchDone := a.startURLWatcher(watchCtx)
+		defer func() {
+			watchCancel()
+			<-watchDone
+		}()
 
 		configurator := NewConfigurator(a.Fapp, a.BrowserService, a.SettingsService, a.Logger)
 		configurator.Run()
-		watchCancel()
 
 		a.Logger.Debug("Configurator closed")
 
@@ -177,10 +182,10 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 
 	a.Logger.Debug(fmt.Sprintf("Starting linkquisition with input: %#q", urlToOpen))
 
-	ctx, cancel := context.WithTimeout(context.Background(), pluginProcessTimeout)
+	processCtx, cancel := context.WithTimeout(ctx, pluginProcessTimeout)
 	defer cancel()
 
-	processedURL, action, message := a.processPlugins(ctx, urlToOpen)
+	processedURL, action, message := a.processPlugins(processCtx, urlToOpen)
 
 	switch action {
 	case linkquisition.ActionBlock:
@@ -195,7 +200,7 @@ func (a *Application) RunGUI(_ context.Context, urlToOpen string) error {
 		// normal flow: match against browser rules or show picker
 	}
 
-	return a.openWithBrowserOrPicker(processedURL)
+	return a.openWithBrowserOrPicker(ctx, processedURL)
 }
 
 // showBlockDialog displays a blocking dialog and exits without opening any URL.
@@ -265,7 +270,7 @@ func (a *Application) showWarnDialog(urlToOpen, message string) {
 }
 
 // openWithBrowserOrPicker handles the normal URL opening flow: match rules or show picker.
-func (a *Application) openWithBrowserOrPicker(urlToOpen string) error {
+func (a *Application) openWithBrowserOrPicker(ctx context.Context, urlToOpen string) error {
 	var browsers []linkquisition.Browser
 
 	isConfigured, configErr := a.SettingsService.IsConfigured()
@@ -290,15 +295,15 @@ func (a *Application) openWithBrowserOrPicker(urlToOpen string) error {
 	}
 
 	bp := NewBrowserPicker(a.Fapp, a.BrowserService, browsers, a.SettingsService, a.Logger, a.collectUIHooks())
-	return bp.Run(context.Background(), urlToOpen)
+	return bp.Run(ctx, urlToOpen)
 }
 
-func (a *Application) shutdownPlugins() {
+func (a *Application) shutdownPlugins(parent context.Context) {
 	if len(a.plugins) == 0 {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), pluginShutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), pluginShutdownTimeout)
 	defer cancel()
 
 	var wg sync.WaitGroup
@@ -309,7 +314,18 @@ func (a *Application) shutdownPlugins() {
 			p.Shutdown(ctx)
 		}(plug)
 	}
-	wg.Wait()
+
+	shutdownDone := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(shutdownDone)
+	}()
+
+	select {
+	case <-shutdownDone:
+	case <-ctx.Done():
+		a.Logger.Warn("Plugin shutdown timed out", "error", ctx.Err())
+	}
 }
 
 // collectUIHooks returns all loaded plugins that implement the PluginUIHook interface.

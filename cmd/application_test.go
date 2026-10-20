@@ -233,7 +233,7 @@ func TestShutdownPlugins_Empty(t *testing.T) {
 	}
 
 	// Should not panic with no plugins
-	app.shutdownPlugins()
+	app.shutdownPlugins(context.Background())
 	t.Log("shutdownPlugins with no plugins did not panic")
 }
 
@@ -250,21 +250,53 @@ func TestShutdownPlugins_WithPlugins(t *testing.T) {
 		plugins: []linkquisition.Plugin{plug},
 	}
 
-	app.shutdownPlugins()
+	app.shutdownPlugins(context.Background())
 
 	if !shutdownCalled {
 		t.Error("expected Shutdown to be called on the plugin")
 	}
 }
 
+func TestShutdownPlugins_UsesBoundedContextAfterParentCancellation(t *testing.T) {
+	parent, cancelParent := context.WithCancel(context.Background())
+	cancelParent()
+
+	var shutdownErr error
+	var hasDeadline bool
+	plug := &shutdownTrackingPlugin{
+		testPlugin: testPlugin{name: "tracker"},
+		onShutdownContext: func(ctx context.Context) {
+			shutdownErr = ctx.Err()
+			_, hasDeadline = ctx.Deadline()
+		},
+	}
+	app := &Application{
+		Logger:  slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError})),
+		plugins: []linkquisition.Plugin{plug},
+	}
+
+	app.shutdownPlugins(parent)
+
+	if shutdownErr != nil {
+		t.Errorf("shutdown context should not inherit parent cancellation, got %v", shutdownErr)
+	}
+	if !hasDeadline {
+		t.Error("shutdown context should have a timeout deadline")
+	}
+}
+
 // shutdownTrackingPlugin tracks whether Shutdown was called.
 type shutdownTrackingPlugin struct {
 	testPlugin
-	onShutdown func()
+	onShutdown        func()
+	onShutdownContext func(context.Context)
 }
 
-func (p *shutdownTrackingPlugin) Shutdown(_ context.Context) {
+func (p *shutdownTrackingPlugin) Shutdown(ctx context.Context) {
 	if p.onShutdown != nil {
 		p.onShutdown()
+	}
+	if p.onShutdownContext != nil {
+		p.onShutdownContext(ctx)
 	}
 }
