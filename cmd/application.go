@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
@@ -80,6 +81,30 @@ func setupLogger(settingsService linkquisition.SettingsService) *slog.Logger {
 	}
 
 	return slog.New(slog.NewTextHandler(logWriter, logHandlerOpts))
+}
+
+// NewApplication creates the shared Fyne application around platform-specific services.
+func NewApplication() *Application {
+	app.SetMetadata(fyne.AppMetadata{
+		ID:         "com.strobotti.linkquisition",
+		Name:       "Linkquisition",
+		Migrations: map[string]bool{"fyneDo": true},
+	})
+
+	fapp := app.New()
+	browserService, settingsService := newPlatformServices()
+	applyTheme(fapp, settingsService)
+
+	logger := setupLogger(settingsService)
+	plugins := loadApplicationPlugins(settingsService, logger)
+
+	return &Application{
+		Fapp:            fapp,
+		BrowserService:  browserService,
+		SettingsService: settingsService,
+		Logger:          logger,
+		plugins:         plugins,
+	}
 }
 
 // rotateLogFile checks the log file size and rotates it if it exceeds the threshold.

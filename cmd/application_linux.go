@@ -3,21 +3,19 @@
 package main
 
 import (
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
-
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/freedesktop"
 )
 
 func newPlatformServices() (linkquisition.BrowserService, linkquisition.SettingsService) {
 	xdgService := &freedesktop.XdgService{}
+	desktopEntryService := &freedesktop.DesktopEntryService{}
 	browserService := &freedesktop.BrowserService{
 		XdgService:          xdgService,
-		DesktopEntryService: &freedesktop.DesktopEntryService{},
+		DesktopEntryService: desktopEntryService,
 		BrowserIconLoader: &freedesktop.DefaultBrowserIconLoader{
 			XdgService:          xdgService,
-			DesktopEntryService: &freedesktop.DesktopEntryService{},
+			DesktopEntryService: desktopEntryService,
 		},
 	}
 
@@ -32,35 +30,4 @@ func newPlatformServices() (linkquisition.BrowserService, linkquisition.Settings
 // getURLFromPlatformEvent on Linux always returns empty — URLs come via argv.
 func getURLFromPlatformEvent() string {
 	return ""
-}
-
-func NewApplication() *Application {
-	app.SetMetadata(fyne.AppMetadata{
-		ID:         "com.strobotti.linkquisition",
-		Name:       "Linkquisition",
-		Migrations: map[string]bool{"fyneDo": true},
-	})
-
-	fapp := app.New()
-	browserService, settingsService := newPlatformServices()
-
-	applyTheme(fapp, settingsService)
-
-	logger := setupLogger(settingsService)
-	pluginServiceProvider := linkquisition.NewPluginServiceProvider(
-		logger, settingsService.GetSettings(), settingsService.GetConfigFolderPath(),
-	)
-
-	var plugins []linkquisition.Plugin
-	if !noPlugins {
-		plugins = setupPlugins(settingsService, pluginServiceProvider, logger, parsePluginOpts(pluginOpts))
-	}
-
-	return &Application{
-		Fapp:            fapp,
-		BrowserService:  browserService,
-		SettingsService: settingsService,
-		Logger:          logger,
-		plugins:         plugins,
-	}
 }
