@@ -23,6 +23,22 @@ func (m *mockBrowserIconLoader) ResolveIconName(_ string) string {
 	return ""
 }
 
+func TestAddLaunchArgument(t *testing.T) {
+	for _, test := range []struct {
+		command  string
+		argument string
+		want     string
+	}{
+		{command: "firefox %u", argument: "-private-window", want: "firefox -private-window %u"},
+		{command: "chrome %U", argument: "--incognito", want: "chrome --incognito %U"},
+		{command: "firefox", argument: "-private-window", want: "firefox -private-window"},
+	} {
+		if got := addLaunchArgument(test.command, test.argument); got != test.want {
+			t.Errorf("addLaunchArgument(%q, %q) = %q, want %q", test.command, test.argument, got, test.want)
+		}
+	}
+}
+
 func TestDesktopEntryHasCategory_MatchesWebBrowser(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "firefox.desktop")

@@ -65,6 +65,9 @@
   "picker.remember_choice": {
     "other": "Muista tämä valinta"
   },
+  "picker.private_mode": {
+    "other": "Avaa yksityisessä ikkunassa"
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (vain tämä sivusto)"
   },
@@ -72,7 +75,7 @@
     "other": "{{.Domain}} (koko verkkotunnus)"
   },
   "picker.keyboard_guide": {
-    "other": "Paina 'ENTER' valitaksesi ensimmäisen, 'ESC' sulkeaksesi, '{{.CopyShortcut}}' kopioidaksesi URL:n leikepöydälle"
+    "other": "Paina 'ENTER' valitaksesi ensimmäisen, pidä 'SHIFT' pohjassa tai ota yksityinen tila käyttöön avataksesi yksityisesti, 'ESC' sulkeaksesi, '{{.CopyShortcut}}' kopioidaksesi URL:n"
   },
   "config.language_label": {
     "other": "Kieli:"

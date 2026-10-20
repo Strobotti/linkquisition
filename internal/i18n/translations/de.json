@@ -65,6 +65,9 @@
   "picker.remember_choice": {
     "other": "Auswahl merken"
   },
+  "picker.private_mode": {
+    "other": "In privatem Fenster öffnen"
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (nur diese Seite)"
   },
@@ -72,7 +75,7 @@
     "other": "{{.Domain}} (gesamte Domain)"
   },
   "picker.keyboard_guide": {
-    "other": "Drücke 'ENTER' für den ersten, 'ESC' zum Beenden, '{{.CopyShortcut}}' um die URL zu kopieren"
+    "other": "Drücke 'ENTER' für den ersten, halte 'SHIFT' oder aktiviere 'Privates Fenster' zum privaten Öffnen, 'ESC' zum Beenden, '{{.CopyShortcut}}' zum Kopieren der URL"
   },
   "config.language_label": {
     "other": "Sprache:"

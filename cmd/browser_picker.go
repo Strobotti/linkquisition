@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -36,13 +37,17 @@ const (
 )
 
 type BrowserPicker struct {
-	fapp            fyne.App
-	browserService  linkquisition.BrowserService
-	browsers        []linkquisition.Browser
-	settingsService linkquisition.SettingsService
-	logger          *slog.Logger
-	uiHooks         []linkquisition.PluginUIHook
-	modalOpen       bool
+	fapp             fyne.App
+	browserService   linkquisition.BrowserService
+	browsers         []linkquisition.Browser
+	settingsService  linkquisition.SettingsService
+	logger           *slog.Logger
+	uiHooks          []linkquisition.PluginUIHook
+	modalOpen        bool
+	shiftLeftHeld    bool
+	shiftRightHeld   bool
+	privateToggle    *widget.Check
+	privateToggleSet bool
 }
 
 func NewBrowserPicker(
@@ -123,6 +128,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	)
 
 	picker.setupKeyboardShortcuts(w, buttons)
+	picker.setupPrivateModeModifier(w)
 
 	var widgets []fyne.CanvasObject
 
@@ -133,6 +139,14 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	}
 
 	widgets = append(widgets, picker.buildURLDisplay(urlToOpen, w)...)
+	picker.privateToggle = widget.NewCheck(i18n.T("picker.private_mode"), func(enabled bool) {
+		if !picker.shiftLeftHeld && !picker.shiftRightHeld {
+			picker.privateToggleSet = enabled
+		}
+		picker.privateToggle.Checked = picker.privateModeEnabled()
+		picker.privateToggle.Refresh()
+	})
+	widgets = append(widgets, picker.privateToggle)
 	widgets = append(widgets, picker.buildRememberCheck(urlToOpen, remember, rememberMatchType)...)
 
 	if !settings.Ui.HideKeyboardGuideLabel {
@@ -143,6 +157,9 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 
 	if pickerLayout == linkquisition.PickerLayoutHorizontal {
 		cols := min(len(buttons), settings.Ui.GetMaxItemsPerRow())
+		if cols == 0 {
+			cols = 1
+		}
 		rows := (len(buttons) + cols - 1) / cols
 		width := float32(cols+1) * horizontalButtonWidth
 		height := float32(rows*horizontalButtonHeight) + 180
@@ -166,9 +183,24 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	return nil
 }
 
+func (picker *BrowserPicker) handleShiftKey(event *fyne.KeyEvent, pressed bool) {
+	switch event.Name {
+	case desktop.KeyShiftLeft:
+		picker.shiftLeftHeld = pressed
+	case desktop.KeyShiftRight:
+		picker.shiftRightHeld = pressed
+	default:
+		return
+	}
+	picker.refreshPrivateModeToggle()
+}
+
 func (picker *BrowserPicker) setupKeyboardShortcuts(w fyne.Window, buttons []fyne.CanvasObject) {
 	w.Canvas().SetOnTypedKey(
 		func(keyEvent *fyne.KeyEvent) {
+			if keyEvent.Name == desktop.KeyShiftLeft || keyEvent.Name == desktop.KeyShiftRight {
+				picker.handleShiftKey(keyEvent, true)
+			}
 			if picker.modalOpen {
 				return
 			}
@@ -207,6 +239,37 @@ func (picker *BrowserPicker) setupKeyboardShortcuts(w fyne.Window, buttons []fyn
 
 // tapButton triggers the OnTapped handler for a button canvas object.
 // Supports both widget.Button (vertical layout) and the tappable container (horizontal layout).
+func (picker *BrowserPicker) setupPrivateModeModifier(w fyne.Window) {
+	desktopCanvas, ok := w.Canvas().(desktop.Canvas)
+	if !ok {
+		return
+	}
+
+	desktopCanvas.SetOnKeyDown(func(event *fyne.KeyEvent) {
+		picker.handleShiftKey(event, true)
+	})
+	desktopCanvas.SetOnKeyUp(func(event *fyne.KeyEvent) {
+		picker.handleShiftKey(event, false)
+	})
+}
+
+func (picker *BrowserPicker) setPrivateModeToggle(enabled bool) {
+	picker.privateToggle.Checked = enabled
+	picker.privateToggle.Refresh()
+}
+
+func (picker *BrowserPicker) refreshPrivateModeToggle() {
+	if picker.privateToggle == nil {
+		return
+	}
+	picker.privateToggle.Checked = picker.privateModeEnabled()
+	picker.privateToggle.Refresh()
+}
+
+func (picker *BrowserPicker) privateModeEnabled() bool {
+	return picker.privateToggleSet || picker.shiftLeftHeld || picker.shiftRightHeld
+}
+
 func (picker *BrowserPicker) tapButton(obj fyne.CanvasObject) {
 	if btn, ok := obj.(*widget.Button); ok {
 		btn.OnTapped()

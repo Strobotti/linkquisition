@@ -136,6 +136,11 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 	if browser.ProfileType == browserprofiles.TypeFirefox {
 		command = addLaunchArgument(command, "-P "+shellescape.Quote(browser.ProfileName))
 	}
+	if browser.PrivateMode {
+		if privateArgument, ok := browserprofiles.PrivateArgument(browser.Name); ok {
+			command = addLaunchArgument(command, privateArgument)
+		}
+	}
 	command = strings.ReplaceAll(command, "%u", u)
 	command = strings.ReplaceAll(command, "%U", u)
 

@@ -8,6 +8,7 @@ type Browser struct {
 	ProfilePath      string
 	ProfileType      string
 	ProfileIsDefault bool
+	PrivateMode      bool
 }
 
 type BrowserService interface {

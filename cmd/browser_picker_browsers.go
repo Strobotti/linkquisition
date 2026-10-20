@@ -84,8 +84,9 @@ func (picker *BrowserPicker) browserOpenCallback(
 	rememberMatchType binding.String,
 ) func() {
 	return func() {
+		browser.PrivateMode = picker.privateModeEnabled()
 		rem, _ := remember.Get()
-		picker.logger.Debug("Opening URL with browser", "browser", browser.Name, "remember", rem)
+		picker.logger.Debug("Opening URL with browser", "browser", browser.Name, "remember", rem, "private", browser.PrivateMode)
 
 		settings := picker.settingsService.GetSettings()
 		remType, _ := rememberMatchType.Get()

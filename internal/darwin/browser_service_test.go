@@ -13,7 +13,26 @@ import (
 	"howett.net/plist"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/browserprofiles"
 )
+
+func TestPrivateArgumentForKnownBrowserFamilies(t *testing.T) {
+	for _, test := range []struct {
+		browser string
+		want    string
+		ok      bool
+	}{
+		{browser: "Google Chrome", want: "--incognito", ok: true},
+		{browser: "Firefox", want: "-private-window", ok: true},
+		{browser: "Safari", ok: false},
+	} {
+		t.Run(test.browser, func(t *testing.T) {
+			got, ok := browserprofiles.PrivateArgument(test.browser)
+			assert.Equal(t, test.ok, ok)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
 
 func TestGetExecutableNameFromApp(t *testing.T) {
 	appPath := filepath.Join(t.TempDir(), "Example.app")

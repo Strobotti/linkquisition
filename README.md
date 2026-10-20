@@ -32,6 +32,7 @@ Motivation behind this project is:
     - Detect Chromium-family and Firefox profiles and choose a profile directly in the picker
     - Manually add a browser to the list (for example, to open a URL in a different profile)
     - Remember the choice for a given site
+    - Open a selected browser profile in a private window with the picker toggle or by holding `Shift`
 - keyboard-shortcuts
     - `Enter` to open the URL in the default browser
     - `Ctrl+C` to just copy the URL to clipboard and close the window

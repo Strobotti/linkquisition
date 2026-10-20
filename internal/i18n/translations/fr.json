@@ -65,6 +65,9 @@
   "picker.remember_choice": {
     "other": "Se souvenir de ce choix"
   },
+  "picker.private_mode": {
+    "other": "Ouvrir dans une fenêtre privée"
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (ce site uniquement)"
   },
@@ -72,7 +75,7 @@
     "other": "{{.Domain}} (tout le domaine)"
   },
   "picker.keyboard_guide": {
-    "other": "Appuyez sur 'ENTRÉE' pour le premier, 'ÉCHAP' pour quitter, '{{.CopyShortcut}}' pour copier l'URL"
+    "other": "Appuyez sur 'ENTRÉE' pour choisir le premier, maintenez 'SHIFT' ou activez le mode privé pour ouvrir en privé, 'ÉCHAP' pour quitter, '{{.CopyShortcut}}' pour copier l'URL"
   },
   "config.language_label": {
     "other": "Langue :"

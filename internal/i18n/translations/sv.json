@@ -65,6 +65,9 @@
   "picker.remember_choice": {
     "other": "Kom ihåg detta val"
   },
+  "picker.private_mode": {
+    "other": "Öppna i privat fönster"
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (bara denna webbplats)"
   },
@@ -72,7 +75,7 @@
     "other": "{{.Domain}} (hela domänen)"
   },
   "picker.keyboard_guide": {
-    "other": "Tryck 'ENTER' för att välja första, 'ESC' för att avsluta, '{{.CopyShortcut}}' för att kopiera URL till urklipp"
+    "other": "Tryck 'ENTER' för att välja första, håll 'SHIFT' eller aktivera privat läge för att öppna privat, 'ESC' för att avsluta, '{{.CopyShortcut}}' för att kopiera URL"
   },
   "config.language_label": {
     "other": "Språk:"

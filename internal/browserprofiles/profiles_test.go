@@ -77,6 +77,25 @@ func TestDetectForPlatformUsesPlatformLocations(t *testing.T) {
 	assert.Equal(t, "Default", profiles[0].Name)
 }
 
+func TestPrivateArgument(t *testing.T) {
+	for _, test := range []struct {
+		browser string
+		want    string
+		ok      bool
+	}{
+		{browser: "Google Chrome", want: "--incognito", ok: true},
+		{browser: "Microsoft Edge", want: "--incognito", ok: true},
+		{browser: "Firefox", want: "-private-window", ok: true},
+		{browser: "Safari", ok: false},
+	} {
+		t.Run(test.browser, func(t *testing.T) {
+			got, ok := PrivateArgument(test.browser)
+			assert.Equal(t, test.ok, ok)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestDetectIgnoresUnsupportedBrowser(t *testing.T) {
 	assert.Empty(t, DetectForPlatform("Safari", "darwin", t.TempDir(), func(string) string { return "" }))
 }

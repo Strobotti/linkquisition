@@ -330,6 +330,11 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 	if browser.ProfileType == browserprofiles.TypeFirefox {
 		profileArgs = append(profileArgs, "-P", browser.ProfileName)
 	}
+	if browser.PrivateMode {
+		if privateArgument, ok := browserprofiles.PrivateArgument(browser.Name); ok {
+			profileArgs = append(profileArgs, privateArgument)
+		}
+	}
 
 	// Handle the "%U" or "%u" placeholder pattern used in config
 	if strings.Contains(command, "%U") || strings.Contains(command, "%u") {
@@ -339,8 +344,8 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 		if len(parts) == 0 {
 			return fmt.Errorf("empty browser command for %s", browser.Name)
 		}
-		args := append(profileArgs, parts[1:]...)
-		cmd := exec.Command(parts[0], args...)
+		args := parts[1:]
+		cmd := exec.Command(parts[0], append(profileArgs, args...)...)
 		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 		return cmd.Start()
 	}

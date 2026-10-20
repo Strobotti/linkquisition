@@ -15,6 +15,20 @@ const (
 	TypeFirefox  = "firefox"
 )
 
+// PrivateArgument returns the browser's supported private-window command line argument.
+func PrivateArgument(browserName string) (string, bool) {
+	name := strings.ToLower(browserName)
+	switch {
+	case strings.Contains(name, "firefox"):
+		return "-private-window", true
+	case strings.Contains(name, "chrome") || strings.Contains(name, "google") || strings.Contains(name, "chromium") ||
+		strings.Contains(name, "edge") || strings.Contains(name, "brave"):
+		return "--incognito", true
+	default:
+		return "", false
+	}
+}
+
 // Profile describes a browser profile that can be selected as a launch target.
 type Profile struct {
 	Name      string

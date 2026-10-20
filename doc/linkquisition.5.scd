@@ -54,7 +54,9 @@ and *rule* subcommands).
 	Identify a detected browser profile and how it is launched. These fields are
 	managed automatically when browsers are scanned. Chromium-family profiles
 	use the profile directory name (for example, _Default_ or _Profile 1_);
-	Firefox profiles use the profile name and directory path.
+	Firefox profiles use the profile name and directory path. In the picker,
+	private mode can be enabled with the toggle or by holding _Shift_ while
+	selecting a browser; it is a launch-time option and is not saved in config.
 
 *iconPath* (string, optional)
 	Absolute path to the browser icon file (e.g. _.png_). Populated

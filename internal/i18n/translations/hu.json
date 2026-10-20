@@ -65,6 +65,9 @@
   "picker.remember_choice": {
     "other": "Választás megjegyzése"
   },
+  "picker.private_mode": {
+    "other": "Megnyitás privát ablakban"
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (csak ez a webhely)"
   },
@@ -72,7 +75,7 @@
     "other": "{{.Domain}} (teljes domain)"
   },
   "picker.keyboard_guide": {
-    "other": "Nyomj 'ENTER'-t az első kiválasztásához, 'ESC'-t a kilépéshez, '{{.CopyShortcut}}'-t az URL vágólapra másolásához"
+    "other": "Nyomj 'ENTER'-t az első kiválasztásához, tartsd lenyomva a 'SHIFT'-et vagy kapcsold be a privát módot, 'ESC'-t a kilépéshez, '{{.CopyShortcut}}'-t az URL másolásához"
   },
   "config.language_label": {
     "other": "Nyelv:"

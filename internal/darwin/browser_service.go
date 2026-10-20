@@ -228,12 +228,26 @@ func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 }
 
 func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.Browser) error {
+	privateArgument := ""
+	if browser.PrivateMode {
+		if argument, ok := browserprofiles.PrivateArgument(browser.Name); ok {
+			privateArgument = argument
+		}
+	}
+
 	if browser.ProfileType == browserprofiles.TypeFirefox {
 		appPath, err := getAppPathForBundleID(browser.Command)
 		if err != nil {
 			return fmt.Errorf("failed to find browser app for profile launch: %w", err)
 		}
-		cmd := exec.Command("open", "-a", appPath, "--args", "-P", browser.ProfileName, "-new-window", url)
+		args := []string{"-P", browser.ProfileName}
+		if browser.PrivateMode && privateArgument != "" {
+			args = append(args, privateArgument)
+		} else {
+			args = append(args, "-new-window")
+		}
+		args = append(args, url)
+		cmd := exec.Command("open", append([]string{"-a", appPath, "--args"}, args...)...)
 		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)
@@ -251,7 +265,12 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 			return fmt.Errorf("failed to find browser executable for profile launch: %w", err)
 		}
 		binaryPath := filepath.Join(appPath, "Contents", "MacOS", binaryName)
-		cmd := exec.Command(binaryPath, "--profile-directory="+browser.ProfilePath, url)
+		args := []string{"--profile-directory=" + browser.ProfilePath}
+		if browser.PrivateMode && privateArgument != "" {
+			args = append(args, privateArgument)
+		}
+		args = append(args, url)
+		cmd := exec.Command(binaryPath, args...)
 		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 		if err := cmd.Start(); err != nil {
 			return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)
@@ -259,6 +278,14 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 		return nil
 	}
 
+	if browser.PrivateMode && privateArgument != "" {
+		cmd := exec.Command("open", "-b", browser.Command, "--args", privateArgument, url)
+		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)
+		}
+		return nil
+	}
 	cmd := exec.Command("open", "-b", browser.Command, url)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Run(); err != nil {
