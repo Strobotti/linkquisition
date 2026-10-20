@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.11](https://github.com/Strobotti/linkquisition/compare/v3.1.10...v3.1.11) (2026-10-20)
+
+
+### Bug Fixes
+
+* report picker and log rotation failures ([#208](https://github.com/Strobotti/linkquisition/issues/208)) ([9ab4bec](https://github.com/Strobotti/linkquisition/commit/9ab4beccfc7cf3974d5f9e5c9bc39b41f42abc09))
+
 ## [3.1.10](https://github.com/Strobotti/linkquisition/compare/v3.1.9...v3.1.10) (2026-09-28)
 
 
