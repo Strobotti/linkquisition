@@ -18,8 +18,6 @@ import (
 )
 
 const (
-	securityTestTimeout = 10 * time.Second
-
 	googleSafeBrowsingURL = "https://console.cloud.google.com/apis/credentials"
 	virusTotalURL         = "https://www.virustotal.com/gui/my-apikey"
 )

@@ -32,8 +32,6 @@ const (
 	verticalWindowWidth      = 600
 	verticalWindowMinHeight  = 50
 	faviconDisplaySize       = 16
-	faviconFetchTimeout      = 5 * time.Second
-	safetyCheckTimeout       = 10 * time.Second
 	rememberIndentMultiplier = 4
 )
 

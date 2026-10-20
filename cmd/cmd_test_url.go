@@ -7,14 +7,11 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/strobotti/linkquisition"
 )
-
-const testURLTimeout = 30 * time.Second
 
 var testURLCmd = &cobra.Command{
 	Use:   "test-url <url>",
