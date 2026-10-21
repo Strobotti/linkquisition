@@ -192,10 +192,10 @@ func supportedPrivateArgument(browsers []linkquisition.Browser) (string, bool) {
 }
 
 func (picker *BrowserPicker) handleShiftKey(event *fyne.KeyEvent, pressed bool) {
-	switch {
-	case event.Name == desktop.KeyShiftLeft:
+	switch event.Name {
+	case desktop.KeyShiftLeft:
 		picker.shiftLeftHeld = pressed
-	case event.Name == desktop.KeyShiftRight:
+	case desktop.KeyShiftRight:
 		picker.shiftRightHeld = pressed
 	default:
 		return

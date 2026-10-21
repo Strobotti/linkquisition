@@ -220,7 +220,8 @@ func findBrowserByName(settings *linkquisition.Settings, name string) (int, erro
 	nameLower := strings.ToLower(name)
 	var matches []int
 
-	for i, b := range settings.Browsers {
+	for i := range settings.Browsers {
+		b := &settings.Browsers[i]
 		if strings.EqualFold(b.Name, name) {
 			// Exact match — return immediately
 			return i, nil
@@ -234,8 +235,8 @@ func findBrowserByName(settings *linkquisition.Settings, name string) (int, erro
 	switch len(matches) {
 	case 0:
 		available := make([]string, 0, len(settings.Browsers))
-		for _, b := range settings.Browsers {
-			available = append(available, b.Name)
+		for i := range settings.Browsers {
+			available = append(available, settings.Browsers[i].Name)
 		}
 
 		return -1, fmt.Errorf("no browser matching %q\nConfigured browsers: %s", name, strings.Join(available, ", "))
