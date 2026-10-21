@@ -253,8 +253,6 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 		args := []string{"-P", browser.ProfileName}
 		if privateArgument != "" {
 			args = append(args, privateArgument)
-		} else {
-			args = append(args, "-new-window")
 		}
 		args = append(args, url)
 		cmd := exec.Command(binaryPath, args...)
