@@ -83,7 +83,7 @@ func (c *Configurator) buildBrowserIconPreview(b *linkquisition.BrowserSettings)
 		Command:  b.Command,
 		IconPath: b.IconPath,
 	}
-	iconBytes, err := c.browserService.GetIconForBrowser(browser)
+	iconBytes, err := c.browserService.GetIconForBrowser(&browser)
 	if err != nil || len(iconBytes) == 0 {
 		return nil
 	}

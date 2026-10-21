@@ -15,7 +15,7 @@ import (
 
 type mockBrowserIconLoader struct{}
 
-func (m *mockBrowserIconLoader) LoadIcon(_ linkquisition.Browser) ([]byte, error) {
+func (m *mockBrowserIconLoader) LoadIcon(_ *linkquisition.Browser) ([]byte, error) {
 	return nil, nil
 }
 

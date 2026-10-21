@@ -50,7 +50,7 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 			}
 			seen[lowerCmd] = true
 			browser := linkquisition.Browser{Name: entry.Name, Command: entry.Command}
-			browsers = appendDetectedProfiles(browsers, browser)
+			browsers = appendDetectedProfiles(browsers, &browser)
 		}
 	}
 
@@ -66,7 +66,7 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 		}
 		seen[lowerCmd] = true
 		browser := linkquisition.Browser{Name: entry.Name, Command: entry.Command}
-		browsers = appendDetectedProfiles(browsers, browser)
+		browsers = appendDetectedProfiles(browsers, &browser)
 	}
 
 	return browsers, nil
@@ -274,14 +274,14 @@ func extractExePath(command string) string {
 	return command
 }
 
-func appendDetectedProfiles(browsers []linkquisition.Browser, browser linkquisition.Browser) []linkquisition.Browser {
+func appendDetectedProfiles(browsers []linkquisition.Browser, browser *linkquisition.Browser) []linkquisition.Browser {
 	profiles := browserprofiles.Detect(browser.Name)
 	if len(profiles) == 0 {
-		return append(browsers, browser)
+		return append(browsers, *browser)
 	}
 
 	for _, profile := range profiles {
-		profiledBrowser := browser
+		profiledBrowser := *browser
 		profiledBrowser.Name = browser.Name + " — " + profile.Name
 		profiledBrowser.ProfileName = profile.Name
 		profiledBrowser.ProfilePath = profile.ID
@@ -440,7 +440,7 @@ func registerURLCapabilities() error {
 	return nil
 }
 
-func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byte, error) {
+func (b *BrowserService) GetIconForBrowser(browser *linkquisition.Browser) ([]byte, error) {
 	exePath := browser.Command
 
 	// Strip any quotes and arguments from the command path

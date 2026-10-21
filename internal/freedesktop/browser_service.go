@@ -66,21 +66,21 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 				Command:  desktopEntry.Exec,
 				IconPath: b.BrowserIconLoader.ResolveIconName(desktopEntry.Icon),
 			}
-			browsers = appendDetectedProfiles(browsers, browser)
+			browsers = appendDetectedProfiles(browsers, &browser)
 		}
 	}
 
 	return browsers, nil
 }
 
-func appendDetectedProfiles(browsers []linkquisition.Browser, browser linkquisition.Browser) []linkquisition.Browser {
+func appendDetectedProfiles(browsers []linkquisition.Browser, browser *linkquisition.Browser) []linkquisition.Browser {
 	profiles := browserprofiles.Detect(browser.Name)
 	if len(profiles) == 0 {
-		return append(browsers, browser)
+		return append(browsers, *browser)
 	}
 
 	for _, profile := range profiles {
-		profiledBrowser := browser
+		profiledBrowser := *browser
 		profiledBrowser.Name = browser.Name + " — " + profile.Name
 		profiledBrowser.ProfileName = profile.Name
 		profiledBrowser.ProfilePath = profile.ID
@@ -183,7 +183,7 @@ func (b *BrowserService) MakeUsTheDefaultBrowser() error {
 	return nil
 }
 
-func (b *BrowserService) SetDefaultBrowser(browser linkquisition.Browser) error {
+func (b *BrowserService) SetDefaultBrowser(browser *linkquisition.Browser) error {
 	return b.XdgService.SettingsSet("default-web-browser", browser.Name)
 }
 
@@ -208,7 +208,7 @@ func (b *BrowserService) NewBrowser(command string) (linkquisition.Browser, erro
 }
 
 // GetIconForBrowser returns the icon for the given browser
-func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byte, error) {
+func (b *BrowserService) GetIconForBrowser(browser *linkquisition.Browser) ([]byte, error) {
 	return b.BrowserIconLoader.LoadIcon(browser)
 }
 

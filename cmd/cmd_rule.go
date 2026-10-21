@@ -77,7 +77,8 @@ func runRuleList(_ *cobra.Command, args []string) error {
 func listAllRules(settings *linkquisition.Settings) error {
 	anyRules := false
 
-	for _, b := range settings.Browsers {
+	for i := range settings.Browsers {
+		b := &settings.Browsers[i]
 		if len(b.Matches) == 0 {
 			continue
 		}

@@ -23,7 +23,7 @@ func (picker *BrowserPicker) makeBrowserButton(
 ) fyne.CanvasObject {
 	var icon fyne.Resource
 
-	iconBytes, err := picker.browserService.GetIconForBrowser(*browser)
+	iconBytes, err := picker.browserService.GetIconForBrowser(browser)
 	if err != nil {
 		picker.logger.Debug("Failed to load browser icon", "browser", browser.Name, "error", err)
 	} else {
@@ -46,7 +46,7 @@ func (picker *BrowserPicker) makeHorizontalBrowserButton(
 	callback := picker.browserOpenCallback(browser, urlToOpen, remember, rememberMatchType)
 
 	var iconWidget fyne.CanvasObject
-	iconBytes, err := picker.browserService.GetIconForBrowser(*browser)
+	iconBytes, err := picker.browserService.GetIconForBrowser(browser)
 	if err != nil {
 		picker.logger.Debug("Failed to load browser icon", "browser", browser.Name, "error", err)
 		// Show a placeholder with the first letter when no icon is available

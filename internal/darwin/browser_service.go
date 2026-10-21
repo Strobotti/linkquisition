@@ -329,7 +329,7 @@ LSSetDefaultHandlerForURLScheme("https" as CFString, bundleID)
 	return nil
 }
 
-func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byte, error) {
+func (b *BrowserService) GetIconForBrowser(browser *linkquisition.Browser) ([]byte, error) {
 	// Find the app bundle by bundle ID and extract its icon
 	appPath, err := getAppPathForBundleID(browser.Command)
 	if err != nil {

@@ -25,15 +25,13 @@ type mockBrowserService struct {
 	err      error
 }
 
-func (m *mockBrowserService) GetAvailableBrowsers() ([]Browser, error)  { return m.browsers, m.err }
-func (m *mockBrowserService) GetDefaultBrowser() (Browser, error)       { return Browser{}, nil }
-func (m *mockBrowserService) OpenUrlWithDefaultBrowser(string) error    { return nil }
-func (m *mockBrowserService) OpenUrlWithBrowser(string, *Browser) error { return nil }
-func (m *mockBrowserService) AreWeTheDefaultBrowser() bool              { return false }
-func (m *mockBrowserService) MakeUsTheDefaultBrowser() error            { return nil }
-func (m *mockBrowserService) GetIconForBrowser(Browser) ([]byte, error) {
-	return nil, nil
-}
+func (m *mockBrowserService) GetAvailableBrowsers() ([]Browser, error)   { return m.browsers, m.err }
+func (m *mockBrowserService) GetDefaultBrowser() (Browser, error)        { return Browser{}, nil }
+func (m *mockBrowserService) OpenUrlWithDefaultBrowser(string) error     { return nil }
+func (m *mockBrowserService) OpenUrlWithBrowser(string, *Browser) error  { return nil }
+func (m *mockBrowserService) AreWeTheDefaultBrowser() bool               { return false }
+func (m *mockBrowserService) MakeUsTheDefaultBrowser() error             { return nil }
+func (m *mockBrowserService) GetIconForBrowser(*Browser) ([]byte, error) { return nil, nil }
 
 func newTestService(t *testing.T, browsers []Browser) *FileSettingsService {
 	t.Helper()

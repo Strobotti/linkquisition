@@ -441,7 +441,7 @@ func TestGetIconForBrowser_Safari(t *testing.T) {
 	svc := &BrowserService{}
 	browser := linkquisition.Browser{Name: "Safari", Command: "com.apple.Safari"}
 
-	iconData, err := svc.GetIconForBrowser(browser)
+	iconData, err := svc.GetIconForBrowser(&browser)
 	require.NoError(t, err)
 	assert.NotEmpty(t, iconData, "Safari icon should be available on macOS")
 
@@ -455,7 +455,7 @@ func TestGetIconForBrowser_UnknownBundleID(t *testing.T) {
 	svc := &BrowserService{}
 	browser := linkquisition.Browser{Name: "Nonexistent", Command: "com.nonexistent.fake.browser"}
 
-	_, err := svc.GetIconForBrowser(browser)
+	_, err := svc.GetIconForBrowser(&browser)
 	assert.Error(t, err)
 }
 
