@@ -68,6 +68,9 @@
   "picker.private_mode": {
     "other": "Open in private window"
   },
+  "picker.private_unsupported": {
+    "other": "Private browsing isn't supported by the available browsers."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (this site only)"
   },

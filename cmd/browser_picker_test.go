@@ -5,10 +5,26 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
+
+	"github.com/strobotti/linkquisition"
 )
 
+func TestSupportedPrivateArgument(t *testing.T) {
+	argument, ok := supportedPrivateArgument([]linkquisition.Browser{
+		{Name: "Safari"},
+		{Name: "Microsoft Edge"},
+	})
+	if !ok || argument != "--inprivate" {
+		t.Fatalf("supportedPrivateArgument returned (%q, %t), want (%q, true)", argument, ok, "--inprivate")
+	}
+
+	if _, ok := supportedPrivateArgument([]linkquisition.Browser{{Name: "Safari"}}); ok {
+		t.Fatal("Safari should not be reported as supporting private launch flags")
+	}
+}
+
 func TestBrowserPickerPrivateModeEnabled(t *testing.T) {
-	picker := &BrowserPicker{}
+	picker := &BrowserPicker{privateSupported: true}
 	if picker.privateModeEnabled() {
 		t.Fatal("private mode should start disabled")
 	}

@@ -84,7 +84,7 @@ func TestPrivateArgument(t *testing.T) {
 		ok      bool
 	}{
 		{browser: "Google Chrome", want: "--incognito", ok: true},
-		{browser: "Microsoft Edge", want: "--incognito", ok: true},
+		{browser: "Microsoft Edge", want: "--inprivate", ok: true},
 		{browser: "Firefox", want: "-private-window", ok: true},
 		{browser: "Safari", ok: false},
 	} {

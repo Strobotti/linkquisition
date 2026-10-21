@@ -331,9 +331,11 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 		profileArgs = append(profileArgs, "-P", browser.ProfileName)
 	}
 	if browser.PrivateMode {
-		if privateArgument, ok := browserprofiles.PrivateArgument(browser.Name); ok {
-			profileArgs = append(profileArgs, privateArgument)
+		privateArgument, ok := browserprofiles.PrivateArgument(browser.Name)
+		if !ok {
+			return fmt.Errorf("private browsing is not supported for browser %q", browser.Name)
 		}
+		profileArgs = append(profileArgs, privateArgument)
 	}
 
 	// Handle the "%U" or "%u" placeholder pattern used in config

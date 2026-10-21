@@ -230,8 +230,10 @@ func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.Browser) error {
 	privateArgument := ""
 	if browser.PrivateMode {
-		if argument, ok := browserprofiles.PrivateArgument(browser.Name); ok {
-			privateArgument = argument
+		var ok bool
+		privateArgument, ok = browserprofiles.PrivateArgument(browser.Name)
+		if !ok {
+			return fmt.Errorf("private browsing is not supported for browser %q", browser.Name)
 		}
 	}
 
@@ -240,16 +242,24 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 		if err != nil {
 			return fmt.Errorf("failed to find browser app for profile launch: %w", err)
 		}
+		binaryName, err := getExecutableNameFromApp(appPath)
+		if err != nil {
+			return fmt.Errorf("failed to find browser executable for profile launch: %w", err)
+		}
+		if _, err := os.Stat(filepath.Join(appPath, "Contents", "MacOS", binaryName)); err != nil {
+			return fmt.Errorf("browser executable not found: %w", err)
+		}
+		binaryPath := filepath.Join(appPath, "Contents", "MacOS", binaryName)
 		args := []string{"-P", browser.ProfileName}
-		if browser.PrivateMode && privateArgument != "" {
+		if privateArgument != "" {
 			args = append(args, privateArgument)
 		} else {
 			args = append(args, "-new-window")
 		}
 		args = append(args, url)
-		cmd := exec.Command("open", append([]string{"-a", appPath, "--args"}, args...)...)
+		cmd := exec.Command(binaryPath, args...)
 		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
-		if err := cmd.Run(); err != nil {
+		if err := cmd.Start(); err != nil {
 			return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)
 		}
 		return nil
@@ -266,7 +276,7 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 		}
 		binaryPath := filepath.Join(appPath, "Contents", "MacOS", binaryName)
 		args := []string{"--profile-directory=" + browser.ProfilePath}
-		if browser.PrivateMode && privateArgument != "" {
+		if privateArgument != "" {
 			args = append(args, privateArgument)
 		}
 		args = append(args, url)
@@ -278,7 +288,7 @@ func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.B
 		return nil
 	}
 
-	if browser.PrivateMode && privateArgument != "" {
+	if browser.PrivateMode {
 		cmd := exec.Command("open", "-b", browser.Command, "--args", privateArgument, url)
 		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 		if err := cmd.Run(); err != nil {

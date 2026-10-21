@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -117,6 +118,12 @@ func (picker *BrowserPicker) browserOpenCallback(
 		go func() {
 			if err := picker.browserService.OpenUrlWithBrowser(urlToOpen, &browser); err != nil {
 				picker.logger.Error("Failed to open URL in browser", "url", urlToOpen, "browser", browser.Name, "error", err)
+				fyne.Do(func() {
+					if picker.pickerWindow != nil {
+						dialog.ShowError(err, picker.pickerWindow)
+					}
+				})
+				return
 			}
 
 			fyne.Do(picker.fapp.Quit)

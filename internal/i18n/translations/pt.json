@@ -68,6 +68,9 @@
   "picker.private_mode": {
     "other": "Abrir em janela privada"
   },
+  "picker.private_unsupported": {
+    "other": "A navegação privada não é suportada pelos navegadores disponíveis."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (apenas este site)"
   },

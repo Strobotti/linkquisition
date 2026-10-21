@@ -18,6 +18,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/browserprofiles"
 	"github.com/strobotti/linkquisition/internal/favicon"
 	"github.com/strobotti/linkquisition/internal/i18n"
 	"github.com/strobotti/linkquisition/internal/qrcode"
@@ -48,6 +49,9 @@ type BrowserPicker struct {
 	shiftRightHeld   bool
 	privateToggle    *widget.Check
 	privateToggleSet bool
+	privateSupported bool
+	pickerCanvas     fyne.Canvas
+	pickerWindow     fyne.Window
 }
 
 func NewBrowserPicker(
@@ -115,6 +119,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	}
 
 	w := picker.fapp.NewWindow(i18n.T("picker.window_title"))
+	picker.pickerWindow = w
 
 	w.Canvas().AddShortcut(
 		&fyne.ShortcutCopy{}, func(shortcut fyne.Shortcut) {
@@ -127,6 +132,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 		},
 	)
 
+	picker.pickerCanvas = w.Canvas()
 	picker.setupKeyboardShortcuts(w, buttons)
 	picker.setupPrivateModeModifier(w)
 
@@ -139,13 +145,24 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	}
 
 	widgets = append(widgets, picker.buildURLDisplay(urlToOpen, w)...)
+	_, picker.privateSupported = supportedPrivateArgument(picker.browsers)
 	picker.privateToggle = widget.NewCheck(i18n.T("picker.private_mode"), func(enabled bool) {
 		if !picker.shiftLeftHeld && !picker.shiftRightHeld {
 			picker.privateToggleSet = enabled
 		}
 		picker.privateToggle.Checked = picker.privateModeEnabled()
 		picker.privateToggle.Refresh()
+		if picker.pickerWindow != nil {
+			picker.pickerWindow.Canvas().Unfocus()
+		}
 	})
+	if !picker.privateSupported {
+		picker.privateToggle.Disable()
+		guide := widget.NewLabel(i18n.T("picker.private_unsupported"))
+		guide.Wrapping = fyne.TextWrapWord
+		guide.TextStyle = fyne.TextStyle{Italic: true}
+		widgets = append(widgets, guide)
+	}
 	widgets = append(widgets, picker.privateToggle)
 	widgets = append(widgets, picker.buildRememberCheck(urlToOpen, remember, rememberMatchType)...)
 
@@ -183,6 +200,15 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	return nil
 }
 
+func supportedPrivateArgument(browsers []linkquisition.Browser) (string, bool) {
+	for _, browser := range browsers {
+		if argument, ok := browserprofiles.PrivateArgument(browser.Name); ok {
+			return argument, true
+		}
+	}
+	return "", false
+}
+
 func (picker *BrowserPicker) handleShiftKey(event *fyne.KeyEvent, pressed bool) {
 	switch event.Name {
 	case desktop.KeyShiftLeft:
@@ -198,9 +224,6 @@ func (picker *BrowserPicker) handleShiftKey(event *fyne.KeyEvent, pressed bool) 
 func (picker *BrowserPicker) setupKeyboardShortcuts(w fyne.Window, buttons []fyne.CanvasObject) {
 	w.Canvas().SetOnTypedKey(
 		func(keyEvent *fyne.KeyEvent) {
-			if keyEvent.Name == desktop.KeyShiftLeft || keyEvent.Name == desktop.KeyShiftRight {
-				picker.handleShiftKey(keyEvent, true)
-			}
 			if picker.modalOpen {
 				return
 			}
@@ -254,8 +277,14 @@ func (picker *BrowserPicker) setupPrivateModeModifier(w fyne.Window) {
 }
 
 func (picker *BrowserPicker) setPrivateModeToggle(enabled bool) {
+	if picker.privateToggle == nil {
+		return
+	}
 	picker.privateToggle.Checked = enabled
 	picker.privateToggle.Refresh()
+	if picker.pickerWindow != nil {
+		picker.pickerWindow.Canvas().Unfocus()
+	}
 }
 
 func (picker *BrowserPicker) refreshPrivateModeToggle() {
@@ -267,7 +296,7 @@ func (picker *BrowserPicker) refreshPrivateModeToggle() {
 }
 
 func (picker *BrowserPicker) privateModeEnabled() bool {
-	return picker.privateToggleSet || picker.shiftLeftHeld || picker.shiftRightHeld
+	return picker.privateSupported && (picker.privateToggleSet || picker.shiftLeftHeld || picker.shiftRightHeld)
 }
 
 func (picker *BrowserPicker) tapButton(obj fyne.CanvasObject) {

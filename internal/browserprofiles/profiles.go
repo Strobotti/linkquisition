@@ -21,8 +21,10 @@ func PrivateArgument(browserName string) (string, bool) {
 	switch {
 	case strings.Contains(name, "firefox"):
 		return "-private-window", true
-	case strings.Contains(name, "chrome") || strings.Contains(name, "google") || strings.Contains(name, "chromium") ||
-		strings.Contains(name, "edge") || strings.Contains(name, "brave"):
+	case strings.Contains(name, "edge"):
+		return "--inprivate", true
+	case strings.Contains(name, "chrome") || strings.Contains(name, "google") ||
+		strings.Contains(name, "chromium") || strings.Contains(name, "brave"):
 		return "--incognito", true
 	default:
 		return "", false

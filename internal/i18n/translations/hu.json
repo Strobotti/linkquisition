@@ -68,6 +68,9 @@
   "picker.private_mode": {
     "other": "Megnyitás privát ablakban"
   },
+  "picker.private_unsupported": {
+    "other": "A privát böngészést a rendelkezésre álló böngészők nem támogatják."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (csak ez a webhely)"
   },

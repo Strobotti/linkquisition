@@ -137,9 +137,11 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 		command = addLaunchArgument(command, "-P "+shellescape.Quote(browser.ProfileName))
 	}
 	if browser.PrivateMode {
-		if privateArgument, ok := browserprofiles.PrivateArgument(browser.Name); ok {
-			command = addLaunchArgument(command, privateArgument)
+		privateArgument, ok := browserprofiles.PrivateArgument(browser.Name)
+		if !ok {
+			return fmt.Errorf("private browsing is not supported for browser %q", browser.Name)
 		}
+		command = addLaunchArgument(command, privateArgument)
 	}
 	command = strings.ReplaceAll(command, "%u", u)
 	command = strings.ReplaceAll(command, "%U", u)
