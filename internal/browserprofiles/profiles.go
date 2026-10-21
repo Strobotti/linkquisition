@@ -3,6 +3,7 @@ package browserprofiles
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -13,6 +14,11 @@ import (
 const (
 	TypeChromium = "chromium"
 	TypeFirefox  = "firefox"
+
+	platformDarwin  = "darwin"
+	platformWindows = "windows"
+
+	chromiumDefaultProfileID = "Default"
 )
 
 // PrivateArgument returns the browser's supported private-window command line argument.
@@ -47,6 +53,24 @@ type chromiumLocalState struct {
 	} `json:"profile"`
 }
 
+// chromiumFamily holds the user-data folder name of a Chromium-based browser on each platform.
+type chromiumFamily struct {
+	darwin  string
+	windows string
+	linux   string
+}
+
+func (f chromiumFamily) relativeDir(platform string) string {
+	switch platform {
+	case platformDarwin:
+		return f.darwin
+	case platformWindows:
+		return f.windows
+	default:
+		return f.linux
+	}
+}
+
 // Detect finds browser profiles in the standard configuration locations for the
 // current platform. Unknown browsers and inaccessible profile files are ignored.
 func Detect(browserName string) []Profile {
@@ -71,10 +95,8 @@ func DetectForPlatform(browserName, platform, home string, getenv func(string) s
 		return nil
 	}
 
-	browserDirs := chromiumProfileDirs(name, platform, home, getenv)
-	for _, dir := range browserDirs {
-		profiles := detectChromium(dir)
-		if len(profiles) > 0 {
+	for _, dir := range chromiumProfileDirs(name, platform, home, getenv) {
+		if profiles := detectChromium(dir); len(profiles) > 0 {
 			return profiles
 		}
 	}
@@ -82,67 +104,65 @@ func DetectForPlatform(browserName, platform, home string, getenv func(string) s
 	return nil
 }
 
-func chromiumProfileDirs(name, platform, home string, getenv func(string) string) []string {
-	name = strings.ToLower(name)
-	var relativeDir string
+func chromiumFamilyFor(name string) (chromiumFamily, bool) {
 	switch {
 	case strings.Contains(name, "edge"):
-		switch platform {
-		case "darwin":
-			relativeDir = filepath.Join("Microsoft Edge")
-		case "windows":
-			relativeDir = filepath.Join("Microsoft", "Edge", "User Data")
-		default:
-			relativeDir = "microsoft-edge"
-		}
+		return chromiumFamily{
+			darwin:  "Microsoft Edge",
+			windows: filepath.Join("Microsoft", "Edge", "User Data"),
+			linux:   "microsoft-edge",
+		}, true
 	case strings.Contains(name, "brave"):
-		switch platform {
-		case "darwin":
-			relativeDir = filepath.Join("BraveSoftware", "Brave-Browser")
-		case "windows":
-			relativeDir = filepath.Join("BraveSoftware", "Brave-Browser", "User Data")
-		default:
-			relativeDir = filepath.Join("BraveSoftware", "Brave-Browser")
-		}
+		return chromiumFamily{
+			darwin:  filepath.Join("BraveSoftware", "Brave-Browser"),
+			windows: filepath.Join("BraveSoftware", "Brave-Browser", "User Data"),
+			linux:   filepath.Join("BraveSoftware", "Brave-Browser"),
+		}, true
 	case strings.Contains(name, "chromium"):
-		switch platform {
-		case "darwin":
-			relativeDir = "Chromium"
-		case "windows":
-			relativeDir = filepath.Join("Chromium", "User Data")
-		default:
-			relativeDir = "chromium"
-		}
+		return chromiumFamily{
+			darwin:  "Chromium",
+			windows: filepath.Join("Chromium", "User Data"),
+			linux:   "chromium",
+		}, true
 	case strings.Contains(name, "chrome") || strings.Contains(name, "google"):
-		switch platform {
-		case "darwin":
-			relativeDir = filepath.Join("Google", "Chrome")
-		case "windows":
-			relativeDir = filepath.Join("Google", "Chrome", "User Data")
-		default:
-			relativeDir = "google-chrome"
-		}
+		return chromiumFamily{
+			darwin:  filepath.Join("Google", "Chrome"),
+			windows: filepath.Join("Google", "Chrome", "User Data"),
+			linux:   "google-chrome",
+		}, true
 	default:
+		return chromiumFamily{}, false
+	}
+}
+
+func chromiumRoots(platform, home string, getenv func(string) string) []string {
+	switch platform {
+	case platformDarwin:
+		return []string{filepath.Join(home, "Library", "Application Support")}
+	case platformWindows:
+		return nonEmpty(getenv("LOCALAPPDATA"))
+	default:
+		defaultConfig := filepath.Join(home, ".config")
+		configHome := getenv("XDG_CONFIG_HOME")
+		if configHome == "" {
+			return []string{defaultConfig}
+		}
+		roots := []string{configHome}
+		if configHome != defaultConfig {
+			roots = append(roots, defaultConfig)
+		}
+		return roots
+	}
+}
+
+func chromiumProfileDirs(name, platform, home string, getenv func(string) string) []string {
+	family, ok := chromiumFamilyFor(strings.ToLower(name))
+	if !ok {
 		return nil
 	}
 
-	var roots []string
-	switch platform {
-	case "darwin":
-		roots = []string{filepath.Join(home, "Library", "Application Support")}
-	case "windows":
-		roots = nonEmpty(getenv("LOCALAPPDATA"))
-	default:
-		configHome := getenv("XDG_CONFIG_HOME")
-		if configHome == "" {
-			configHome = filepath.Join(home, ".config")
-		}
-		roots = []string{configHome}
-		if configHome != filepath.Join(home, ".config") {
-			roots = append(roots, filepath.Join(home, ".config"))
-		}
-	}
-
+	relativeDir := family.relativeDir(platform)
+	roots := chromiumRoots(platform, home, getenv)
 	dirs := make([]string, 0, len(roots))
 	for _, root := range roots {
 		dirs = append(dirs, filepath.Join(root, relativeDir))
@@ -152,9 +172,9 @@ func chromiumProfileDirs(name, platform, home string, getenv func(string) string
 
 func firefoxProfileDirs(platform, home string, getenv func(string) string) []string {
 	switch platform {
-	case "darwin":
+	case platformDarwin:
 		return []string{filepath.Join(home, "Library", "Application Support", "Firefox")}
-	case "windows":
+	case platformWindows:
 		roaming := getenv("APPDATA")
 		if roaming == "" {
 			roaming = filepath.Join(home, "AppData", "Roaming")
@@ -165,8 +185,7 @@ func firefoxProfileDirs(platform, home string, getenv func(string) string) []str
 		if profileHome == "" {
 			profileHome = filepath.Join(home, ".config")
 		}
-		dirs := []string{filepath.Join(home, ".mozilla", "firefox"), filepath.Join(profileHome, "mozilla", "firefox")}
-		return dirs
+		return []string{filepath.Join(home, ".mozilla", "firefox"), filepath.Join(profileHome, "mozilla", "firefox")}
 	}
 }
 
@@ -186,10 +205,10 @@ func detectChromium(userDataDir string) []Profile {
 		profileIDs = append(profileIDs, id)
 	}
 	sort.Slice(profileIDs, func(i, j int) bool {
-		if profileIDs[i] == "Default" {
+		if profileIDs[i] == chromiumDefaultProfileID {
 			return true
 		}
-		if profileIDs[j] == "Default" {
+		if profileIDs[j] == chromiumDefaultProfileID {
 			return false
 		}
 		return profileIDs[i] < profileIDs[j]
@@ -204,9 +223,22 @@ func detectChromium(userDataDir string) []Profile {
 		if _, err := os.Stat(filepath.Join(userDataDir, id)); err != nil {
 			continue
 		}
-		profiles = append(profiles, Profile{Name: info.Name, ID: id, Type: TypeChromium, IsDefault: id == "Default"})
+		profiles = append(profiles, Profile{
+			Name:      info.Name,
+			ID:        id,
+			Type:      TypeChromium,
+			IsDefault: id == chromiumDefaultProfileID,
+		})
 	}
 	return profiles
+}
+
+// firefoxProfileEntry is one [ProfileN] section of Firefox's profiles.ini.
+type firefoxProfileEntry struct {
+	name       string
+	path       string
+	isRelative bool
+	isDefault  bool
 }
 
 func detectFirefox(profileDir string) []Profile {
@@ -216,47 +248,8 @@ func detectFirefox(profileDir string) []Profile {
 	}
 	defer file.Close()
 
-	type profileEntry struct {
-		name       string
-		path       string
-		isRelative bool
-		isDefault  bool
-		isProfile  bool
-	}
-	var entries []profileEntry
-	var current *profileEntry
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
-			section := strings.TrimSuffix(strings.TrimPrefix(line, "["), "]")
-			if !strings.HasPrefix(section, "Profile") {
-				current = nil
-				continue
-			}
-			entries = append(entries, profileEntry{isProfile: true, isRelative: true})
-			current = &entries[len(entries)-1]
-			continue
-		}
-		key, value, ok := strings.Cut(line, "=")
-		if !ok {
-			continue
-		}
-		if current == nil {
-			continue
-		}
-		switch key {
-		case "Name":
-			current.name = value
-		case "Path":
-			current.path = value
-		case "IsRelative":
-			current.isRelative = value != "0"
-		case "Default":
-			current.isDefault = value == "1"
-		}
-	}
-	if scanner.Err() != nil {
+	entries, err := parseFirefoxProfilesINI(file)
+	if err != nil {
 		return nil
 	}
 
@@ -266,14 +259,8 @@ func detectFirefox(profileDir string) []Profile {
 
 	var profiles []Profile
 	for _, entry := range entries {
-		if !entry.isProfile || entry.name == "" || entry.path == "" {
-			continue
-		}
-		path := entry.path
-		if entry.isRelative {
-			path = filepath.Join(profileDir, filepath.FromSlash(path))
-		}
-		if info, err := os.Stat(path); err != nil || !info.IsDir() {
+		path, ok := resolveFirefoxProfilePath(profileDir, entry)
+		if !ok || entry.name == "" {
 			continue
 		}
 		profiles = append(profiles, Profile{
@@ -284,6 +271,67 @@ func detectFirefox(profileDir string) []Profile {
 		})
 	}
 	return profiles
+}
+
+// parseFirefoxProfilesINI returns the [Profile...] sections of a profiles.ini file.
+func parseFirefoxProfilesINI(r io.Reader) ([]firefoxProfileEntry, error) {
+	var entries []firefoxProfileEntry
+	inProfile := false
+
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if section, ok := parseINISection(line); ok {
+			inProfile = strings.HasPrefix(section, "Profile")
+			if inProfile {
+				entries = append(entries, firefoxProfileEntry{isRelative: true})
+			}
+			continue
+		}
+		if !inProfile {
+			continue
+		}
+		if key, value, ok := strings.Cut(line, "="); ok {
+			applyFirefoxProfileKey(&entries[len(entries)-1], key, value)
+		}
+	}
+	return entries, scanner.Err()
+}
+
+func parseINISection(line string) (string, bool) {
+	if !strings.HasPrefix(line, "[") || !strings.HasSuffix(line, "]") {
+		return "", false
+	}
+	return line[1 : len(line)-1], true
+}
+
+func applyFirefoxProfileKey(entry *firefoxProfileEntry, key, value string) {
+	switch key {
+	case "Name":
+		entry.name = value
+	case "Path":
+		entry.path = value
+	case "IsRelative":
+		entry.isRelative = value != "0"
+	case "Default":
+		entry.isDefault = value == "1"
+	}
+}
+
+// resolveFirefoxProfilePath returns the absolute profile directory, if it exists.
+func resolveFirefoxProfilePath(profileDir string, entry firefoxProfileEntry) (string, bool) {
+	if entry.path == "" {
+		return "", false
+	}
+	path := entry.path
+	if entry.isRelative {
+		path = filepath.Join(profileDir, filepath.FromSlash(path))
+	}
+	info, err := os.Stat(path)
+	if err != nil || !info.IsDir() {
+		return "", false
+	}
+	return path, true
 }
 
 func nonEmpty(paths ...string) []string {

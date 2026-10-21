@@ -107,13 +107,13 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 			buttons = append(
 				buttons,
 				picker.makeHorizontalBrowserButton(
-					picker.browsers[i], urlToOpen, remember, rememberMatchType,
+					&picker.browsers[i], urlToOpen, remember, rememberMatchType,
 				),
 			)
 		} else {
 			buttons = append(
 				buttons,
-				picker.makeBrowserButton(picker.browsers[i], urlToOpen, remember, rememberMatchType),
+				picker.makeBrowserButton(&picker.browsers[i], urlToOpen, remember, rememberMatchType),
 			)
 		}
 	}
@@ -145,25 +145,7 @@ func (picker *BrowserPicker) Run(_ context.Context, urlToOpen string) error {
 	}
 
 	widgets = append(widgets, picker.buildURLDisplay(urlToOpen, w)...)
-	_, picker.privateSupported = supportedPrivateArgument(picker.browsers)
-	picker.privateToggle = widget.NewCheck(i18n.T("picker.private_mode"), func(enabled bool) {
-		if !picker.shiftLeftHeld && !picker.shiftRightHeld {
-			picker.privateToggleSet = enabled
-		}
-		picker.privateToggle.Checked = picker.privateModeEnabled()
-		picker.privateToggle.Refresh()
-		if picker.pickerWindow != nil {
-			picker.pickerWindow.Canvas().Unfocus()
-		}
-	})
-	if !picker.privateSupported {
-		picker.privateToggle.Disable()
-		guide := widget.NewLabel(i18n.T("picker.private_unsupported"))
-		guide.Wrapping = fyne.TextWrapWord
-		guide.TextStyle = fyne.TextStyle{Italic: true}
-		widgets = append(widgets, guide)
-	}
-	widgets = append(widgets, picker.privateToggle)
+	widgets = append(widgets, picker.buildPrivateModeControls(w)...)
 	widgets = append(widgets, picker.buildRememberCheck(urlToOpen, remember, rememberMatchType)...)
 
 	if !settings.Ui.HideKeyboardGuideLabel {
@@ -210,15 +192,37 @@ func supportedPrivateArgument(browsers []linkquisition.Browser) (string, bool) {
 }
 
 func (picker *BrowserPicker) handleShiftKey(event *fyne.KeyEvent, pressed bool) {
-	switch event.Name {
-	case desktop.KeyShiftLeft:
+	if event.Name == desktop.KeyShiftLeft {
 		picker.shiftLeftHeld = pressed
-	case desktop.KeyShiftRight:
+	} else if event.Name == desktop.KeyShiftRight {
 		picker.shiftRightHeld = pressed
-	default:
+	} else {
 		return
 	}
 	picker.refreshPrivateModeToggle()
+}
+
+// buildPrivateModeControls creates the "open in private window" toggle, plus a note when no
+// available browser supports private launching.
+func (picker *BrowserPicker) buildPrivateModeControls(w fyne.Window) []fyne.CanvasObject {
+	_, picker.privateSupported = supportedPrivateArgument(picker.browsers)
+	picker.privateToggle = widget.NewCheck(i18n.T("picker.private_mode"), func(enabled bool) {
+		if !picker.shiftLeftHeld && !picker.shiftRightHeld {
+			picker.privateToggleSet = enabled
+		}
+		picker.refreshPrivateModeToggle()
+		w.Canvas().Unfocus()
+	})
+
+	var controls []fyne.CanvasObject
+	if !picker.privateSupported {
+		picker.privateToggle.Disable()
+		guide := widget.NewLabel(i18n.T("picker.private_unsupported"))
+		guide.Wrapping = fyne.TextWrapWord
+		guide.TextStyle = fyne.TextStyle{Italic: true}
+		controls = append(controls, guide)
+	}
+	return append(controls, picker.privateToggle)
 }
 
 func (picker *BrowserPicker) setupKeyboardShortcuts(w fyne.Window, buttons []fyne.CanvasObject) {
@@ -260,8 +264,7 @@ func (picker *BrowserPicker) setupKeyboardShortcuts(w fyne.Window, buttons []fyn
 	)
 }
 
-// tapButton triggers the OnTapped handler for a button canvas object.
-// Supports both widget.Button (vertical layout) and the tappable container (horizontal layout).
+// setupPrivateModeModifier tracks held Shift keys so the private toggle reflects them while held.
 func (picker *BrowserPicker) setupPrivateModeModifier(w fyne.Window) {
 	desktopCanvas, ok := w.Canvas().(desktop.Canvas)
 	if !ok {
@@ -274,17 +277,6 @@ func (picker *BrowserPicker) setupPrivateModeModifier(w fyne.Window) {
 	desktopCanvas.SetOnKeyUp(func(event *fyne.KeyEvent) {
 		picker.handleShiftKey(event, false)
 	})
-}
-
-func (picker *BrowserPicker) setPrivateModeToggle(enabled bool) {
-	if picker.privateToggle == nil {
-		return
-	}
-	picker.privateToggle.Checked = enabled
-	picker.privateToggle.Refresh()
-	if picker.pickerWindow != nil {
-		picker.pickerWindow.Canvas().Unfocus()
-	}
 }
 
 func (picker *BrowserPicker) refreshPrivateModeToggle() {

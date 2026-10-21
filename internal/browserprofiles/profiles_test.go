@@ -48,8 +48,9 @@ func TestDetectForPlatformFirefoxProfiles(t *testing.T) {
 
 func TestChromiumProfileDirsUsePlatformLocations(t *testing.T) {
 	home := t.TempDir()
-	windowsDirs := chromiumProfileDirs("Google Chrome", "windows", home, func(string) string { return "C:/Users/test/AppData/Local" })
-	require.Equal(t, []string{filepath.Join("C:/Users/test/AppData/Local", "Google", "Chrome", "User Data")}, windowsDirs)
+	localAppData := filepath.Join(home, "AppData", "Local")
+	windowsDirs := chromiumProfileDirs("Google Chrome", "windows", home, func(string) string { return localAppData })
+	require.Equal(t, []string{filepath.Join(localAppData, "Google", "Chrome", "User Data")}, windowsDirs)
 
 	darwinDirs := chromiumProfileDirs("Google Chrome", "darwin", home, func(string) string { return "" })
 	require.Equal(t, []string{filepath.Join(home, "Library", "Application Support", "Google", "Chrome")}, darwinDirs)

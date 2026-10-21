@@ -307,7 +307,7 @@ func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
 		found := false
 		for j := range s.Browsers {
 			if sameBrowserTarget(s.Browsers[j].Command, s.Browsers[j].ProfilePath, browsers[i].Command, browsers[i].ProfilePath) ||
-				(s.Browsers[j].Command == browsers[i].Command && s.Browsers[j].ProfilePath == "" && isDefaultBrowser(browsers[i])) {
+				(s.Browsers[j].Command == browsers[i].Command && s.Browsers[j].ProfilePath == "" && isDefaultBrowser(&browsers[i])) {
 				found = true
 				break
 			}
@@ -333,9 +333,8 @@ func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
 	return s
 }
 
-// refreshIconPaths updates the icon path for auto-discovered browsers that have
-// a newer icon path available. Manual browsers keep their existing icon path unless
-// it is empty and a new one was discovered.
+// sameBrowserTarget reports whether two entries refer to the same launch target
+// (same browser command and the same profile).
 func sameBrowserTarget(commandA, profileA, commandB, profileB string) bool {
 	return commandA == commandB && profileA == profileB
 }
@@ -349,10 +348,13 @@ func hasProfileTargets(command string, browsers []Browser) bool {
 	return false
 }
 
-func isDefaultBrowser(browser Browser) bool {
+func isDefaultBrowser(browser *Browser) bool {
 	return browser.ProfilePath == "" || browser.ProfileIsDefault
 }
 
+// refreshIconPaths updates the icon path for auto-discovered browsers that have
+// a newer icon path available. Manual browsers keep their existing icon path unless
+// it is empty and a new one was discovered.
 func (s *Settings) refreshIconPaths(browsers []Browser) *Settings {
 	for i := range s.Browsers {
 		if s.Browsers[i].ProfilePath == "" && hasProfileTargets(s.Browsers[i].Command, browsers) {
