@@ -348,7 +348,7 @@ the build matrix.
 
 ### Requirements
 
-- Go 1.27.2 (https://go.dev/doc/install)
+- Go 1.27.3 (https://go.dev/doc/install)
 - Taskfile (https://taskfile.dev/#/installation)
 - Build-dependencies:
   ```shell
