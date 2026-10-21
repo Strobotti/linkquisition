@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.12](https://github.com/Strobotti/linkquisition/compare/v3.1.11...v3.1.12) (2026-10-21)
+
+
+### Bug Fixes
+
+* update Go version to 1.27.3 ([#215](https://github.com/Strobotti/linkquisition/issues/215)) ([8f7706f](https://github.com/Strobotti/linkquisition/commit/8f7706f044d87d94494baad5efa0e01e066c3324))
+
 ## [3.1.11](https://github.com/Strobotti/linkquisition/compare/v3.1.10...v3.1.11) (2026-10-20)
 
 
