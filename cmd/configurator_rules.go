@@ -27,9 +27,54 @@ func (c *Configurator) getRulesTab() fyne.CanvasObject {
 		c.rebuildRulesList(content, text)
 	}
 
+	c.moveRulesBtn = widget.NewButton(i18n.T("config.rules_move"), func() {
+		c.showMoveRulesDialog(content)
+	})
+	c.moveRulesBtn.Disable()
+
 	c.rebuildRulesList(content, "")
 
-	return container.NewBorder(filterEntry, nil, nil, nil, container.NewVScroll(content))
+	topBar := container.NewBorder(nil, nil, nil, c.moveRulesBtn, filterEntry)
+	return container.NewBorder(topBar, nil, nil, nil, container.NewVScroll(content))
+}
+
+// ruleSelectionKey identifies a rule by its browser and rule index in the current settings.
+func ruleSelectionKey(browserIdx, ruleIdx int) string {
+	return fmt.Sprintf("%d/%d", browserIdx, ruleIdx)
+}
+
+func (c *Configurator) isRuleSelected(browserIdx, ruleIdx int) bool {
+	return c.selectedRules[ruleSelectionKey(browserIdx, ruleIdx)]
+}
+
+func (c *Configurator) setRuleSelected(browserIdx, ruleIdx int, selected bool) {
+	if c.selectedRules == nil {
+		c.selectedRules = map[string]bool{}
+	}
+	key := ruleSelectionKey(browserIdx, ruleIdx)
+	if selected {
+		c.selectedRules[key] = true
+	} else {
+		delete(c.selectedRules, key)
+	}
+	c.updateMoveRulesButton()
+}
+
+// clearRuleSelection drops all selections. Called after any change that re-indexes rules.
+func (c *Configurator) clearRuleSelection() {
+	c.selectedRules = map[string]bool{}
+	c.updateMoveRulesButton()
+}
+
+func (c *Configurator) updateMoveRulesButton() {
+	if c.moveRulesBtn == nil {
+		return
+	}
+	if len(c.selectedRules) > 0 {
+		c.moveRulesBtn.Enable()
+	} else {
+		c.moveRulesBtn.Disable()
+	}
 }
 
 func (c *Configurator) rebuildRulesList(content *fyne.Container, filter string) {
@@ -146,6 +191,12 @@ func (c *Configurator) buildRuleRow(
 	settings := c.settingsService.GetSettings()
 	rule := settings.Browsers[browserIdx].Matches[ruleIdx]
 
+	selectCheck := widget.NewCheck("", nil)
+	selectCheck.SetChecked(c.isRuleSelected(browserIdx, ruleIdx))
+	selectCheck.OnChanged = func(checked bool) {
+		c.setRuleSelected(browserIdx, ruleIdx, checked)
+	}
+
 	typeLabel := widget.NewLabel(fmt.Sprintf("[%s]", rule.Type))
 	typeLabel.TextStyle = fyne.TextStyle{Bold: true}
 
@@ -161,8 +212,9 @@ func (c *Configurator) buildRuleRow(
 	})
 
 	buttons := container.NewHBox(editBtn, deleteBtn)
+	leading := container.NewHBox(selectCheck, typeLabel)
 
-	return container.NewBorder(nil, nil, typeLabel, buttons, valueLabel)
+	return container.NewBorder(nil, nil, leading, buttons, valueLabel)
 }
 
 func (c *Configurator) showAddRuleDialog(browserIdx int, listContainer *fyne.Container) {
@@ -352,7 +404,104 @@ func (c *Configurator) deleteRule(browserIdx, ruleIdx int, listContainer *fyne.C
 		return
 	}
 
+	// Removing a rule re-indexes the rules after it, so previous selections no longer point at the same rules.
+	c.clearRuleSelection()
 	c.rebuildRulesList(listContainer, "")
+}
+
+// showMoveRulesDialog asks for a target browser and moves all checked rules there.
+func (c *Configurator) showMoveRulesDialog(listContainer *fyne.Container) {
+	if len(c.selectedRules) == 0 {
+		return
+	}
+
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
+		return
+	}
+
+	settings := c.settingsService.GetSettings()
+	names := make([]string, 0, len(settings.Browsers))
+	for i := range settings.Browsers {
+		names = append(names, settings.Browsers[i].Name)
+	}
+
+	targetSelect := widget.NewSelect(names, nil)
+	if len(names) > 0 {
+		targetSelect.SetSelectedIndex(0)
+	}
+
+	form := widget.NewForm(widget.NewFormItem(i18n.T("config.rules_move_target"), targetSelect))
+
+	d := dialog.NewCustomConfirm(
+		i18n.T("config.rules_move_title"),
+		i18n.T("config.rules_move"),
+		i18n.T("config.plugins_cancel"),
+		form,
+		func(confirmed bool) {
+			if !confirmed {
+				return
+			}
+			target := targetSelect.SelectedIndex()
+			if target < 0 {
+				return
+			}
+			c.moveSelectedRules(target, listContainer)
+		},
+		parentWindow,
+	)
+	d.Resize(fyne.NewSize(500, 180)) //nolint:mnd
+	d.Show()
+}
+
+// moveSelectedRules moves every checked rule into the target browser. Rules that already exist there
+// (same type and value) are not duplicated, but are still removed from their source.
+func (c *Configurator) moveSelectedRules(target int, listContainer *fyne.Container) {
+	settings := c.settingsService.GetSettings()
+	if target < 0 || target >= len(settings.Browsers) {
+		return
+	}
+
+	var moved []linkquisition.BrowserMatch
+	for i := range settings.Browsers {
+		if i == target {
+			continue
+		}
+
+		kept := make([]linkquisition.BrowserMatch, 0, len(settings.Browsers[i].Matches))
+		for j, m := range settings.Browsers[i].Matches {
+			if c.isRuleSelected(i, j) {
+				moved = append(moved, m)
+				continue
+			}
+			kept = append(kept, m)
+		}
+		settings.Browsers[i].Matches = kept
+	}
+
+	targetBrowser := &settings.Browsers[target]
+	for _, m := range moved {
+		if !hasSameMatch(targetBrowser.Matches, m) {
+			targetBrowser.Matches = append(targetBrowser.Matches, m)
+		}
+	}
+
+	if err := c.settingsService.WriteSettings(settings); err != nil {
+		c.logger.Error("Error moving rules", "error", err)
+		return
+	}
+
+	c.clearRuleSelection()
+	c.rebuildRulesList(listContainer, "")
+}
+
+func hasSameMatch(matches []linkquisition.BrowserMatch, m linkquisition.BrowserMatch) bool {
+	for _, existing := range matches {
+		if existing.Type == m.Type && existing.Value == m.Value {
+			return true
+		}
+	}
+	return false
 }
 
 // regexPanel provides live regex validation and test-matching UI.

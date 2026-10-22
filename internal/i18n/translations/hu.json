@@ -260,6 +260,15 @@
   "config.rules_add": {
     "other": "+ Szabály hozzáadása"
   },
+  "config.rules_move": {
+    "other": "Kijelöltek áthelyezése…"
+  },
+  "config.rules_move_title": {
+    "other": "Szabályok áthelyezése"
+  },
+  "config.rules_move_target": {
+    "other": "Áthelyezés ide:"
+  },
   "config.rules_add_title": {
     "other": "Szabály hozzáadása: {{.Name}}"
   },

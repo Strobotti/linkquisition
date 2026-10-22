@@ -260,6 +260,15 @@
   "config.rules_add": {
     "other": "+ Lägg till regel"
   },
+  "config.rules_move": {
+    "other": "Flytta valda…"
+  },
+  "config.rules_move_title": {
+    "other": "Flytta regler"
+  },
+  "config.rules_move_target": {
+    "other": "Flytta till:"
+  },
   "config.rules_add_title": {
     "other": "Lägg till regel för {{.Name}}"
   },

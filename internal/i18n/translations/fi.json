@@ -260,6 +260,15 @@
   "config.rules_add": {
     "other": "+ Lisää sääntö"
   },
+  "config.rules_move": {
+    "other": "Siirrä valitut…"
+  },
+  "config.rules_move_title": {
+    "other": "Siirrä säännöt"
+  },
+  "config.rules_move_target": {
+    "other": "Siirrä kohteeseen:"
+  },
   "config.rules_add_title": {
     "other": "Lisää sääntö selaimelle {{.Name}}"
   },

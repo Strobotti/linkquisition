@@ -260,6 +260,15 @@
   "config.rules_add": {
     "other": "+ Додати правило"
   },
+  "config.rules_move": {
+    "other": "Перемістити вибрані…"
+  },
+  "config.rules_move_title": {
+    "other": "Перемістити правила"
+  },
+  "config.rules_move_target": {
+    "other": "Перемістити до:"
+  },
   "config.rules_add_title": {
     "other": "Додати правило для {{.Name}}"
   },

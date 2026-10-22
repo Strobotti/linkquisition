@@ -260,6 +260,15 @@
   "config.rules_add": {
     "other": "+ Ajouter une règle"
   },
+  "config.rules_move": {
+    "other": "Déplacer la sélection…"
+  },
+  "config.rules_move_title": {
+    "other": "Déplacer les règles"
+  },
+  "config.rules_move_target": {
+    "other": "Déplacer vers :"
+  },
   "config.rules_add_title": {
     "other": "Ajouter une règle à {{.Name}}"
   },

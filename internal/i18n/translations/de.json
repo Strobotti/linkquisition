@@ -260,6 +260,15 @@
   "config.rules_add": {
     "other": "+ Regel hinzufügen"
   },
+  "config.rules_move": {
+    "other": "Ausgewählte verschieben…"
+  },
+  "config.rules_move_title": {
+    "other": "Regeln verschieben"
+  },
+  "config.rules_move_target": {
+    "other": "Verschieben nach:"
+  },
   "config.rules_add_title": {
     "other": "Regel hinzufügen für {{.Name}}"
   },

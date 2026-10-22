@@ -260,6 +260,15 @@
   "config.rules_add": {
     "other": "+ Add rule"
   },
+  "config.rules_move": {
+    "other": "Move selected…"
+  },
+  "config.rules_move_title": {
+    "other": "Move rules"
+  },
+  "config.rules_move_target": {
+    "other": "Move to:"
+  },
   "config.rules_add_title": {
     "other": "Add Rule to {{.Name}}"
   },
