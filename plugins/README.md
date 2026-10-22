@@ -228,6 +228,7 @@ when it appears.
 - `football` — Top-down football/soccer pitch with animated spotlight sweep
 - `frogger` — Frogger dodging traffic and hopping on logs
 - `glitch` — Cyberpunk-style RGB channel splitting with periodic static bursts
+- `halloween` — Spooky scene with a harvest moon, flapping bats, fading ghosts, cobwebs and a dangling spider
 - `invaders` — Space invaders with marching formation and explosions
 - `lava` — Lava lamp with soft blobs rising and falling
 - `life` — Conway's Game of Life cellular automata
