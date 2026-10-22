@@ -306,11 +306,12 @@ func (c *Configurator) showRenameBrowserDialog(idx int, listContainer *fyne.Cont
 		return
 	}
 
-	dialog.ShowForm(
+	form := widget.NewForm(widget.NewFormItem(i18n.T("config.browsers_name"), nameEntry))
+	d := dialog.NewCustomConfirm(
 		i18n.T("config.browsers_rename_title"),
 		i18n.T("config.plugins_save"),
 		i18n.T("config.plugins_cancel"),
-		[]*widget.FormItem{widget.NewFormItem(i18n.T("config.browsers_name"), nameEntry)},
+		form,
 		func(confirmed bool) {
 			if !confirmed || nameEntry.Text == "" {
 				return
@@ -328,6 +329,8 @@ func (c *Configurator) showRenameBrowserDialog(idx int, listContainer *fyne.Cont
 		},
 		parentWindow,
 	)
+	d.Resize(fyne.NewSize(500, 180)) //nolint:mnd
+	d.Show()
 }
 
 func (c *Configurator) showEditBrowserDialog(idx int, listContainer *fyne.Container) {
