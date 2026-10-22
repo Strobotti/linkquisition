@@ -354,6 +354,21 @@ func TestSettings_UpdateWithBrowsers_AddsDetectedProfiles(t *testing.T) {
 	require.Equal(t, "Profile 1", settings.Browsers[1].ProfilePath)
 }
 
+func TestSettings_UpdateWithBrowsers_PreservesCustomBrowserName(t *testing.T) {
+	settings := &Settings{Browsers: []BrowserSettings{{
+		Name: "Personal Chrome", Command: "chrome", Source: SourceAuto,
+		ProfileName: "Personal", ProfilePath: "Default", ProfileType: "chromium",
+	}}}
+
+	settings.UpdateWithBrowsers([]Browser{{
+		Name: "Google Chrome — Personal", Command: "chrome",
+		ProfileName: "Personal", ProfilePath: "Default", ProfileType: "chromium", ProfileIsDefault: true,
+	}})
+
+	require.Len(t, settings.Browsers, 1)
+	assert.Equal(t, "Personal Chrome", settings.Browsers[0].Name)
+}
+
 func TestSettings_UpdateWithBrowsers_MigratesLegacyBrowserToDefaultProfile(t *testing.T) {
 	settings := &Settings{Browsers: []BrowserSettings{{
 		Name: "Google Chrome", Command: "chrome", Source: SourceAuto,

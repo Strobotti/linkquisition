@@ -209,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Redigera webbläsare"
   },
+  "config.browsers_rename_title": {
+    "other": "Byt namn på webbläsare"
+  },
   "config.browsers_delete": {
     "other": "Ta bort"
   },

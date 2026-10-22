@@ -209,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Editar navegador"
   },
+  "config.browsers_rename_title": {
+    "other": "Renombrar navegador"
+  },
   "config.browsers_delete": {
     "other": "Eliminar"
   },

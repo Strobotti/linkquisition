@@ -209,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Muokkaa selainta"
   },
+  "config.browsers_rename_title": {
+    "other": "Nimeä selain uudelleen"
+  },
   "config.browsers_delete": {
     "other": "Poista"
   },
