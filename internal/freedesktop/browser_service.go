@@ -146,11 +146,17 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 	command = strings.ReplaceAll(command, "%u", u)
 	command = strings.ReplaceAll(command, "%U", u)
 
-	// now just execute the damn command
+	// Start rather than Run: browsers that are not yet running stay alive as the main
+	// process, and waiting for them would keep the picker open. Browsers that are already
+	// running hand the URL off and exit immediately, which is why the picker used to
+	// close only in that case.
 	cmd := exec.Command("sh", "-c", command)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to open URL %#q with browser %#q: %v", u, browser.Name, err)
+	}
+	if err := cmd.Process.Release(); err != nil {
+		return fmt.Errorf("failed to release browser process %#q: %v", browser.Name, err)
 	}
 
 	return nil

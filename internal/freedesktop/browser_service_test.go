@@ -6,12 +6,25 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/strobotti/linkquisition"
 )
+
+func TestOpenUrlWithBrowserDoesNotWaitForBrowserExit(t *testing.T) {
+	// Simulates a browser that stays alive as its main process (e.g. a first launch of Chrome).
+	b := &BrowserService{}
+	browser := &linkquisition.Browser{Name: "Fake Browser", Command: "sleep 5 %u"}
+
+	start := time.Now()
+	require.NoError(t, b.OpenUrlWithBrowser("https://example.com", browser))
+	if elapsed := time.Since(start); elapsed >= 2*time.Second {
+		t.Errorf("OpenUrlWithBrowser blocked for %v waiting for the browser to exit", elapsed)
+	}
+}
 
 type mockBrowserIconLoader struct{}
 
