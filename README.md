@@ -403,6 +403,11 @@ Profile entries are stored in `config.json` with their identity (`profileName`, 
 (`matches`) are attached to the profile they were created for. If a browser was configured before profile support was
 added, its existing rules move to the browser's default profile on the next scan.
 
+Because of this, rules created before profile detection may now sit on a profile you didn't intend (for example, a rule
+for a work site that ended up on your personal profile). To fix this, open the **Rules** tab, tick the rules to move
+using their checkboxes, click **Move selected…**, and choose the correct browser or profile. Rules that already exist in
+the target are not duplicated.
+
 If a profile is removed from the browser, its entry disappears on the next scan. Renaming an entry in the
 configuration screen is kept across scans.
 
