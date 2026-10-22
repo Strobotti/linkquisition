@@ -318,6 +318,11 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 		regexPanel.update(typeSelect.Selected, text)
 	}
 
+	privateModeCheck := widget.NewCheck(i18n.T("picker.private_mode"), nil)
+	privateModeCheck.SetChecked(settings.Browsers[browserIdx].PrivateMode)
+	privateModeHelp := widget.NewLabel(i18n.T("config.rules_private_mode_help"))
+	privateModeHelp.Wrapping = fyne.TextWrapWord
+
 	form := container.NewVBox(
 		widget.NewForm(
 			widget.NewFormItem(i18n.T("config.rules_type"), typeSelect),
@@ -325,6 +330,8 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 				nil, nil, nil, regexPanel.indicatorBox, valueEntry,
 			)),
 		),
+		privateModeCheck,
+		privateModeHelp,
 		regexPanel.panel,
 	)
 
@@ -348,7 +355,14 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 				}
 			}
 
-			c.updateRule(browserIdx, ruleIdx, typeSelect.Selected, valueEntry.Text, listContainer)
+			c.updateRule(
+				browserIdx,
+				ruleIdx,
+				typeSelect.Selected,
+				valueEntry.Text,
+				privateModeCheck.Checked,
+				listContainer,
+			)
 		},
 		parentWindow,
 	)
@@ -357,7 +371,7 @@ func (c *Configurator) showEditRuleDialog(browserIdx, ruleIdx int, listContainer
 }
 
 func (c *Configurator) updateRule(
-	browserIdx, ruleIdx int, matchType, matchValue string, listContainer *fyne.Container,
+	browserIdx, ruleIdx int, matchType, matchValue string, privateMode bool, listContainer *fyne.Container,
 ) {
 	settings := c.settingsService.GetSettings()
 
@@ -365,6 +379,7 @@ func (c *Configurator) updateRule(
 		Type:  matchType,
 		Value: matchValue,
 	}
+	settings.Browsers[browserIdx].PrivateMode = privateMode
 
 	if err := c.settingsService.WriteSettings(settings); err != nil {
 		c.logger.Error("Error updating rule", "error", err)

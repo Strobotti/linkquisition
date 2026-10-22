@@ -62,6 +62,7 @@ type BrowserSettings struct {
 	ProfilePath      string `json:"profilePath,omitempty"`
 	ProfileType      string `json:"profileType,omitempty"`
 	ProfileIsDefault bool   `json:"profileIsDefault,omitempty"`
+	PrivateMode      bool   `json:"privateMode,omitempty"`
 
 	Matches []BrowserMatch `json:"matches"`
 }
@@ -414,6 +415,7 @@ func (s *Settings) GetMatchingBrowser(u string) (*Browser, error) {
 			ProfilePath:      s.Browsers[i].ProfilePath,
 			ProfileType:      s.Browsers[i].ProfileType,
 			ProfileIsDefault: s.Browsers[i].ProfileIsDefault,
+			PrivateMode:      s.Browsers[i].PrivateMode,
 		}, nil
 	}
 
@@ -423,6 +425,7 @@ func (s *Settings) GetMatchingBrowser(u string) (*Browser, error) {
 func (s *Settings) AddRuleToBrowser(b *Browser, matchType, matchValue string) {
 	for i := range s.Browsers {
 		if sameBrowserTarget(s.Browsers[i].Command, s.Browsers[i].ProfilePath, b.Command, b.ProfilePath) {
+			s.Browsers[i].PrivateMode = b.PrivateMode
 			s.Browsers[i].Matches = append(
 				s.Browsers[i].Matches,
 				BrowserMatch{

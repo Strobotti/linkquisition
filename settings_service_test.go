@@ -175,6 +175,25 @@ func TestFileSettingsService_IsConfigured_ReturnsFalseForCorruptFile(t *testing.
 	assert.Error(t, err)
 }
 
+func TestFileSettingsService_ReadSettings_PreservesPrivateMode(t *testing.T) {
+	svc := newTestService(t, nil)
+	settings := &Settings{
+		Browsers: []BrowserSettings{{
+			Name:        "Firefox",
+			Command:     "firefox",
+			Source:      SourceAuto,
+			PrivateMode: true,
+			Matches:     []BrowserMatch{{Type: BrowserMatchTypeSite, Value: "example.com"}},
+		}},
+	}
+	require.NoError(t, svc.WriteSettings(settings))
+
+	read, err := svc.ReadSettings()
+	require.NoError(t, err)
+	require.Len(t, read.Browsers, 1)
+	assert.True(t, read.Browsers[0].PrivateMode)
+}
+
 func TestFileSettingsService_ReadSettings_CompilesRegexPatterns(t *testing.T) {
 	svc := newTestService(t, nil)
 

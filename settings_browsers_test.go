@@ -529,9 +529,10 @@ func TestSettings_GetMatchingBrowser(t *testing.T) {
 	settings := &Settings{
 		Browsers: []BrowserSettings{
 			{
-				Name:     "Firefox",
-				Command:  "firefox",
-				IconPath: "/usr/share/icons/firefox.png",
+				Name:        "Firefox",
+				Command:     "firefox",
+				IconPath:    "/usr/share/icons/firefox.png",
+				PrivateMode: true,
 				Matches: []BrowserMatch{
 					{Type: BrowserMatchTypeSite, Value: "www.facebook.com"},
 				},
@@ -552,6 +553,7 @@ func TestSettings_GetMatchingBrowser(t *testing.T) {
 		assert.Equal(t, "Firefox", browser.Name)
 		assert.Equal(t, "firefox", browser.Command)
 		assert.Equal(t, "/usr/share/icons/firefox.png", browser.IconPath)
+		assert.True(t, browser.PrivateMode)
 	})
 
 	t.Run("returns matching browser for domain rule", func(t *testing.T) {
@@ -597,12 +599,13 @@ func TestSettings_AddRuleToBrowser(t *testing.T) {
 			},
 		}
 
-		browser := &Browser{Name: "Firefox", Command: "firefox"}
+		browser := &Browser{Name: "Firefox", Command: "firefox", PrivateMode: true}
 		settings.AddRuleToBrowser(browser, BrowserMatchTypeSite, "www.example.com")
 
 		assert.Len(t, settings.Browsers[0].Matches, 1)
 		assert.Equal(t, BrowserMatchTypeSite, settings.Browsers[0].Matches[0].Type)
 		assert.Equal(t, "www.example.com", settings.Browsers[0].Matches[0].Value)
+		assert.True(t, settings.Browsers[0].PrivateMode)
 		// Other browser should be untouched
 		assert.Empty(t, settings.Browsers[1].Matches)
 	})

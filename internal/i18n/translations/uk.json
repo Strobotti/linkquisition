@@ -275,6 +275,9 @@
   "config.rules_edit_title": {
     "other": "Редагувати правило"
   },
+  "config.rules_private_mode_help": {
+    "other": "Applies to all URLs handled by this browser."
+  },
   "config.rules_type": {
     "other": "Тип"
   },
