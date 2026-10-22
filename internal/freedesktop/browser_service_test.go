@@ -328,6 +328,7 @@ Categories=Development;TextEditor;
 `
 	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "editor.desktop"), []byte(editorContent), 0600))
 
+	t.Setenv("HOME", dir)
 	t.Setenv("XDG_DATA_HOME", filepath.Join(dir, "local"))
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "share"))
 

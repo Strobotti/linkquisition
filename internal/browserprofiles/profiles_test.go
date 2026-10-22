@@ -59,6 +59,20 @@ func TestChromiumProfileDirsUsePlatformLocations(t *testing.T) {
 	require.Equal(t, []string{filepath.Join(home, ".config", "microsoft-edge")}, linuxDirs)
 }
 
+func TestDetectForPlatformBraveFlatpakProfiles(t *testing.T) {
+	home := t.TempDir()
+	userData := filepath.Join(home, ".var", "app", "com.brave.Browser", "config", "BraveSoftware", "Brave-Browser")
+	require.NoError(t, os.MkdirAll(filepath.Join(userData, "Default"), 0700))
+	require.NoError(t, os.WriteFile(filepath.Join(userData, "Local State"),
+		[]byte(`{"profile":{"info_cache":{"Default":{"name":"Personal"}}}}`), 0600))
+
+	profiles := DetectForPlatform("Brave Web Browser", "linux", home, func(string) string { return "" })
+
+	require.Equal(t, []Profile{
+		{Name: "Personal", ID: "Default", Type: TypeChromium, IsDefault: true},
+	}, profiles)
+}
+
 func TestDetectForPlatformUsesPlatformLocations(t *testing.T) {
 	home := t.TempDir()
 	appData := filepath.Join(home, "local")

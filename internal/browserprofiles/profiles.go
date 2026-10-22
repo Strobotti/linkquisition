@@ -54,10 +54,13 @@ type chromiumLocalState struct {
 }
 
 // chromiumFamily holds the user-data folder name of a Chromium-based browser on each platform.
+// flatpakID, when set, is the Flatpak application ID whose sandboxed config folder also
+// holds the browser's user data on Linux.
 type chromiumFamily struct {
-	darwin  string
-	windows string
-	linux   string
+	darwin    string
+	windows   string
+	linux     string
+	flatpakID string
 }
 
 func (f chromiumFamily) relativeDir(platform string) string {
@@ -114,9 +117,10 @@ func chromiumFamilyFor(name string) (chromiumFamily, bool) {
 		}, true
 	case strings.Contains(name, "brave"):
 		return chromiumFamily{
-			darwin:  filepath.Join("BraveSoftware", "Brave-Browser"),
-			windows: filepath.Join("BraveSoftware", "Brave-Browser", "User Data"),
-			linux:   filepath.Join("BraveSoftware", "Brave-Browser"),
+			darwin:    filepath.Join("BraveSoftware", "Brave-Browser"),
+			windows:   filepath.Join("BraveSoftware", "Brave-Browser", "User Data"),
+			linux:     filepath.Join("BraveSoftware", "Brave-Browser"),
+			flatpakID: "com.brave.Browser",
 		}, true
 	case strings.Contains(name, "chromium"):
 		return chromiumFamily{
@@ -163,9 +167,12 @@ func chromiumProfileDirs(name, platform, home string, getenv func(string) string
 
 	relativeDir := family.relativeDir(platform)
 	roots := chromiumRoots(platform, home, getenv)
-	dirs := make([]string, 0, len(roots))
+	dirs := make([]string, 0, len(roots)+1)
 	for _, root := range roots {
 		dirs = append(dirs, filepath.Join(root, relativeDir))
+	}
+	if platform != platformDarwin && platform != platformWindows && family.flatpakID != "" {
+		dirs = append(dirs, filepath.Join(home, ".var", "app", family.flatpakID, "config", relativeDir))
 	}
 	return dirs
 }
