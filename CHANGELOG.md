@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/Strobotti/linkquisition/compare/v3.1.12...v3.2.0) (2026-10-22)
+
+
+### Features
+
+* **plugins:** add halloween effect to shenanigans plugin ([#217](https://github.com/Strobotti/linkquisition/issues/217)) ([e7abc1e](https://github.com/Strobotti/linkquisition/commit/e7abc1e4491a8cdcb40fbeb7cae59b1983f68f05))
+
 ## [3.1.12](https://github.com/Strobotti/linkquisition/compare/v3.1.11...v3.1.12) (2026-10-21)
 
 
