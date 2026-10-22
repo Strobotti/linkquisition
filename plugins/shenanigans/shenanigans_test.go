@@ -53,7 +53,7 @@ func TestShenanigans_Metadata(t *testing.T) {
 		"asteroids", "aurora", "boids", "breakout",
 		"dino", "fire", "fireflies", "fireworks",
 		"flappy", "football", "frogger", "glitch",
-		"invaders", "lava", "life", "matrix",
+		"halloween", "invaders", "lava", "life", "matrix",
 		"minesweeper", "pacman", "pipes", "plasma", "pong",
 		"pride", "rain", "raycast", "snake",
 		"sinescroll", "snow", "starfield", "tetris",
@@ -127,6 +127,35 @@ func TestShenanigans_OnPickerShown_Fire(t *testing.T) {
 	// Call the draw function to ensure it doesn't panic
 	pixels := mc.drawFn(200, 100)
 	assert.Len(t, pixels, 200*100*4)
+}
+
+func TestShenanigans_OnPickerShown_Halloween(t *testing.T) {
+	for _, light := range []bool{false, true} {
+		state := newHalloweenState(light)
+		state.init(300, 200)
+		for range 50 {
+			state.update()
+		}
+		pixels := state.render()
+		assert.Len(t, pixels, 300*200*4)
+
+		visible := 0
+		for i := 3; i < len(pixels); i += 4 {
+			if pixels[i] > 0 {
+				visible++
+			}
+		}
+		assert.Positive(t, visible)
+	}
+
+	p := NewForTesting()
+	_ = p.Setup(newTestServiceProvider(), map[string]interface{}{"effect": "halloween"})
+
+	mc := &mockPickerCanvas{}
+	p.OnPickerShown(mc)
+
+	assert.True(t, mc.overlayAdded)
+	assert.Len(t, mc.drawFn(200, 100), 200*100*4)
 }
 
 func TestShenanigans_OnPickerShown_Snow(t *testing.T) {

@@ -37,6 +37,7 @@ const (
 	effectLava        = "lava"
 	effectSineScroll  = "sinescroll"
 	effectFireflies   = "fireflies"
+	effectHalloween   = "halloween"
 	effectBoids       = "boids"
 	effectRaycast     = "raycast"
 	effectPipes       = "pipes"
@@ -83,7 +84,7 @@ func (p *shenanigans) Metadata() linkquisition.PluginMetadata {
 					effectAsteroids, effectAurora, effectBoids, effectBreakout,
 					effectDino, effectFire, effectFireflies, effectFireworks,
 					effectFlappy, effectFootball, effectFrogger, effectGlitch,
-					effectInvaders, effectLava, effectLife, effectMatrix,
+					effectHalloween, effectInvaders, effectLava, effectLife, effectMatrix,
 					effectMinesweeper, effectPacman, effectPipes, effectPlasma, effectPong,
 					effectPride, effectRain, effectRaycast, effectSnake,
 					effectSineScroll, effectSnow, effectStarfield, effectTetris,
@@ -131,6 +132,7 @@ func (p *shenanigans) OnPickerShown(canvas linkquisition.PickerCanvas) {
 		effectAsteroids, effectPacman, effectTetris, effectFrogger,
 		effectMinesweeper, effectFlappy, effectLava, effectSineScroll,
 		effectFireflies, effectBoids, effectRaycast, effectPipes,
+		effectHalloween,
 	}
 
 	if effect == effectRandom || !isKnownEffect(effect, allEffects) {
@@ -173,6 +175,7 @@ func (p *shenanigans) dispatchEffect(effect string, canvas linkquisition.PickerC
 		effectBoids:       p.startBoids,
 		effectRaycast:     p.startRaycast,
 		effectPipes:       p.startPipes,
+		effectHalloween:   p.startHalloween,
 	}
 
 	if fn, ok := dispatch[effect]; ok {
