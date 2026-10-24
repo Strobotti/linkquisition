@@ -15,6 +15,7 @@ import (
 	"howett.net/plist"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/browserprofiles"
 	"github.com/strobotti/linkquisition/internal/launchenv"
 )
 
@@ -47,10 +48,21 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 			continue
 		}
 		seen[entry.BundleID] = true
-		browsers = append(browsers, linkquisition.Browser{
-			Name:    entry.Name,
-			Command: entry.BundleID,
-		})
+		browser := linkquisition.Browser{Name: entry.Name, Command: entry.BundleID}
+		profiles := browserprofiles.Detect(browser.Name)
+		if len(profiles) == 0 {
+			browsers = append(browsers, browser)
+			continue
+		}
+		for _, profile := range profiles {
+			profiledBrowser := browser
+			profiledBrowser.Name = browser.Name + " — " + profile.Name
+			profiledBrowser.ProfileName = profile.Name
+			profiledBrowser.ProfilePath = profile.ID
+			profiledBrowser.ProfileType = profile.Type
+			profiledBrowser.ProfileIsDefault = profile.IsDefault
+			browsers = append(browsers, profiledBrowser)
+		}
 	}
 
 	return browsers, nil
@@ -111,10 +123,11 @@ func parseBrowserPlist(plistPath, appDirName string) (bundleID, name string, isH
 	defer f.Close()
 
 	var plistData struct {
-		BundleID    string `plist:"CFBundleIdentifier"`
-		DisplayName string `plist:"CFBundleDisplayName"`
-		BundleName  string `plist:"CFBundleName"`
-		URLTypes    []struct {
+		BundleID       string `plist:"CFBundleIdentifier"`
+		DisplayName    string `plist:"CFBundleDisplayName"`
+		BundleName     string `plist:"CFBundleName"`
+		ExecutableName string `plist:"CFBundleExecutable"`
+		URLTypes       []struct {
 			Schemes []string `plist:"CFBundleURLSchemes"`
 		} `plist:"CFBundleURLTypes"`
 	}
@@ -186,6 +199,25 @@ func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
 	return linkquisition.Browser{Name: name, Command: bundleID}, nil
 }
 
+func getExecutableNameFromApp(appPath string) (string, error) {
+	file, err := os.Open(filepath.Join(appPath, "Contents", "Info.plist"))
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	var appInfo struct {
+		ExecutableName string `plist:"CFBundleExecutable"`
+	}
+	if err := plist.NewDecoder(file).Decode(&appInfo); err != nil {
+		return "", err
+	}
+	if appInfo.ExecutableName == "" {
+		return "", fmt.Errorf("CFBundleExecutable is missing from %s", appPath)
+	}
+	return appInfo.ExecutableName, nil
+}
+
 func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 	cmd := exec.Command("open", url)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
@@ -196,6 +228,74 @@ func (b *BrowserService) OpenUrlWithDefaultBrowser(url string) error {
 }
 
 func (b *BrowserService) OpenUrlWithBrowser(url string, browser *linkquisition.Browser) error {
+	privateArgument := ""
+	if browser.PrivateMode {
+		var ok bool
+		privateArgument, ok = browserprofiles.PrivateArgument(browser.Name)
+		if !ok {
+			return fmt.Errorf("private browsing is not supported for browser %q", browser.Name)
+		}
+	}
+
+	if browser.ProfileType == browserprofiles.TypeFirefox {
+		appPath, err := getAppPathForBundleID(browser.Command)
+		if err != nil {
+			return fmt.Errorf("failed to find browser app for profile launch: %w", err)
+		}
+		binaryName, err := getExecutableNameFromApp(appPath)
+		if err != nil {
+			return fmt.Errorf("failed to find browser executable for profile launch: %w", err)
+		}
+		if _, err := os.Stat(filepath.Join(appPath, "Contents", "MacOS", binaryName)); err != nil {
+			return fmt.Errorf("browser executable not found: %w", err)
+		}
+		binaryPath := filepath.Join(appPath, "Contents", "MacOS", binaryName)
+		args := []string{"-P", browser.ProfileName}
+		if privateArgument != "" {
+			args = append(args, privateArgument)
+		} else {
+			args = append(args, "-new-tab")
+		}
+		args = append(args, url)
+		cmd := exec.Command(binaryPath, args...)
+		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
+		if err := cmd.Start(); err != nil {
+			return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)
+		}
+		return nil
+	}
+
+	if browser.ProfileType == browserprofiles.TypeChromium {
+		appPath, err := getAppPathForBundleID(browser.Command)
+		if err != nil {
+			return fmt.Errorf("failed to find browser app for profile launch: %w", err)
+		}
+		binaryName, err := getExecutableNameFromApp(appPath)
+		if err != nil {
+			return fmt.Errorf("failed to find browser executable for profile launch: %w", err)
+		}
+		binaryPath := filepath.Join(appPath, "Contents", "MacOS", binaryName)
+		args := []string{"--profile-directory=" + browser.ProfilePath}
+		if privateArgument != "" {
+			args = append(args, privateArgument)
+		}
+		args = append(args, url)
+		cmd := exec.Command(binaryPath, args...)
+		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
+		if err := cmd.Start(); err != nil {
+			return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)
+		}
+		return nil
+	}
+
+	if browser.PrivateMode {
+		cmd := exec.Command("open", "-b", browser.Command, "--args", privateArgument, url)
+		cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to open URL %#q with browser %#q: %v", url, browser.Name, err)
+		}
+		return nil
+	}
 	cmd := exec.Command("open", "-b", browser.Command, url)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
 	if err := cmd.Run(); err != nil {
@@ -229,7 +329,7 @@ LSSetDefaultHandlerForURLScheme("https" as CFString, bundleID)
 	return nil
 }
 
-func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byte, error) {
+func (b *BrowserService) GetIconForBrowser(browser *linkquisition.Browser) ([]byte, error) {
 	// Find the app bundle by bundle ID and extract its icon
 	appPath, err := getAppPathForBundleID(browser.Command)
 	if err != nil {

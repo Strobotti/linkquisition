@@ -341,6 +341,62 @@ func TestSettings_UpdateWithBrowsers(t *testing.T) {
 	}
 }
 
+func TestSettings_UpdateWithBrowsers_AddsDetectedProfiles(t *testing.T) {
+	settings := (&Settings{}).UpdateWithBrowsers([]Browser{
+		{Name: "Google Chrome — Personal", Command: "chrome", ProfileName: "Personal", ProfilePath: "Default", ProfileType: "chromium", ProfileIsDefault: true},
+		{Name: "Google Chrome — Work", Command: "chrome", ProfileName: "Work", ProfilePath: "Profile 1", ProfileType: "chromium"},
+	})
+
+	require.Len(t, settings.Browsers, 2)
+	require.Equal(t, "Google Chrome — Personal", settings.Browsers[0].Name)
+	require.Equal(t, "Default", settings.Browsers[0].ProfilePath)
+	require.True(t, settings.Browsers[0].ProfileIsDefault)
+	require.Equal(t, "Profile 1", settings.Browsers[1].ProfilePath)
+}
+
+func TestSettings_UpdateWithBrowsers_PreservesCustomBrowserName(t *testing.T) {
+	settings := &Settings{Browsers: []BrowserSettings{{
+		Name: "Personal Chrome", Command: "chrome", Source: SourceAuto,
+		ProfileName: "Personal", ProfilePath: "Default", ProfileType: "chromium",
+	}}}
+
+	settings.UpdateWithBrowsers([]Browser{{
+		Name: "Google Chrome — Personal", Command: "chrome",
+		ProfileName: "Personal", ProfilePath: "Default", ProfileType: "chromium", ProfileIsDefault: true,
+	}})
+
+	require.Len(t, settings.Browsers, 1)
+	assert.Equal(t, "Personal Chrome", settings.Browsers[0].Name)
+}
+
+func TestSettings_UpdateWithBrowsers_MigratesLegacyBrowserToDefaultProfile(t *testing.T) {
+	settings := &Settings{Browsers: []BrowserSettings{{
+		Name: "Google Chrome", Command: "chrome", Source: SourceAuto,
+		Matches: []BrowserMatch{{Type: BrowserMatchTypeDomain, Value: "example.com"}},
+	}}}
+
+	settings.UpdateWithBrowsers([]Browser{
+		{Name: "Google Chrome", Command: "chrome"},
+		{Name: "Google Chrome — Personal", Command: "chrome", ProfileName: "Personal", ProfilePath: "Default", ProfileType: "chromium", ProfileIsDefault: true},
+		{Name: "Google Chrome — Work", Command: "chrome", ProfileName: "Work", ProfilePath: "Profile 1", ProfileType: "chromium"},
+	})
+
+	require.Len(t, settings.Browsers, 2)
+	require.Equal(t, "Default", settings.Browsers[0].ProfilePath)
+	require.Equal(t, "example.com", settings.Browsers[0].Matches[0].Value)
+	require.Equal(t, "Profile 1", settings.Browsers[1].ProfilePath)
+}
+
+func TestSettings_UpdateWithBrowsers_DropsRemovedProfileOnly(t *testing.T) {
+	settings := (&Settings{Browsers: []BrowserSettings{
+		{Name: "Chrome — Default", Command: "chrome", ProfilePath: "Default", Source: SourceAuto},
+		{Name: "Chrome — Work", Command: "chrome", ProfilePath: "Profile 1", Source: SourceAuto},
+	}}).UpdateWithBrowsers([]Browser{{Name: "Chrome — Default", Command: "chrome", ProfilePath: "Default"}})
+
+	require.Len(t, settings.Browsers, 1)
+	assert.Equal(t, "Default", settings.Browsers[0].ProfilePath)
+}
+
 func TestSettings_UpdateWithBrowsers_PreservesNonBrowserFields(t *testing.T) {
 	settings := &Settings{
 		LogLevel: "debug",
@@ -473,9 +529,10 @@ func TestSettings_GetMatchingBrowser(t *testing.T) {
 	settings := &Settings{
 		Browsers: []BrowserSettings{
 			{
-				Name:     "Firefox",
-				Command:  "firefox",
-				IconPath: "/usr/share/icons/firefox.png",
+				Name:        "Firefox",
+				Command:     "firefox",
+				IconPath:    "/usr/share/icons/firefox.png",
+				PrivateMode: true,
 				Matches: []BrowserMatch{
 					{Type: BrowserMatchTypeSite, Value: "www.facebook.com"},
 				},
@@ -496,6 +553,7 @@ func TestSettings_GetMatchingBrowser(t *testing.T) {
 		assert.Equal(t, "Firefox", browser.Name)
 		assert.Equal(t, "firefox", browser.Command)
 		assert.Equal(t, "/usr/share/icons/firefox.png", browser.IconPath)
+		assert.True(t, browser.PrivateMode)
 	})
 
 	t.Run("returns matching browser for domain rule", func(t *testing.T) {
@@ -541,12 +599,13 @@ func TestSettings_AddRuleToBrowser(t *testing.T) {
 			},
 		}
 
-		browser := &Browser{Name: "Firefox", Command: "firefox"}
+		browser := &Browser{Name: "Firefox", Command: "firefox", PrivateMode: true}
 		settings.AddRuleToBrowser(browser, BrowserMatchTypeSite, "www.example.com")
 
 		assert.Len(t, settings.Browsers[0].Matches, 1)
 		assert.Equal(t, BrowserMatchTypeSite, settings.Browsers[0].Matches[0].Type)
 		assert.Equal(t, "www.example.com", settings.Browsers[0].Matches[0].Value)
+		assert.True(t, settings.Browsers[0].PrivateMode)
 		// Other browser should be untouched
 		assert.Empty(t, settings.Browsers[1].Matches)
 	})

@@ -58,6 +58,12 @@ type BrowserSettings struct {
 	Hidden   bool   `json:"hidden"`
 	Source   string `json:"source"`
 
+	ProfileName      string `json:"profileName,omitempty"`
+	ProfilePath      string `json:"profilePath,omitempty"`
+	ProfileType      string `json:"profileType,omitempty"`
+	ProfileIsDefault bool   `json:"profileIsDefault,omitempty"`
+	PrivateMode      bool   `json:"privateMode,omitempty"`
+
 	Matches []BrowserMatch `json:"matches"`
 }
 
@@ -243,10 +249,33 @@ func (s *Settings) CompileAllRegexMatches() *Settings {
 }
 
 func (s *Settings) UpdateWithBrowsers(browsers []Browser) *Settings {
+	s.migrateLegacyBrowserEntries(browsers)
 	return s.dropAutoAddedBrowsersNoLongerPresent(browsers).
 		addMissingBrowsers(browsers).
 		refreshIconPaths(browsers).
 		NormalizeBrowsers()
+}
+
+// migrateLegacyBrowserEntries attaches an existing unprofiled browser entry and its
+// rules to the detected default profile when the old config predates profile targets.
+func (s *Settings) migrateLegacyBrowserEntries(browsers []Browser) {
+	for i := range s.Browsers {
+		if s.Browsers[i].Source != SourceAuto || s.Browsers[i].ProfilePath != "" {
+			continue
+		}
+
+		for _, browser := range browsers {
+			if browser.Command != s.Browsers[i].Command || browser.ProfilePath == "" || !browser.ProfileIsDefault {
+				continue
+			}
+
+			s.Browsers[i].Name = browser.Name
+			s.Browsers[i].ProfileName = browser.ProfileName
+			s.Browsers[i].ProfilePath = browser.ProfilePath
+			s.Browsers[i].ProfileType = browser.ProfileType
+			break
+		}
+	}
 }
 
 func (s *Settings) dropAutoAddedBrowsersNoLongerPresent(browsers []Browser) *Settings {
@@ -259,7 +288,7 @@ func (s *Settings) dropAutoAddedBrowsersNoLongerPresent(browsers []Browser) *Set
 		}
 
 		for j := range browsers {
-			if s.Browsers[i].Command == browsers[j].Command {
+			if sameBrowserTarget(s.Browsers[i].Command, s.Browsers[i].ProfilePath, browsers[j].Command, browsers[j].ProfilePath) {
 				browserSettings = append(browserSettings, s.Browsers[i])
 				break
 			}
@@ -273,9 +302,13 @@ func (s *Settings) dropAutoAddedBrowsersNoLongerPresent(browsers []Browser) *Set
 
 func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
 	for i := range browsers {
+		if browsers[i].ProfilePath == "" && hasProfileTargets(browsers[i].Command, browsers) {
+			continue
+		}
 		found := false
 		for j := range s.Browsers {
-			if s.Browsers[j].Command == browsers[i].Command {
+			if sameBrowserTarget(s.Browsers[j].Command, s.Browsers[j].ProfilePath, browsers[i].Command, browsers[i].ProfilePath) ||
+				(s.Browsers[j].Command == browsers[i].Command && s.Browsers[j].ProfilePath == "" && isDefaultBrowser(&browsers[i])) {
 				found = true
 				break
 			}
@@ -284,11 +317,15 @@ func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
 		if !found {
 			s.Browsers = append(
 				s.Browsers, BrowserSettings{
-					Name:     browsers[i].Name,
-					Command:  browsers[i].Command,
-					IconPath: browsers[i].IconPath,
-					Hidden:   false,
-					Source:   SourceAuto,
+					Name:             browsers[i].Name,
+					Command:          browsers[i].Command,
+					IconPath:         browsers[i].IconPath,
+					Hidden:           false,
+					Source:           SourceAuto,
+					ProfileName:      browsers[i].ProfileName,
+					ProfilePath:      browsers[i].ProfilePath,
+					ProfileType:      browsers[i].ProfileType,
+					ProfileIsDefault: browsers[i].ProfileIsDefault,
 				},
 			)
 		}
@@ -297,22 +334,46 @@ func (s *Settings) addMissingBrowsers(browsers []Browser) *Settings {
 	return s
 }
 
+// sameBrowserTarget reports whether two entries refer to the same launch target
+// (same browser command and the same profile).
+func sameBrowserTarget(commandA, profileA, commandB, profileB string) bool {
+	return commandA == commandB && profileA == profileB
+}
+
+func hasProfileTargets(command string, browsers []Browser) bool {
+	for _, browser := range browsers {
+		if browser.Command == command && browser.ProfilePath != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func isDefaultBrowser(browser *Browser) bool {
+	return browser.ProfilePath == "" || browser.ProfileIsDefault
+}
+
 // refreshIconPaths updates the icon path for auto-discovered browsers that have
 // a newer icon path available. Manual browsers keep their existing icon path unless
 // it is empty and a new one was discovered.
 func (s *Settings) refreshIconPaths(browsers []Browser) *Settings {
 	for i := range s.Browsers {
+		if s.Browsers[i].ProfilePath == "" && hasProfileTargets(s.Browsers[i].Command, browsers) {
+			continue
+		}
 		for j := range browsers {
-			if s.Browsers[i].Command == browsers[j].Command {
-				// Update icon path for auto browsers unconditionally,
-				// for manual browsers only if currently empty
-				if s.Browsers[i].Source == SourceAuto || s.Browsers[i].IconPath == "" {
-					if browsers[j].IconPath != "" {
-						s.Browsers[i].IconPath = browsers[j].IconPath
-					}
-				}
-				break
+			if !sameBrowserTarget(s.Browsers[i].Command, s.Browsers[i].ProfilePath, browsers[j].Command, browsers[j].ProfilePath) {
+				continue
 			}
+
+			// Update icon path for auto browsers unconditionally,
+			// for manual browsers only if currently empty.
+			if s.Browsers[i].Source == SourceAuto || s.Browsers[i].IconPath == "" {
+				if browsers[j].IconPath != "" {
+					s.Browsers[i].IconPath = browsers[j].IconPath
+				}
+			}
+			break
 		}
 	}
 
@@ -328,9 +389,12 @@ func (s *Settings) GetSelectableBrowsers() []Browser {
 		}
 
 		browser := Browser{
-			Name:     s.Browsers[i].Name,
-			Command:  s.Browsers[i].Command,
-			IconPath: s.Browsers[i].IconPath,
+			Name:        s.Browsers[i].Name,
+			Command:     s.Browsers[i].Command,
+			IconPath:    s.Browsers[i].IconPath,
+			ProfileName: s.Browsers[i].ProfileName,
+			ProfilePath: s.Browsers[i].ProfilePath,
+			ProfileType: s.Browsers[i].ProfileType,
 		}
 		browsers = append(browsers, browser)
 	}
@@ -340,13 +404,19 @@ func (s *Settings) GetSelectableBrowsers() []Browser {
 
 func (s *Settings) GetMatchingBrowser(u string) (*Browser, error) {
 	for i := range s.Browsers {
-		if s.Browsers[i].MatchesUrl(u) {
-			return &Browser{
-				Name:     s.Browsers[i].Name,
-				Command:  s.Browsers[i].Command,
-				IconPath: s.Browsers[i].IconPath,
-			}, nil
+		if !s.Browsers[i].MatchesUrl(u) {
+			continue
 		}
+		return &Browser{
+			Name:             s.Browsers[i].Name,
+			Command:          s.Browsers[i].Command,
+			IconPath:         s.Browsers[i].IconPath,
+			ProfileName:      s.Browsers[i].ProfileName,
+			ProfilePath:      s.Browsers[i].ProfilePath,
+			ProfileType:      s.Browsers[i].ProfileType,
+			ProfileIsDefault: s.Browsers[i].ProfileIsDefault,
+			PrivateMode:      s.Browsers[i].PrivateMode,
+		}, nil
 	}
 
 	return nil, ErrNoMatchFound
@@ -354,7 +424,8 @@ func (s *Settings) GetMatchingBrowser(u string) (*Browser, error) {
 
 func (s *Settings) AddRuleToBrowser(b *Browser, matchType, matchValue string) {
 	for i := range s.Browsers {
-		if s.Browsers[i].Command == b.Command {
+		if sameBrowserTarget(s.Browsers[i].Command, s.Browsers[i].ProfilePath, b.Command, b.ProfilePath) {
+			s.Browsers[i].PrivateMode = b.PrivateMode
 			s.Browsers[i].Matches = append(
 				s.Browsers[i].Matches,
 				BrowserMatch{

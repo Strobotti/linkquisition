@@ -65,6 +65,12 @@
   "picker.remember_choice": {
     "other": "Kom ihåg detta val"
   },
+  "picker.private_mode": {
+    "other": "Öppna i privat fönster"
+  },
+  "picker.private_unsupported": {
+    "other": "Privat surfning stöds inte av de tillgängliga webbläsarna."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (bara denna webbplats)"
   },
@@ -72,7 +78,7 @@
     "other": "{{.Domain}} (hela domänen)"
   },
   "picker.keyboard_guide": {
-    "other": "Tryck 'ENTER' för att välja första, 'ESC' för att avsluta, '{{.CopyShortcut}}' för att kopiera URL till urklipp"
+    "other": "Tryck 'ENTER' för att välja första, håll 'SHIFT' eller aktivera privat läge för att öppna privat, 'ESC' för att avsluta, '{{.CopyShortcut}}' för att kopiera URL"
   },
   "config.language_label": {
     "other": "Språk:"
@@ -203,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Redigera webbläsare"
   },
+  "config.browsers_rename_title": {
+    "other": "Byt namn på webbläsare"
+  },
   "config.browsers_delete": {
     "other": "Ta bort"
   },
@@ -251,11 +260,23 @@
   "config.rules_add": {
     "other": "+ Lägg till regel"
   },
+  "config.rules_move": {
+    "other": "Flytta valda…"
+  },
+  "config.rules_move_title": {
+    "other": "Flytta regler"
+  },
+  "config.rules_move_target": {
+    "other": "Flytta till:"
+  },
   "config.rules_add_title": {
     "other": "Lägg till regel för {{.Name}}"
   },
   "config.rules_edit_title": {
     "other": "Redigera regel"
+  },
+  "config.rules_private_mode_help": {
+    "other": "Applies to all URLs handled by this browser."
   },
   "config.rules_type": {
     "other": "Typ"

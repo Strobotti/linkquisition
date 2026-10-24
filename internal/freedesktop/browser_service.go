@@ -13,6 +13,7 @@ import (
 	"gopkg.in/alessio/shellescape.v1"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/browserprofiles"
 	"github.com/strobotti/linkquisition/internal/launchenv"
 )
 
@@ -65,11 +66,29 @@ func (b *BrowserService) GetAvailableBrowsers() ([]linkquisition.Browser, error)
 				Command:  desktopEntry.Exec,
 				IconPath: b.BrowserIconLoader.ResolveIconName(desktopEntry.Icon),
 			}
-			browsers = append(browsers, browser)
+			browsers = appendDetectedProfiles(browsers, &browser)
 		}
 	}
 
 	return browsers, nil
+}
+
+func appendDetectedProfiles(browsers []linkquisition.Browser, browser *linkquisition.Browser) []linkquisition.Browser {
+	profiles := browserprofiles.Detect(browser.Name)
+	if len(profiles) == 0 {
+		return append(browsers, *browser)
+	}
+
+	for _, profile := range profiles {
+		profiledBrowser := *browser
+		profiledBrowser.Name = browser.Name + " — " + profile.Name
+		profiledBrowser.ProfileName = profile.Name
+		profiledBrowser.ProfilePath = profile.ID
+		profiledBrowser.ProfileType = profile.Type
+		profiledBrowser.ProfileIsDefault = profile.IsDefault
+		browsers = append(browsers, profiledBrowser)
+	}
+	return browsers
 }
 
 func (b *BrowserService) GetDefaultBrowser() (linkquisition.Browser, error) {
@@ -111,17 +130,45 @@ func (b *BrowserService) OpenUrlWithBrowser(u string, browser *linkquisition.Bro
 	u = shellescape.Quote(u)
 
 	command := browser.Command
+	if browser.ProfileType == browserprofiles.TypeChromium {
+		command = addLaunchArgument(command, "--profile-directory="+shellescape.Quote(browser.ProfilePath))
+	}
+	if browser.ProfileType == browserprofiles.TypeFirefox {
+		command = addLaunchArgument(command, "-P "+shellescape.Quote(browser.ProfileName))
+	}
+	if browser.PrivateMode {
+		privateArgument, ok := browserprofiles.PrivateArgument(browser.Name)
+		if !ok {
+			return fmt.Errorf("private browsing is not supported for browser %q", browser.Name)
+		}
+		command = addLaunchArgument(command, privateArgument)
+	}
 	command = strings.ReplaceAll(command, "%u", u)
 	command = strings.ReplaceAll(command, "%U", u)
 
-	// now just execute the damn command
+	// Start rather than Run: browsers that are not yet running stay alive as the main
+	// process, and waiting for them would keep the picker open. Browsers that are already
+	// running hand the URL off and exit immediately, which is why the picker used to
+	// close only in that case.
 	cmd := exec.Command("sh", "-c", command)
 	cmd.Env = launchenv.SanitizeEnviron(cmd.Environ())
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to open URL %#q with browser %#q: %v", u, browser.Name, err)
+	}
+	if err := cmd.Process.Release(); err != nil {
+		return fmt.Errorf("failed to release browser process %#q: %v", browser.Name, err)
 	}
 
 	return nil
+}
+
+func addLaunchArgument(command, argument string) string {
+	for _, placeholder := range []string{"%u", "%U"} {
+		if strings.Contains(command, placeholder) {
+			return strings.Replace(command, placeholder, argument+" "+placeholder, 1)
+		}
+	}
+	return command + " " + argument
 }
 
 func (b *BrowserService) AreWeTheDefaultBrowser() bool {
@@ -142,7 +189,7 @@ func (b *BrowserService) MakeUsTheDefaultBrowser() error {
 	return nil
 }
 
-func (b *BrowserService) SetDefaultBrowser(browser linkquisition.Browser) error {
+func (b *BrowserService) SetDefaultBrowser(browser *linkquisition.Browser) error {
 	return b.XdgService.SettingsSet("default-web-browser", browser.Name)
 }
 
@@ -167,7 +214,7 @@ func (b *BrowserService) NewBrowser(command string) (linkquisition.Browser, erro
 }
 
 // GetIconForBrowser returns the icon for the given browser
-func (b *BrowserService) GetIconForBrowser(browser linkquisition.Browser) ([]byte, error) {
+func (b *BrowserService) GetIconForBrowser(browser *linkquisition.Browser) ([]byte, error) {
 	return b.BrowserIconLoader.LoadIcon(browser)
 }
 

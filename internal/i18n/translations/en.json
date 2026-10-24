@@ -65,6 +65,12 @@
   "picker.remember_choice": {
     "other": "Remember this choice"
   },
+  "picker.private_mode": {
+    "other": "Open in private window"
+  },
+  "picker.private_unsupported": {
+    "other": "Private browsing isn't supported by the available browsers."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (this site only)"
   },
@@ -72,7 +78,7 @@
     "other": "{{.Domain}} (entire domain)"
   },
   "picker.keyboard_guide": {
-    "other": "Press 'ENTER' to pick first, 'ESC' to quit, '{{.CopyShortcut}}' to copy URL to clipboard"
+    "other": "Press 'ENTER' to pick first, hold 'SHIFT' or enable private mode to open privately, 'ESC' to quit, '{{.CopyShortcut}}' to copy URL"
   },
   "config.language_label": {
     "other": "Language:"
@@ -203,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Edit Browser"
   },
+  "config.browsers_rename_title": {
+    "other": "Rename Browser"
+  },
   "config.browsers_delete": {
     "other": "Delete"
   },
@@ -251,11 +260,23 @@
   "config.rules_add": {
     "other": "+ Add rule"
   },
+  "config.rules_move": {
+    "other": "Move selected…"
+  },
+  "config.rules_move_title": {
+    "other": "Move rules"
+  },
+  "config.rules_move_target": {
+    "other": "Move to:"
+  },
   "config.rules_add_title": {
     "other": "Add Rule to {{.Name}}"
   },
   "config.rules_edit_title": {
     "other": "Edit Rule"
+  },
+  "config.rules_private_mode_help": {
+    "other": "Applies to all URLs handled by this browser."
   },
   "config.rules_type": {
     "other": "Type"

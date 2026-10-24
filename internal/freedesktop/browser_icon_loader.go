@@ -15,7 +15,7 @@ import (
 
 // BrowserIconLoader loads browser icons and resolves icon names to file paths.
 type BrowserIconLoader interface {
-	LoadIcon(browser linkquisition.Browser) ([]byte, error)
+	LoadIcon(browser *linkquisition.Browser) ([]byte, error)
 	// ResolveIconName resolves an icon name (from a .desktop file's Icon= field) to an
 	// absolute file path. If the name is already an absolute path and the file exists,
 	// it is returned as-is. Otherwise, it searches standard icon directories.
@@ -29,7 +29,7 @@ type DefaultBrowserIconLoader struct {
 	DesktopEntryService *DesktopEntryService
 }
 
-func (l *DefaultBrowserIconLoader) LoadIcon(browser linkquisition.Browser) ([]byte, error) {
+func (l *DefaultBrowserIconLoader) LoadIcon(browser *linkquisition.Browser) ([]byte, error) {
 	// If the browser has a cached icon path, use it directly
 	if browser.IconPath != "" {
 		if icon, errLoad := fyne.LoadResourceFromPath(browser.IconPath); errLoad == nil {

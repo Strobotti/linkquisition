@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,14 +14,42 @@ import (
 	"github.com/strobotti/linkquisition"
 )
 
+func TestOpenUrlWithBrowserDoesNotWaitForBrowserExit(t *testing.T) {
+	// Simulates a browser that stays alive as its main process (e.g. a first launch of Chrome).
+	b := &BrowserService{}
+	browser := &linkquisition.Browser{Name: "Fake Browser", Command: "sleep 5 %u"}
+
+	start := time.Now()
+	require.NoError(t, b.OpenUrlWithBrowser("https://example.com", browser))
+	if elapsed := time.Since(start); elapsed >= 2*time.Second {
+		t.Errorf("OpenUrlWithBrowser blocked for %v waiting for the browser to exit", elapsed)
+	}
+}
+
 type mockBrowserIconLoader struct{}
 
-func (m *mockBrowserIconLoader) LoadIcon(_ linkquisition.Browser) ([]byte, error) {
+func (m *mockBrowserIconLoader) LoadIcon(_ *linkquisition.Browser) ([]byte, error) {
 	return nil, nil
 }
 
 func (m *mockBrowserIconLoader) ResolveIconName(_ string) string {
 	return ""
+}
+
+func TestAddLaunchArgument(t *testing.T) {
+	for _, test := range []struct {
+		command  string
+		argument string
+		want     string
+	}{
+		{command: "firefox %u", argument: "-private-window", want: "firefox -private-window %u"},
+		{command: "chrome %U", argument: "--incognito", want: "chrome --incognito %U"},
+		{command: "firefox", argument: "-private-window", want: "firefox -private-window"},
+	} {
+		if got := addLaunchArgument(test.command, test.argument); got != test.want {
+			t.Errorf("addLaunchArgument(%q, %q) = %q, want %q", test.command, test.argument, got, test.want)
+		}
+	}
 }
 
 func TestDesktopEntryHasCategory_MatchesWebBrowser(t *testing.T) {
@@ -299,6 +328,7 @@ Categories=Development;TextEditor;
 `
 	require.NoError(t, os.WriteFile(filepath.Join(appsDir, "editor.desktop"), []byte(editorContent), 0600))
 
+	t.Setenv("HOME", dir)
 	t.Setenv("XDG_DATA_HOME", filepath.Join(dir, "local"))
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "share"))
 

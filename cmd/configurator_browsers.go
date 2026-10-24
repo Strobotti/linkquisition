@@ -83,7 +83,7 @@ func (c *Configurator) buildBrowserIconPreview(b *linkquisition.BrowserSettings)
 		Command:  b.Command,
 		IconPath: b.IconPath,
 	}
-	iconBytes, err := c.browserService.GetIconForBrowser(browser)
+	iconBytes, err := c.browserService.GetIconForBrowser(&browser)
 	if err != nil || len(iconBytes) == 0 {
 		return nil
 	}
@@ -132,13 +132,14 @@ func (c *Configurator) buildBrowserCard(
 		downBtn.Disable()
 	}
 
-	// Edit button — only for manual browsers
-	var editBtn *widget.Button
-	if b.Source == linkquisition.SourceManual {
-		editBtn = widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
+	// Rename every browser; manual browsers can also edit their command and icon.
+	editBtn := widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
+		if b.Source == linkquisition.SourceManual {
 			c.showEditBrowserDialog(idx, listContainer)
-		})
-	}
+			return
+		}
+		c.showRenameBrowserDialog(idx, listContainer)
+	})
 
 	// Delete button — trash icon with confirmation
 	deleteBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
@@ -169,10 +170,7 @@ func (c *Configurator) buildBrowserCard(
 	}
 
 	// Right-side controls
-	controls := container.NewHBox(visibilityBtn, upBtn, downBtn)
-	if editBtn != nil {
-		controls.Add(editBtn)
-	}
+	controls := container.NewHBox(visibilityBtn, upBtn, downBtn, editBtn)
 	controls.Add(deleteBtn)
 
 	headerRow := container.NewBorder(
@@ -291,6 +289,48 @@ func (c *Configurator) addManualBrowser(name, command, iconPath string, listCont
 	}
 
 	c.rebuildBrowsersList(listContainer)
+}
+
+func (c *Configurator) showRenameBrowserDialog(idx int, listContainer *fyne.Container) {
+	settings := c.settingsService.GetSettings()
+	if idx < 0 || idx >= len(settings.Browsers) {
+		return
+	}
+
+	nameEntry := widget.NewEntry()
+	nameEntry.SetText(settings.Browsers[idx].Name)
+	nameEntry.SetPlaceHolder(i18n.T("config.browsers_name_placeholder"))
+
+	parentWindow := c.parentWindow()
+	if parentWindow == nil {
+		return
+	}
+
+	form := widget.NewForm(widget.NewFormItem(i18n.T("config.browsers_name"), nameEntry))
+	d := dialog.NewCustomConfirm(
+		i18n.T("config.browsers_rename_title"),
+		i18n.T("config.plugins_save"),
+		i18n.T("config.plugins_cancel"),
+		form,
+		func(confirmed bool) {
+			if !confirmed || nameEntry.Text == "" {
+				return
+			}
+			s := c.settingsService.GetSettings()
+			if idx >= len(s.Browsers) {
+				return
+			}
+			s.Browsers[idx].Name = nameEntry.Text
+			if err := c.settingsService.WriteSettings(s); err != nil {
+				c.logger.Error("Error renaming browser", "error", err)
+				return
+			}
+			c.rebuildBrowsersList(listContainer)
+		},
+		parentWindow,
+	)
+	d.Resize(fyne.NewSize(500, 180)) //nolint:mnd
+	d.Show()
 }
 
 func (c *Configurator) showEditBrowserDialog(idx int, listContainer *fyne.Container) {

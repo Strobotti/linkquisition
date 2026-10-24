@@ -53,7 +53,8 @@ func runBrowsersList(_ *cobra.Command, _ []string) error {
 		return nil
 	}
 
-	for i, b := range settings.Browsers {
+	for i := range settings.Browsers {
+		b := &settings.Browsers[i]
 		status := ""
 		if b.Hidden {
 			status = browserStatusHidden
@@ -89,7 +90,8 @@ func runBrowsersScan(_ *cobra.Command, _ []string) error {
 	visible := 0
 	hidden := 0
 
-	for _, b := range settings.Browsers {
+	for i := range settings.Browsers {
+		b := &settings.Browsers[i]
 		if b.Hidden {
 			hidden++
 		} else {

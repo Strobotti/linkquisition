@@ -25,15 +25,13 @@ type mockBrowserService struct {
 	err      error
 }
 
-func (m *mockBrowserService) GetAvailableBrowsers() ([]Browser, error)  { return m.browsers, m.err }
-func (m *mockBrowserService) GetDefaultBrowser() (Browser, error)       { return Browser{}, nil }
-func (m *mockBrowserService) OpenUrlWithDefaultBrowser(string) error    { return nil }
-func (m *mockBrowserService) OpenUrlWithBrowser(string, *Browser) error { return nil }
-func (m *mockBrowserService) AreWeTheDefaultBrowser() bool              { return false }
-func (m *mockBrowserService) MakeUsTheDefaultBrowser() error            { return nil }
-func (m *mockBrowserService) GetIconForBrowser(Browser) ([]byte, error) {
-	return nil, nil
-}
+func (m *mockBrowserService) GetAvailableBrowsers() ([]Browser, error)   { return m.browsers, m.err }
+func (m *mockBrowserService) GetDefaultBrowser() (Browser, error)        { return Browser{}, nil }
+func (m *mockBrowserService) OpenUrlWithDefaultBrowser(string) error     { return nil }
+func (m *mockBrowserService) OpenUrlWithBrowser(string, *Browser) error  { return nil }
+func (m *mockBrowserService) AreWeTheDefaultBrowser() bool               { return false }
+func (m *mockBrowserService) MakeUsTheDefaultBrowser() error             { return nil }
+func (m *mockBrowserService) GetIconForBrowser(*Browser) ([]byte, error) { return nil, nil }
 
 func newTestService(t *testing.T, browsers []Browser) *FileSettingsService {
 	t.Helper()
@@ -175,6 +173,25 @@ func TestFileSettingsService_IsConfigured_ReturnsFalseForCorruptFile(t *testing.
 	configured, err := svc.IsConfigured()
 	assert.False(t, configured)
 	assert.Error(t, err)
+}
+
+func TestFileSettingsService_ReadSettings_PreservesPrivateMode(t *testing.T) {
+	svc := newTestService(t, nil)
+	settings := &Settings{
+		Browsers: []BrowserSettings{{
+			Name:        "Firefox",
+			Command:     "firefox",
+			Source:      SourceAuto,
+			PrivateMode: true,
+			Matches:     []BrowserMatch{{Type: BrowserMatchTypeSite, Value: "example.com"}},
+		}},
+	}
+	require.NoError(t, svc.WriteSettings(settings))
+
+	read, err := svc.ReadSettings()
+	require.NoError(t, err)
+	require.Len(t, read.Browsers, 1)
+	assert.True(t, read.Browsers[0].PrivateMode)
 }
 
 func TestFileSettingsService_ReadSettings_CompilesRegexPatterns(t *testing.T) {

@@ -65,6 +65,12 @@
   "picker.remember_choice": {
     "other": "Auswahl merken"
   },
+  "picker.private_mode": {
+    "other": "In privatem Fenster öffnen"
+  },
+  "picker.private_unsupported": {
+    "other": "Privates Surfen wird von den verfügbaren Browsern nicht unterstützt."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (nur diese Seite)"
   },
@@ -72,7 +78,7 @@
     "other": "{{.Domain}} (gesamte Domain)"
   },
   "picker.keyboard_guide": {
-    "other": "Drücke 'ENTER' für den ersten, 'ESC' zum Beenden, '{{.CopyShortcut}}' um die URL zu kopieren"
+    "other": "Drücke 'ENTER' für den ersten, halte 'SHIFT' oder aktiviere 'Privates Fenster' zum privaten Öffnen, 'ESC' zum Beenden, '{{.CopyShortcut}}' zum Kopieren der URL"
   },
   "config.language_label": {
     "other": "Sprache:"
@@ -203,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Browser bearbeiten"
   },
+  "config.browsers_rename_title": {
+    "other": "Browser umbenennen"
+  },
   "config.browsers_delete": {
     "other": "Löschen"
   },
@@ -251,11 +260,23 @@
   "config.rules_add": {
     "other": "+ Regel hinzufügen"
   },
+  "config.rules_move": {
+    "other": "Ausgewählte verschieben…"
+  },
+  "config.rules_move_title": {
+    "other": "Regeln verschieben"
+  },
+  "config.rules_move_target": {
+    "other": "Verschieben nach:"
+  },
   "config.rules_add_title": {
     "other": "Regel hinzufügen für {{.Name}}"
   },
   "config.rules_edit_title": {
     "other": "Regel bearbeiten"
+  },
+  "config.rules_private_mode_help": {
+    "other": "Applies to all URLs handled by this browser."
   },
   "config.rules_type": {
     "other": "Typ"

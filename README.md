@@ -29,12 +29,16 @@ Motivation behind this project is:
         - site (e.g. `www.example.com`)
         - regular expression (e.g. `.*\.example\.com`)
     - Hide a browser from the list
+    - Detect Chromium-family and Firefox profiles and choose a profile directly in the picker
+    - Open a browser profile in a private window with the picker toggle or by holding `Shift`
     - Manually add a browser to the list (for example, to open a URL in a different profile)
-    - Remember the choice for given site
+    - Rename any browser in the configuration screen; the name is kept when re-scanning
+    - Remember the choice for a given site
 - keyboard-shortcuts
     - `Enter` to open the URL in the default browser
     - `Ctrl+C` to just copy the URL to clipboard and close the window
     - Number keys (1-9) to select a browser
+    - `Shift` (held) to open the selected browser in a private window
 - Optional favicon display next to the URL in the picker (lazy-loaded, no startup delay)
     - Three retrieval strategies: direct (`/favicon.ico`), parsed (HTML link tag), or Google's service
 - URL safety checking via [Google Safe Browsing](https://safebrowsing.google.com/) or
@@ -382,27 +386,56 @@ The following command will build a `.deb` package in the `dist` directory:
 task package:deb # results in dist/linkquisition_0.0.0_amd64.deb
 ```
 
+### Browser profiles
+
+Scanning detects the profiles of Chromium-family browsers (Chrome, Chromium, Edge, Brave) and Firefox. Each profile
+appears in the picker as its own entry, for example `Google Chrome — Work`, so you can open a link in a specific profile
+with a single click or number key.
+
+Detection reads each browser's standard profile data:
+
+| Browser family | Where profiles are read from                                   |
+|----------------|----------------------------------------------------------------|
+| Chromium-based | `Local State` in the browser's user-data folder (`info_cache`) |
+| Firefox        | `profiles.ini` in the Firefox profile folder                   |
+
+Profile entries are stored in `config.json` with their identity (`profileName`, `profilePath`, `profileType`). Rules
+(`matches`) are attached to the profile they were created for. If a browser was configured before profile support was
+added, its existing rules move to the browser's default profile on the next scan.
+
+Because of this, rules created before profile detection may now sit on a profile you didn't intend (for example, a rule
+for a work site that ended up on your personal profile). To fix this, open the **Rules** tab, tick the rules to move
+using their checkboxes, click **Move selected…**, and choose the correct browser or profile. Rules that already exist in
+the target are not duplicated.
+
+If a profile is removed from the browser, its entry disappears on the next scan. Renaming an entry in the
+configuration screen is kept across scans.
+
+### Private browsing
+
+To open a link in a private window, either:
+
+- tick **Open in private window** in the picker before choosing the browser, or
+- hold `Shift` while choosing the browser (the checkbox reflects the held key, and is only active while held).
+
+The private option is applied to the browser you choose; the picker never adds separate private entries. The checkbox
+is disabled, with a short explanation, when none of the available browsers has a known private-window option.
+
+Private-window arguments per browser:
+
+| Browser                 | Argument          |
+|-------------------------|-------------------|
+| Firefox                 | `-private-window` |
+| Microsoft Edge          | `--inprivate`     |
+| Chrome, Chromium, Brave | `--incognito`     |
+
+Browsers without a known private-window option (for example Safari) can't be opened privately: the picker shows an error
+instead of opening a regular window. The checkbox is disabled when none of the available browsers supports private mode.
+
+On macOS, a normal (non-private) Firefox profile launch passes `-new-tab`, so the link opens as a new tab in the
+existing
+Firefox window rather than starting a new window.
+
 ## Plugin system
 
 See [plugins](./plugins/README.md) for more information.
-
-## TODO
-
-- [X] Add support for plugins
-- [X] Add support for translations
-- [X] Add support for browser icons
-- [X] Add support for more platforms
-- [ ] Add support for more architectures
-- [X] Add support for more package-formats
-
-<img src="Icon.png" width="142" height="142" alt="Linkquisition" align="left"/>
-
-With the above list the most interesting feature for me personally is the plugins -feature, as it would allow for doing
-some more complex processing of the URL before opening it in a browser. ~~For example, I could write a plugin that
-strips any tracking parameters from the URL before opening it in the browser.~~ See
-[Sanitize](./plugins/sanitize/sanitize.go) -plugin for more information.
-
-~~I also would like to have a plugin that checks if the opened url is a Microsoft Defender (Evergreen) URL and then,
-with matching rules, opens the actual url (baked in the "evergreen-assets URL") in a browser. This way all the internal
-links in my company could be opened directly in the browser, but the external links would still go through the Defender
-URL.~~ See [Unwrap](./plugins/unwrap/unwrap.go) -plugin for more information.

@@ -1,9 +1,14 @@
 package linkquisition
 
 type Browser struct {
-	Name     string
-	Command  string
-	IconPath string
+	Name             string
+	Command          string
+	IconPath         string
+	ProfileName      string
+	ProfilePath      string
+	ProfileType      string
+	ProfileIsDefault bool
+	PrivateMode      bool
 }
 
 type BrowserService interface {
@@ -26,5 +31,5 @@ type BrowserService interface {
 	MakeUsTheDefaultBrowser() error
 
 	// GetIconForBrowser returns the icon for the given browser
-	GetIconForBrowser(browser Browser) ([]byte, error)
+	GetIconForBrowser(browser *Browser) ([]byte, error)
 }

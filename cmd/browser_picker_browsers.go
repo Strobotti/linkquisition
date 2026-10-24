@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -15,7 +16,7 @@ import (
 )
 
 func (picker *BrowserPicker) makeBrowserButton(
-	browser linkquisition.Browser,
+	browser *linkquisition.Browser,
 	urlToOpen string,
 	remember binding.Bool,
 	rememberMatchType binding.String,
@@ -37,7 +38,7 @@ func (picker *BrowserPicker) makeBrowserButton(
 }
 
 func (picker *BrowserPicker) makeHorizontalBrowserButton(
-	browser linkquisition.Browser,
+	browser *linkquisition.Browser,
 	urlToOpen string,
 	remember binding.Bool,
 	rememberMatchType binding.String,
@@ -78,14 +79,18 @@ func (picker *BrowserPicker) makeHorizontalBrowserButton(
 }
 
 func (picker *BrowserPicker) browserOpenCallback(
-	browser linkquisition.Browser,
+	browser *linkquisition.Browser,
 	urlToOpen string,
 	remember binding.Bool,
 	rememberMatchType binding.String,
 ) func() {
 	return func() {
+		// Work on a copy so the private-mode state of this click doesn't leak into the shared browser list.
+		launch := *browser
+		launch.PrivateMode = picker.privateModeEnabled()
+
 		rem, _ := remember.Get()
-		picker.logger.Debug("Opening URL with browser", "browser", browser.Name, "remember", rem)
+		picker.logger.Debug("Opening URL with browser", "browser", launch.Name, "remember", rem, "private", launch.PrivateMode)
 
 		settings := picker.settingsService.GetSettings()
 		remType, _ := rememberMatchType.Get()
@@ -106,7 +111,7 @@ func (picker *BrowserPicker) browserOpenCallback(
 					"error", matchErr,
 				)
 			} else {
-				settings.AddRuleToBrowser(&browser, remType, matchValue)
+				settings.AddRuleToBrowser(&launch, remType, matchValue)
 				if writeErr := picker.settingsService.WriteSettings(settings); writeErr != nil {
 					picker.logger.Error("Failed to write settings", "error", writeErr)
 				}
@@ -114,8 +119,14 @@ func (picker *BrowserPicker) browserOpenCallback(
 		}
 
 		go func() {
-			if err := picker.browserService.OpenUrlWithBrowser(urlToOpen, &browser); err != nil {
-				picker.logger.Error("Failed to open URL in browser", "url", urlToOpen, "browser", browser.Name, "error", err)
+			if err := picker.browserService.OpenUrlWithBrowser(urlToOpen, &launch); err != nil {
+				picker.logger.Error("Failed to open URL in browser", "url", urlToOpen, "browser", launch.Name, "error", err)
+				fyne.Do(func() {
+					if picker.pickerWindow != nil {
+						dialog.ShowError(err, picker.pickerWindow)
+					}
+				})
+				return
 			}
 
 			fyne.Do(picker.fapp.Quit)

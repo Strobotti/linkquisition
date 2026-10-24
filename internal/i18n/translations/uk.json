@@ -65,6 +65,12 @@
   "picker.remember_choice": {
     "other": "Запам'ятати цей вибір"
   },
+  "picker.private_mode": {
+    "other": "Відкрити у приватному вікні"
+  },
+  "picker.private_unsupported": {
+    "other": "Приватний перегляд не підтримується доступними браузерами."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (лише цей сайт)"
   },
@@ -72,7 +78,7 @@
     "other": "{{.Domain}} (весь домен)"
   },
   "picker.keyboard_guide": {
-    "other": "Натисніть 'ENTER' для першого, 'ESC' для виходу, '{{.CopyShortcut}}' для копіювання URL"
+    "other": "Натисніть 'ENTER' для першого, утримуйте 'SHIFT' або ввімкніть приватний режим, 'ESC' для виходу, '{{.CopyShortcut}}' для копіювання URL"
   },
   "config.language_label": {
     "other": "Мова:"
@@ -203,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Редагувати браузер"
   },
+  "config.browsers_rename_title": {
+    "other": "Перейменувати браузер"
+  },
   "config.browsers_delete": {
     "other": "Видалити"
   },
@@ -251,11 +260,23 @@
   "config.rules_add": {
     "other": "+ Додати правило"
   },
+  "config.rules_move": {
+    "other": "Перемістити вибрані…"
+  },
+  "config.rules_move_title": {
+    "other": "Перемістити правила"
+  },
+  "config.rules_move_target": {
+    "other": "Перемістити до:"
+  },
   "config.rules_add_title": {
     "other": "Додати правило для {{.Name}}"
   },
   "config.rules_edit_title": {
     "other": "Редагувати правило"
+  },
+  "config.rules_private_mode_help": {
+    "other": "Applies to all URLs handled by this browser."
   },
   "config.rules_type": {
     "other": "Тип"

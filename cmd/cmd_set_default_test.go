@@ -36,7 +36,7 @@ func (m *mockBrowserService) MakeUsTheDefaultBrowser() error {
 	return m.makeDefaultErr
 }
 
-func (m *mockBrowserService) GetIconForBrowser(_ linkquisition.Browser) ([]byte, error) {
+func (m *mockBrowserService) GetIconForBrowser(_ *linkquisition.Browser) ([]byte, error) {
 	return nil, nil
 }
 

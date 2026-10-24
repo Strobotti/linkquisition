@@ -229,6 +229,6 @@ func (m *trackingBrowserService) AreWeTheDefaultBrowser() bool { return m.isDefa
 
 func (m *trackingBrowserService) MakeUsTheDefaultBrowser() error { return nil }
 
-func (m *trackingBrowserService) GetIconForBrowser(_ linkquisition.Browser) ([]byte, error) {
+func (m *trackingBrowserService) GetIconForBrowser(_ *linkquisition.Browser) ([]byte, error) {
 	return nil, nil
 }

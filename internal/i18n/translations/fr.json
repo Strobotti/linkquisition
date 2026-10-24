@@ -65,6 +65,12 @@
   "picker.remember_choice": {
     "other": "Se souvenir de ce choix"
   },
+  "picker.private_mode": {
+    "other": "Ouvrir dans une fenêtre privée"
+  },
+  "picker.private_unsupported": {
+    "other": "La navigation privée n'est pas prise en charge par les navigateurs disponibles."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (ce site uniquement)"
   },
@@ -72,7 +78,7 @@
     "other": "{{.Domain}} (tout le domaine)"
   },
   "picker.keyboard_guide": {
-    "other": "Appuyez sur 'ENTRÉE' pour le premier, 'ÉCHAP' pour quitter, '{{.CopyShortcut}}' pour copier l'URL"
+    "other": "Appuyez sur 'ENTRÉE' pour choisir le premier, maintenez 'SHIFT' ou activez le mode privé pour ouvrir en privé, 'ÉCHAP' pour quitter, '{{.CopyShortcut}}' pour copier l'URL"
   },
   "config.language_label": {
     "other": "Langue :"
@@ -203,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Modifier le navigateur"
   },
+  "config.browsers_rename_title": {
+    "other": "Renommer le navigateur"
+  },
   "config.browsers_delete": {
     "other": "Supprimer"
   },
@@ -251,11 +260,23 @@
   "config.rules_add": {
     "other": "+ Ajouter une règle"
   },
+  "config.rules_move": {
+    "other": "Déplacer la sélection…"
+  },
+  "config.rules_move_title": {
+    "other": "Déplacer les règles"
+  },
+  "config.rules_move_target": {
+    "other": "Déplacer vers :"
+  },
   "config.rules_add_title": {
     "other": "Ajouter une règle à {{.Name}}"
   },
   "config.rules_edit_title": {
     "other": "Modifier la règle"
+  },
+  "config.rules_private_mode_help": {
+    "other": "Applies to all URLs handled by this browser."
   },
   "config.rules_type": {
     "other": "Type"

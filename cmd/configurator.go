@@ -35,6 +35,11 @@ type Configurator struct {
 	// noBrowsersWarning holds the warning container shown on the General tab
 	// when no browsers are configured. It is hidden after a successful scan.
 	noBrowsersWarning fyne.CanvasObject
+
+	// selectedRules holds the checked rules on the Rules tab, keyed by "browserIdx/ruleIdx".
+	selectedRules map[string]bool
+	// moveRulesBtn is the Rules-tab button that moves the selected rules to another browser.
+	moveRulesBtn *widget.Button
 }
 
 func NewConfigurator(

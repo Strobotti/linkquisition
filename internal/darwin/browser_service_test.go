@@ -13,7 +13,39 @@ import (
 	"howett.net/plist"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/browserprofiles"
 )
+
+func TestPrivateArgumentForKnownBrowserFamilies(t *testing.T) {
+	for _, test := range []struct {
+		browser string
+		want    string
+		ok      bool
+	}{
+		{browser: "Google Chrome", want: "--incognito", ok: true},
+		{browser: "Firefox", want: "-private-window", ok: true},
+		{browser: "Safari", ok: false},
+	} {
+		t.Run(test.browser, func(t *testing.T) {
+			got, ok := browserprofiles.PrivateArgument(test.browser)
+			assert.Equal(t, test.ok, ok)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestGetExecutableNameFromApp(t *testing.T) {
+	appPath := filepath.Join(t.TempDir(), "Example.app")
+	require.NoError(t, os.MkdirAll(filepath.Join(appPath, "Contents"), 0700))
+	writePlist(t, filepath.Join(appPath, "Contents", "Info.plist"), map[string]interface{}{
+		"CFBundleExecutable": "ExampleBrowser",
+	})
+
+	name, err := getExecutableNameFromApp(appPath)
+
+	require.NoError(t, err)
+	assert.Equal(t, "ExampleBrowser", name)
+}
 
 func TestParseBrowserPlist_HTTPHandler(t *testing.T) {
 	dir := t.TempDir()
@@ -277,10 +309,11 @@ func TestGetAvailableBrowsers_NoDuplicates(t *testing.T) {
 
 	seen := make(map[string]bool)
 	for _, b := range browsers {
-		if seen[b.Command] {
-			t.Errorf("duplicate browser bundle ID found: %s (%s)", b.Command, b.Name)
+		key := b.Command + "\x00" + b.ProfilePath
+		if seen[key] {
+			t.Errorf("duplicate browser target found: %s (%s)", b.Command, b.Name)
 		}
-		seen[b.Command] = true
+		seen[key] = true
 	}
 }
 
@@ -408,7 +441,7 @@ func TestGetIconForBrowser_Safari(t *testing.T) {
 	svc := &BrowserService{}
 	browser := linkquisition.Browser{Name: "Safari", Command: "com.apple.Safari"}
 
-	iconData, err := svc.GetIconForBrowser(browser)
+	iconData, err := svc.GetIconForBrowser(&browser)
 	require.NoError(t, err)
 	assert.NotEmpty(t, iconData, "Safari icon should be available on macOS")
 
@@ -422,7 +455,7 @@ func TestGetIconForBrowser_UnknownBundleID(t *testing.T) {
 	svc := &BrowserService{}
 	browser := linkquisition.Browser{Name: "Nonexistent", Command: "com.nonexistent.fake.browser"}
 
-	_, err := svc.GetIconForBrowser(browser)
+	_, err := svc.GetIconForBrowser(&browser)
 	assert.Error(t, err)
 }
 

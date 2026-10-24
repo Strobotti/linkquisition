@@ -65,6 +65,12 @@
   "picker.remember_choice": {
     "other": "Választás megjegyzése"
   },
+  "picker.private_mode": {
+    "other": "Megnyitás privát ablakban"
+  },
+  "picker.private_unsupported": {
+    "other": "A privát böngészést a rendelkezésre álló böngészők nem támogatják."
+  },
   "picker.remember_site": {
     "other": "{{.Site}} (csak ez a webhely)"
   },
@@ -72,7 +78,7 @@
     "other": "{{.Domain}} (teljes domain)"
   },
   "picker.keyboard_guide": {
-    "other": "Nyomj 'ENTER'-t az első kiválasztásához, 'ESC'-t a kilépéshez, '{{.CopyShortcut}}'-t az URL vágólapra másolásához"
+    "other": "Nyomj 'ENTER'-t az első kiválasztásához, tartsd lenyomva a 'SHIFT'-et vagy kapcsold be a privát módot, 'ESC'-t a kilépéshez, '{{.CopyShortcut}}'-t az URL másolásához"
   },
   "config.language_label": {
     "other": "Nyelv:"
@@ -203,6 +209,9 @@
   "config.browsers_edit_title": {
     "other": "Böngésző szerkesztése"
   },
+  "config.browsers_rename_title": {
+    "other": "Böngésző átnevezése"
+  },
   "config.browsers_delete": {
     "other": "Törlés"
   },
@@ -251,11 +260,23 @@
   "config.rules_add": {
     "other": "+ Szabály hozzáadása"
   },
+  "config.rules_move": {
+    "other": "Kijelöltek áthelyezése…"
+  },
+  "config.rules_move_title": {
+    "other": "Szabályok áthelyezése"
+  },
+  "config.rules_move_target": {
+    "other": "Áthelyezés ide:"
+  },
   "config.rules_add_title": {
     "other": "Szabály hozzáadása: {{.Name}}"
   },
   "config.rules_edit_title": {
     "other": "Szabály szerkesztése"
+  },
+  "config.rules_private_mode_help": {
+    "other": "Applies to all URLs handled by this browser."
   },
   "config.rules_type": {
     "other": "Típus"
