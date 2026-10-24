@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.0](https://github.com/Strobotti/linkquisition/compare/v3.2.0...v3.3.0) (2026-10-24)
+
+
+### Features
+
+* detect browser profiles and add private browsing toggle ([#214](https://github.com/Strobotti/linkquisition/issues/214)) ([2ccf7c2](https://github.com/Strobotti/linkquisition/commit/2ccf7c2812e508e9a496828e9e5b90e23cbd1b12))
+
 ## [3.2.0](https://github.com/Strobotti/linkquisition/compare/v3.1.12...v3.2.0) (2026-10-22)
 
 
