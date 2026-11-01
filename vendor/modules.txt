@@ -170,8 +170,8 @@ github.com/mitchellh/mapstructure
 # github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 ## explicit
 github.com/nfnt/resize
-# github.com/nicksnyder/go-i18n/v2 v2.6.1
-## explicit; go 1.24.0
+# github.com/nicksnyder/go-i18n/v2 v2.7.0
+## explicit; go 1.26.0
 github.com/nicksnyder/go-i18n/v2/i18n
 github.com/nicksnyder/go-i18n/v2/i18n/template
 github.com/nicksnyder/go-i18n/v2/internal
