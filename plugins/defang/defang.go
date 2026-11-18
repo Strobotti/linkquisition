@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -225,47 +226,34 @@ func (p *defang) isDomainBlocked(host string) bool {
 	return false
 }
 
-// loadCachedLists loads blocklists from the cache directory
+// loadCachedLists atomically replaces the in-memory list with the current sources.
+// Legacy index-based files are retained as a fallback until each source is fetched.
 func (p *defang) loadCachedLists() {
-	if _, err := os.Stat(p.cacheDir); os.IsNotExist(err) {
-		return
-	}
-
-	entries, err := os.ReadDir(p.cacheDir)
-	if err != nil {
-		p.serviceProvider.GetLogger().Warn("error reading cache directory", "error", err.Error(), "plugin", "defang")
-		return
-	}
-
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".txt") {
+	domains := make(map[string]struct{})
+	for i, source := range p.sources {
+		path, _, _ := p.sourcePaths(source)
+		file, err := os.Open(path)
+		if os.IsNotExist(err) {
+			path = filepath.Join(p.cacheDir, fmt.Sprintf("source_%d.txt", i))
+			file, err = os.Open(path)
+		}
+		if err != nil {
+			if !os.IsNotExist(err) {
+				p.serviceProvider.GetLogger().Warn("error opening hosts file", "path", path, "error", err.Error(), "plugin", "defang")
+			}
 			continue
 		}
-
-		filePath := filepath.Join(p.cacheDir, entry.Name())
-		p.loadHostsFile(filePath)
+		parseHostsReader(file, domains)
+		_ = file.Close()
 	}
-
-	p.serviceProvider.GetLogger().Debug(
-		fmt.Sprintf("loaded %d blocked domains from cache", len(p.blockedDomains)),
-		"plugin", "defang",
-	)
+	p.mu.Lock()
+	p.blockedDomains = domains
+	p.mu.Unlock()
+	p.serviceProvider.GetLogger().Debug(fmt.Sprintf("loaded %d blocked domains from cache", len(domains)), "plugin", "defang")
 }
 
-// loadHostsFile parses a hosts-format file and adds domains to the blocklist
-func (p *defang) loadHostsFile(path string) {
-	file, err := os.Open(path)
-	if err != nil {
-		p.serviceProvider.GetLogger().Warn("error opening hosts file", "path", path, "error", err.Error(), "plugin", "defang")
-		return
-	}
-	defer file.Close()
-
-	p.parseHostsReader(file)
-}
-
-// parseHostsReader parses a hosts-format reader and adds domains to the blocklist
-func (p *defang) parseHostsReader(reader io.Reader) {
+// parseHostsReader parses a hosts-format reader and adds domains to the blocklist.
+func parseHostsReader(reader io.Reader, domains map[string]struct{}) {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -295,44 +283,23 @@ func (p *defang) parseHostsReader(reader io.Reader) {
 			continue
 		}
 
-		p.blockedDomains[domain] = struct{}{}
+		domains[domain] = struct{}{}
 	}
 }
 
-// maybeStartUpdate checks if any cached list is stale and starts a background update
+// maybeStartUpdate schedules a background pass; each source is checked independently.
 func (p *defang) maybeStartUpdate() {
-	needsUpdate := false
-
-	if _, err := os.Stat(p.cacheDir); os.IsNotExist(err) {
-		// No cache at all — need to fetch
-		needsUpdate = true
-	} else {
-		// Check if any source file is missing or older than updateInterval
-		for i := range p.sources {
-			fileName := fmt.Sprintf("source_%d.txt", i)
-			filePath := filepath.Join(p.cacheDir, fileName)
-
-			info, err := os.Stat(filePath)
-			if err != nil || time.Since(info.ModTime()) > p.updateInterval {
-				needsUpdate = true
-				break
-			}
-		}
-	}
-
-	if !needsUpdate {
+	p.mu.Lock()
+	if p.updating {
+		p.mu.Unlock()
 		return
 	}
-
-	p.mu.Lock()
 	p.updating = true
 	p.done = make(chan struct{})
 	p.mu.Unlock()
-
 	go p.fetchUpdates()
 }
 
-// fetchUpdates downloads all configured blocklist sources to the cache directory
 func (p *defang) fetchUpdates() {
 	defer func() {
 		p.mu.Lock()
@@ -341,42 +308,66 @@ func (p *defang) fetchUpdates() {
 		p.mu.Unlock()
 	}()
 
-	p.serviceProvider.GetLogger().Debug("starting blocklist update", "plugin", "defang")
-
 	if err := os.MkdirAll(p.cacheDir, cacheDirPerms); err != nil {
 		p.serviceProvider.GetLogger().Warn("error creating cache directory", "error", err.Error(), "plugin", "defang")
 		return
 	}
-
-	client := &http.Client{
-		Timeout: 30 * time.Second,
+	client := &http.Client{Timeout: 30 * time.Second}
+	for _, source := range p.sources {
+		p.updateSource(client, source)
 	}
+	p.loadCachedLists()
+}
 
-	for i, source := range p.sources {
-		fileName := fmt.Sprintf("source_%d.txt", i)
-		filePath := filepath.Join(p.cacheDir, fileName)
-
-		if err := p.downloadSource(client, source, filePath); err != nil {
-			p.serviceProvider.GetLogger().Warn(
-				fmt.Sprintf("error downloading blocklist from %s", source),
-				"error", err.Error(),
-				"plugin", "defang",
-			)
-			continue
+func (p *defang) updateSource(client *http.Client, source string) {
+	cachePath, statePath, lockPath := p.sourcePaths(source)
+	lock, err := trySourceLock(lockPath)
+	if err != nil {
+		// Another process may already be updating this source.
+		return
+	}
+	defer unlockSource(lock)
+	state, err := readSourceState(statePath)
+	if err != nil {
+		p.serviceProvider.GetLogger().Warn("error reading blocklist state", "error", err.Error(), "plugin", "defang")
+		return
+	}
+	now := time.Now()
+	if !sourceDue(state, cachePath, p.updateInterval, now) {
+		return
+	}
+	// Persist the attempt before networking, so an interrupted process doesn't
+	// immediately retry on every link open.
+	state.LastAttempt = now
+	state.Failures++
+	state.NextAttempt = now.Add(retryDelay(state.Failures))
+	if err := writeSourceState(statePath, state); err != nil {
+		p.serviceProvider.GetLogger().Warn("error recording blocklist attempt", "error", err.Error(), "plugin", "defang")
+		return
+	}
+	if err := p.downloadSource(client, source, cachePath); err != nil {
+		var httpErr *sourceHTTPError
+		if errors.As(err, &httpErr) {
+			state.HTTPStatus = httpErr.status
+			state.Gone = httpErr.status == http.StatusGone
+		} else {
+			state.HTTPStatus = 0
 		}
-
-		// Load the newly downloaded list into memory
-		p.loadHostsFile(filePath)
+		if stateErr := writeSourceState(statePath, state); stateErr != nil {
+			p.serviceProvider.GetLogger().Warn("error recording blocklist failure", "error", stateErr.Error(), "plugin", "defang")
+		}
+		// Network errors may embed the URL, including credentials or query parameters.
+		p.serviceProvider.GetLogger().Warn("error downloading blocklist", "source_id", sourceID(source), "http_status", state.HTTPStatus, "plugin", "defang")
+		return
 	}
-
-	p.mu.Lock()
-	domainCount := len(p.blockedDomains)
-	p.mu.Unlock()
-
-	p.serviceProvider.GetLogger().Debug(
-		fmt.Sprintf("blocklist update complete, %d domains blocked", domainCount),
-		"plugin", "defang",
-	)
+	state.LastSuccess = time.Now()
+	state.Failures = 0
+	state.HTTPStatus = 0
+	state.Gone = false
+	state.NextAttempt = time.Time{}
+	if err := writeSourceState(statePath, state); err != nil {
+		p.serviceProvider.GetLogger().Warn("error recording blocklist success", "error", err.Error(), "plugin", "defang")
+	}
 }
 
 // downloadSource downloads a single blocklist source to a file
@@ -393,7 +384,7 @@ func (p *defang) downloadSource(client *http.Client, sourceURL, destPath string)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("HTTP %d from %s", resp.StatusCode, sourceURL)
+		return &sourceHTTPError{status: resp.StatusCode}
 	}
 
 	tmpPath := destPath + ".tmp"

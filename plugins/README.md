@@ -165,7 +165,13 @@ By default, it uses two well-known, trusted sources:
 
 The blocklists are cached in the config directory (e.g. `~/.config/linkquisition/defang/` on Linux) and refreshed
 in the background when older than the configured update interval. The app never blocks on network I/O — it uses
-whatever is cached and updates lazily.
+whatever is cached and updates lazily. Each source is refreshed independently: a failure does not refresh healthy
+sources early. Transient failures are retried with backoff; HTTP 410 (Gone) is remembered until the source is changed.
+The last successful cached list remains in use when a download fails. Existing index-based caches are used as a
+fallback until their corresponding sources are successfully downloaded with the new cache format.
+
+The URLhaus host-file URL currently returns HTTP 410 and no longer supplies the default list. Configure another
+hosts-format source if you need that protection; the Steven Black source continues to work independently.
 
 ### Configuration
 
