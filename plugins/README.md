@@ -158,10 +158,15 @@ Marketo (`mkt_tok`), Adobe (`s_cid`), and common social/affiliate trackers (`igs
 This plugin checks URLs against known-malicious domain blocklists before they reach the browser. It downloads and
 caches hosts-format blocklists locally, checking them on every URL open without any network request in the hot path.
 
-By default, it uses two well-known, trusted sources:
+By default, it uses two sources:
 
-- [URLhaus](https://urlhaus.abuse.ch/) (abuse.ch) — malware distribution URLs
+- [NetAPI compromised domains](https://netapi.com/compromised-urls/) — domains currently listed as compromised or
+  malicious, regenerated hourly (CC BY 4.0)
 - [Steven Black's hosts](https://github.com/StevenBlack/hosts) — aggregated malware/adware/phishing domains
+
+Earlier versions used the [URLhaus](https://urlhaus.abuse.ch/) host file instead of the NetAPI list. abuse.ch stopped
+serving keyless downloads in October 2026 and the host file now answers HTTP 410, so a config that still lists it
+gets nothing from that source.
 
 The blocklists are cached in the config directory (e.g. `~/.config/linkquisition/defang/` on Linux) and refreshed
 in the background when older than the configured update interval. The app never blocks on network I/O — it uses
@@ -179,7 +184,7 @@ whatever is cached and updates lazily.
       "path": "defang.so",
       "settings": {
         "sources": [
-          "https://urlhaus.abuse.ch/downloads/hostfile/",
+          "https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
           "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
         ],
         "updateInterval": "168h",

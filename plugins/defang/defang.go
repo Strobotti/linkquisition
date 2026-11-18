@@ -18,9 +18,10 @@ import (
 	"github.com/strobotti/linkquisition"
 )
 
-// defaultSources is the list of blocklist URLs used when no custom sources are configured
+// defaultSources is the list of blocklist URLs used when no custom sources are configured.
+// The URLhaus host file is no longer used: abuse.ch answers keyless downloads with HTTP 410 since October 2026.
 var defaultSources = []string{
-	"https://urlhaus.abuse.ch/downloads/hostfile/",
+	"https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
 	"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
 }
 
