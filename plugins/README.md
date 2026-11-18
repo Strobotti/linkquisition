@@ -172,7 +172,8 @@ fallback until their corresponding sources are successfully downloaded with the 
 
 The URLhaus host-file URL currently returns HTTP 410 and no longer supplies the default list. Configure another
 hosts-format source if you need that protection; the Steven Black source continues to work independently. The General
-tab's Configuration health check flags this known issue and opens the Defang settings for editing.
+tab's Configuration health check flags this known issue and recorded HTTP 410 responses from other sources, and opens
+the Defang settings for editing. The check uses local state and does not download any lists.
 
 ### Configuration
 

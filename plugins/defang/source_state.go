@@ -1,14 +1,14 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/strobotti/linkquisition/internal/defangconfig"
 )
 
 const (
@@ -28,8 +28,7 @@ type sourceState struct {
 }
 
 func sourceID(source string) string {
-	sum := sha256.Sum256([]byte(source))
-	return hex.EncodeToString(sum[:])
+	return defangconfig.SourceID(source)
 }
 
 func (p *defang) sourcePaths(source string) (string, string, string) {

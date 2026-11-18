@@ -16,7 +16,7 @@ func (c *Configurator) buildConfigurationHealthSection() fyne.CanvasObject {
 	title := widget.NewLabel(i18n.T("config.health_title"))
 	title.TextStyle.Bold = true
 	c.healthRefresh = func() {
-		issues := confighealth.Check(c.settingsService.GetSettings(), runtime.GOOS != "windows")
+		issues := confighealth.Check(c.settingsService.GetSettings(), runtime.GOOS != "windows", c.settingsService.GetConfigFolderPath())
 		results.RemoveAll()
 		if len(issues) == 0 {
 			results.Add(widget.NewLabel(i18n.T("config.health_ok")))
@@ -28,11 +28,17 @@ func (c *Configurator) buildConfigurationHealthSection() fyne.CanvasObject {
 				c.healthBanner.Show()
 			}
 			for _, issue := range issues {
-				if issue.Code != confighealth.IssueDefangURLhaus {
+				var text string
+				switch issue.Code {
+				case confighealth.IssueDefangURLhaus:
+					text = i18n.T("config.health_urlhaus")
+				case confighealth.IssueDefangSourceGone:
+					text = i18n.T("config.health_source_gone", map[string]interface{}{"Number": issue.SourceIndex + 1})
+				default:
 					continue
 				}
 				index := issue.PluginIndex
-				message := widget.NewLabel(i18n.T("config.health_urlhaus"))
+				message := widget.NewLabel(text)
 				message.Wrapping = fyne.TextWrapWord
 				button := widget.NewButton(i18n.T("config.health_edit_plugin"), func() { c.openHealthPluginSettings(index) })
 				results.Add(container.NewVBox(message, button))

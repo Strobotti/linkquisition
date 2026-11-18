@@ -28,7 +28,7 @@ func TestCheckDefangURLhaus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			settings := &linkquisition.Settings{Plugins: []linkquisition.PluginSettings{tt.plugin}}
-			issues := Check(settings, tt.supported)
+			issues := Check(settings, tt.supported, t.TempDir())
 			if tt.want {
 				require.Equal(t, []Issue{{Code: IssueDefangURLhaus, PluginIndex: 0}}, issues)
 			} else {
