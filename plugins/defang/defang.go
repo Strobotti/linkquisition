@@ -17,13 +17,11 @@ import (
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/defangconfig"
 )
 
 // defaultSources is the list of blocklist URLs used when no custom sources are configured
-var defaultSources = []string{
-	"https://urlhaus.abuse.ch/downloads/hostfile/",
-	"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
-}
+var defaultSources = defangconfig.DefaultSources()
 
 // DefangPluginSettings holds the configuration for the defang plugin
 type DefangPluginSettings struct {

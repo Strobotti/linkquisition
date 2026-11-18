@@ -547,5 +547,12 @@
   },
   "about.bug_report_issues_link": {
     "other": "Report an issue on GitHub"
-  }
+  },
+  "config.health_title": { "other": "Configuration health" },
+  "config.health_check": { "other": "Check configuration" },
+  "config.health_ok": { "other": "No known configuration issues found." },
+  "config.health_banner": { "other": "A configuration issue needs attention." },
+  "config.health_review": { "other": "Review" },
+  "config.health_urlhaus": { "other": "Defang's URLhaus host-file source is no longer available. Other sources may still be working. Edit the sources to use a supported hosts-format list." },
+  "config.health_edit_plugin": { "other": "Edit Defang settings" }
 }

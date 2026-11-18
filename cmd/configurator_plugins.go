@@ -20,6 +20,7 @@ import (
 
 func (c *Configurator) pluginTabItems() []*container.TabItem {
 	content := container.NewVBox()
+	c.pluginList = content
 	c.rebuildPluginsList(content)
 
 	return []*container.TabItem{
@@ -63,6 +64,17 @@ func (c *Configurator) rebuildPluginsList(content *fyne.Container) {
 	}
 
 	content.Refresh()
+	if c.healthRefresh != nil {
+		c.healthRefresh()
+	}
+}
+
+func (c *Configurator) openHealthPluginSettings(index int) {
+	settings := c.settingsService.GetSettings()
+	if c.pluginList == nil || index < 0 || index >= len(settings.Plugins) {
+		return
+	}
+	c.showPluginSettings(index, c.pluginList)
 }
 
 func (c *Configurator) buildPluginCard(
@@ -87,6 +99,10 @@ func (c *Configurator) buildPluginCard(
 		s.Plugins[idx].IsDisabled = !checked
 		if err := c.settingsService.WriteSettings(s); err != nil {
 			c.logger.Error("Error saving plugin state", "error", err, "plugin", pluginName)
+			return
+		}
+		if c.healthRefresh != nil {
+			c.healthRefresh()
 		}
 	})
 	enableCheck.Checked = !ps.IsDisabled

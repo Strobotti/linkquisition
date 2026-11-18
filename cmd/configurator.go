@@ -40,6 +40,11 @@ type Configurator struct {
 	selectedRules map[string]bool
 	// moveRulesBtn is the Rules-tab button that moves the selected rules to another browser.
 	moveRulesBtn *widget.Button
+
+	healthBanner  *fyne.Container
+	healthRefresh func()
+	pluginList    *fyne.Container
+	tabs          *container.AppTabs
 }
 
 func NewConfigurator(
@@ -68,6 +73,15 @@ func (c *Configurator) parentWindow() fyne.Window {
 
 func (c *Configurator) Run() {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))
+	c.healthBanner = container.NewHBox(
+		widget.NewLabel(i18n.T("config.health_banner")),
+		widget.NewButton(i18n.T("config.health_review"), func() {
+			if c.tabs != nil {
+				c.tabs.SelectIndex(0)
+			}
+		}),
+	)
+	c.healthBanner.Hide()
 
 	tabItems := []*container.TabItem{
 		container.NewTabItem(i18n.T("config.tab_general"), c.getGeneralTab()),
@@ -84,10 +98,10 @@ func (c *Configurator) Run() {
 		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab(w)),
 	)
 
-	tabs := container.NewAppTabs(tabItems...)
-	tabs.SetTabLocation(container.TabLocationTop)
+	c.tabs = container.NewAppTabs(tabItems...)
+	c.tabs.SetTabLocation(container.TabLocationTop)
 
-	w.SetContent(tabs)
+	w.SetContent(container.NewBorder(c.healthBanner, nil, nil, nil, c.tabs))
 
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
 		if keyEvent.Name == fyne.KeyEscape {
@@ -116,6 +130,8 @@ func (c *Configurator) getGeneralTab() fyne.CanvasObject {
 		sections.Add(c.noBrowsersWarning)
 	}
 
+	sections.Add(c.buildConfigurationHealthSection())
+	sections.Add(widget.NewSeparator())
 	sections.Add(c.buildLanguageSection())
 	sections.Add(widget.NewSeparator())
 	sections.Add(c.buildLogLevelSection())

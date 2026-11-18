@@ -171,7 +171,8 @@ The last successful cached list remains in use when a download fails. Existing i
 fallback until their corresponding sources are successfully downloaded with the new cache format.
 
 The URLhaus host-file URL currently returns HTTP 410 and no longer supplies the default list. Configure another
-hosts-format source if you need that protection; the Steven Black source continues to work independently.
+hosts-format source if you need that protection; the Steven Black source continues to work independently. The General
+tab's Configuration health check flags this known issue and opens the Defang settings for editing.
 
 ### Configuration
 

@@ -8,3 +8,5 @@ import "fyne.io/fyne/v2/container"
 func (c *Configurator) pluginTabItems() []*container.TabItem {
 	return nil
 }
+
+func (c *Configurator) openHealthPluginSettings(_ int) {}
