@@ -7,8 +7,8 @@ import (
 
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/test"
-
 	"github.com/stretchr/testify/require"
+
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/defangconfig"
 	"github.com/strobotti/linkquisition/internal/i18n"

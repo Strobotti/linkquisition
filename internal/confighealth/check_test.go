@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
 	"github.com/strobotti/linkquisition"
 	"github.com/strobotti/linkquisition/internal/defangconfig"
 )
