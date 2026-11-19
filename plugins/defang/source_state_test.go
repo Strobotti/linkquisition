@@ -92,7 +92,12 @@ func TestConcurrentStartsDoNotDuplicateDownloads(t *testing.T) {
 
 func TestSourceCacheFollowsSourceNotPosition(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("0.0.0.0 " + r.URL.Path[1:] + ".test\n"))
+		switch r.URL.Path {
+		case "/first":
+			_, _ = w.Write([]byte("0.0.0.0 first.test\n"))
+		case "/second":
+			_, _ = w.Write([]byte("0.0.0.0 second.test\n"))
+		}
 	}))
 	defer server.Close()
 	dir := t.TempDir()

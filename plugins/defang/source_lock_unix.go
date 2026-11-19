@@ -3,14 +3,14 @@
 package main
 
 import (
-    "os"
+	"os"
 
-    "golang.org/x/sys/unix"
+	"golang.org/x/sys/unix"
 )
 
 // trySourceLock prevents concurrent processes from downloading the same source.
 func trySourceLock(path string) (*os.File, error) {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0600)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, sourceLockFilePerms)
 	if err != nil {
 		return nil, err
 	}

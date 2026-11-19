@@ -337,7 +337,7 @@ func (p *defang) updateSource(client *http.Client, source string) {
 		return
 	}
 	now := time.Now()
-	if !sourceDue(state, cachePath, p.updateInterval, now) {
+	if !sourceDue(&state, cachePath, p.updateInterval, now) {
 		return
 	}
 	// Persist the attempt before networking, so an interrupted process doesn't
@@ -345,12 +345,12 @@ func (p *defang) updateSource(client *http.Client, source string) {
 	state.LastAttempt = now
 	state.Failures++
 	state.NextAttempt = now.Add(retryDelay(state.Failures))
-	if err := writeSourceState(statePath, state); err != nil {
-		p.serviceProvider.GetLogger().Warn("error recording blocklist attempt", "error", err.Error(), "plugin", "defang")
+	if writeErr := writeSourceState(statePath, &state); writeErr != nil {
+		p.serviceProvider.GetLogger().Warn("error recording blocklist attempt", "error", writeErr.Error(), "plugin", "defang")
 		return
 	}
 	var etag, lastModified string
-	if _, err := os.Stat(cachePath); err == nil {
+	if _, statErr := os.Stat(cachePath); statErr == nil {
 		etag, lastModified = state.ETag, state.LastModified
 	}
 	result, err := p.downloadSource(client, source, cachePath, etag, lastModified)
@@ -362,11 +362,16 @@ func (p *defang) updateSource(client *http.Client, source string) {
 		} else {
 			state.HTTPStatus = 0
 		}
-		if stateErr := writeSourceState(statePath, state); stateErr != nil {
+		if stateErr := writeSourceState(statePath, &state); stateErr != nil {
 			p.serviceProvider.GetLogger().Warn("error recording blocklist failure", "error", stateErr.Error(), "plugin", "defang")
 		}
 		// Network errors may embed the URL, including credentials or query parameters.
-		p.serviceProvider.GetLogger().Warn("error downloading blocklist", "source_id", sourceID(source), "http_status", state.HTTPStatus, "plugin", "defang")
+		p.serviceProvider.GetLogger().Warn(
+			"error downloading blocklist",
+			"source_id", sourceID(source),
+			"http_status", state.HTTPStatus,
+			"plugin", "defang",
+		)
 		return
 	}
 	state.LastSuccess = time.Now()
@@ -385,30 +390,14 @@ func (p *defang) updateSource(client *http.Client, source string) {
 		state.ETag = result.ETag
 		state.LastModified = result.LastModified
 	}
-	if err := writeSourceState(statePath, state); err != nil {
-		p.serviceProvider.GetLogger().Warn("error recording blocklist success", "error", err.Error(), "plugin", "defang")
+	if writeErr := writeSourceState(statePath, &state); writeErr != nil {
+		p.serviceProvider.GetLogger().Warn("error recording blocklist success", "error", writeErr.Error(), "plugin", "defang")
 	}
 }
 
 // downloadSource fetches a source, using conditional requests when cached validators are available.
 func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, lastModified string) (sourceDownloadResult, error) {
-	newRequest := func(useValidators bool) (*http.Request, error) {
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, sourceURL, http.NoBody)
-		if err != nil {
-			return nil, fmt.Errorf("error creating request: %w", err)
-		}
-		if useValidators {
-			if etag != "" {
-				req.Header.Set(ifNoneMatchHeader, etag)
-			}
-			if lastModified != "" {
-				req.Header.Set(ifModifiedSinceHeader, lastModified)
-			}
-		}
-		return req, nil
-	}
-
-	req, err := newRequest(etag != "" || lastModified != "")
+	req, err := newSourceRequest(sourceURL, etag, lastModified)
 	if err != nil {
 		return sourceDownloadResult{}, err
 	}
@@ -427,7 +416,7 @@ func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, 
 			return result, nil
 		}
 		// A validator without a corresponding cache is unusable; retry unconditionally.
-		req, err = newRequest(false)
+		req, err = newSourceRequest(sourceURL, "", "")
 		if err != nil {
 			return sourceDownloadResult{}, err
 		}
@@ -436,11 +425,28 @@ func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, 
 			return sourceDownloadResult{}, fmt.Errorf(httpRequestFailed+": %w", err)
 		}
 	}
+	return saveSourceResponse(resp, destPath)
+}
+
+func newSourceRequest(sourceURL, etag, lastModified string) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, sourceURL, http.NoBody)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+	if etag != "" {
+		req.Header.Set(ifNoneMatchHeader, etag)
+	}
+	if lastModified != "" {
+		req.Header.Set(ifModifiedSinceHeader, lastModified)
+	}
+	return req, nil
+}
+
+func saveSourceResponse(resp *http.Response, destPath string) (sourceDownloadResult, error) {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return sourceDownloadResult{}, &sourceHTTPError{status: resp.StatusCode}
 	}
-
 	tmpPath := destPath + ".tmp"
 	file, err := os.Create(tmpPath)
 	if err != nil {
@@ -466,7 +472,7 @@ func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, 
 // plugin.Lookup("Plugin") returns *defang which satisfies linkquisition.Plugin (pointer receiver methods).
 var Plugin defang
 
-// NewForTesting creates a fresh defang instance for use in tests (avoids mutex copy issues with the global Plugin var)
+// NewForTesting creates a fresh defang instance for use in tests (avoids mutex copy issues with the global Plugin var).
 func NewForTesting() linkquisition.Plugin {
 	return &defang{}
 }

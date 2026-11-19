@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	initialRetryDelay = time.Hour
-	maxRetryDelay     = 24 * time.Hour
+	initialRetryDelay   = time.Hour
+	maxRetryDelay       = 24 * time.Hour
+	sourceLockFilePerms = 0600
 )
 
 // sourceState is stored separately from the last successful hosts file. It never
@@ -33,7 +34,7 @@ func sourceID(source string) string {
 	return defangconfig.SourceID(source)
 }
 
-func (p *defang) sourcePaths(source string) (string, string, string) {
+func (p *defang) sourcePaths(source string) (cachePath, statePath, lockPath string) {
 	prefix := filepath.Join(p.cacheDir, "source_"+sourceID(source))
 	return prefix + ".txt", prefix + ".json", prefix + ".lock"
 }
@@ -53,7 +54,7 @@ func readSourceState(path string) (sourceState, error) {
 	return state, nil
 }
 
-func writeSourceState(path string, state sourceState) error {
+func writeSourceState(path string, state *sourceState) error {
 	data, err := json.Marshal(state)
 	if err != nil {
 		return err
@@ -63,14 +64,17 @@ func writeSourceState(path string, state sourceState) error {
 		return err
 	}
 	defer os.Remove(file.Name())
-	if _, err = file.Write(data); err != nil {
-		file.Close()
-		return err
+	if _, writeErr := file.Write(data); writeErr != nil {
+		_ = file.Close()
+		return writeErr
 	}
-	if err = file.Close(); err != nil {
-		return err
+	if closeErr := file.Close(); closeErr != nil {
+		return closeErr
 	}
-	return os.Rename(file.Name(), path)
+	if renameErr := os.Rename(file.Name(), path); renameErr != nil {
+		return renameErr
+	}
+	return nil
 }
 
 func retryDelay(failures int) time.Duration {
@@ -84,7 +88,7 @@ func retryDelay(failures int) time.Duration {
 	return delay
 }
 
-func sourceDue(state sourceState, cachePath string, interval time.Duration, now time.Time) bool {
+func sourceDue(state *sourceState, cachePath string, interval time.Duration, now time.Time) bool {
 	if state.Gone || now.Before(state.NextAttempt) {
 		return false
 	}

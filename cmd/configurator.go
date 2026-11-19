@@ -23,8 +23,15 @@ import (
 // templateKeyName is the template data key used for name substitution in i18n strings.
 const templateKeyName = "Name"
 
-// osDarwin is the runtime.GOOS value for macOS, extracted to satisfy goconst.
-const osDarwin = "darwin"
+const (
+	osDarwin  = "darwin"
+	osWindows = "windows"
+)
+
+const warningIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+<path fill="#FFC107" stroke="#B77900" stroke-width="1" d="M12 2 1.5 21h21z"/>
+<path fill="#4A3900" d="M11 8h2v7h-2zm0 9h2v2h-2z"/>
+</svg>`
 
 type Configurator struct {
 	fapp            fyne.App
@@ -73,7 +80,7 @@ func (c *Configurator) parentWindow() fyne.Window {
 
 func (c *Configurator) Run() {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))
-	warningIcon := fyne.NewStaticResource("configuration-warning.svg", []byte(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#FFC107" stroke="#B77900" stroke-width="1" d="M12 2 1.5 21h21z"/><path fill="#4A3900" d="M11 8h2v7h-2zm0 9h2v2h-2z"/></svg>`))
+	warningIcon := fyne.NewStaticResource("configuration-warning.svg", []byte(warningIconSVG))
 	c.healthBanner = container.NewHBox(
 		widget.NewIcon(warningIcon),
 		widget.NewLabel(i18n.T("config.health_banner")),
@@ -570,7 +577,7 @@ func openFileInEditor(path string) error {
 	switch runtime.GOOS {
 	case osDarwin:
 		return exec.CommandContext(ctx, "open", "-t", path).Start()
-	case "windows":
+	case osWindows:
 		// Use rundll32 to avoid a console window flash (cmd.exe is a console app).
 		return exec.CommandContext(ctx, "rundll32", "url.dll,FileProtocolHandler", path).Start()
 	default: // Linux and other Unix-like systems

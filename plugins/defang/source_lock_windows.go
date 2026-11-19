@@ -3,13 +3,13 @@
 package main
 
 import (
-    "os"
+	"os"
 
-    "golang.org/x/sys/windows"
+	"golang.org/x/sys/windows"
 )
 
 func trySourceLock(path string) (*os.File, error) {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0600)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, sourceLockFilePerms)
 	if err != nil {
 		return nil, err
 	}

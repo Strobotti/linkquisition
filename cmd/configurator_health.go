@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+
 	"github.com/strobotti/linkquisition/internal/confighealth"
 	"github.com/strobotti/linkquisition/internal/i18n"
 )
@@ -16,7 +17,7 @@ func (c *Configurator) buildConfigurationHealthSection() fyne.CanvasObject {
 	title := widget.NewLabel(i18n.T("config.health_title"))
 	title.TextStyle.Bold = true
 	c.healthRefresh = func() {
-		issues := confighealth.Check(c.settingsService.GetSettings(), runtime.GOOS != "windows", c.settingsService.GetConfigFolderPath())
+		issues := confighealth.Check(c.settingsService.GetSettings(), runtime.GOOS != osWindows, c.settingsService.GetConfigFolderPath())
 		results.RemoveAll()
 		if len(issues) == 0 {
 			results.Add(widget.NewLabel(i18n.T("config.health_ok")))
