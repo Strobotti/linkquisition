@@ -15,8 +15,8 @@ func TestCheckDefangURLhaus(t *testing.T) {
 		supported bool
 		want      bool
 	}{
-		{"implicit defaults", linkquisition.PluginSettings{Path: "defang.so"}, true, true},
-		{"empty list uses defaults", linkquisition.PluginSettings{Path: "defang.so", Settings: map[string]interface{}{"sources": []interface{}{}}}, true, true},
+		{"implicit defaults use working sources", linkquisition.PluginSettings{Path: "defang.so"}, true, false},
+		{"empty list uses working defaults", linkquisition.PluginSettings{Path: "defang.so", Settings: map[string]interface{}{"sources": []interface{}{}}}, true, false},
 		{"explicit default", linkquisition.PluginSettings{Path: "/plugins/defang.so", Settings: map[string]interface{}{"sources": []interface{}{defangconfig.URLhausHostFile, "https://example.test/hosts"}}}, true, true},
 		{"go string slice", linkquisition.PluginSettings{Path: "defang", Settings: map[string]interface{}{"sources": []string{defangconfig.URLhausHostFile}}}, true, true},
 		{"custom source", linkquisition.PluginSettings{Path: "defang.so", Settings: map[string]interface{}{"sources": []string{"https://example.test/hosts"}}}, true, false},

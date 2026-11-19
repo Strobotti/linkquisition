@@ -17,7 +17,7 @@ const URLhausHostFile = "https://urlhaus.abuse.ch/downloads/hostfile/"
 // DefaultSources returns a fresh copy of the default blocklist URLs.
 func DefaultSources() []string {
 	return []string{
-		URLhausHostFile,
+		"https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
 		"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
 	}
 }

@@ -158,9 +158,9 @@ Marketo (`mkt_tok`), Adobe (`s_cid`), and common social/affiliate trackers (`igs
 This plugin checks URLs against known-malicious domain blocklists before they reach the browser. It downloads and
 caches hosts-format blocklists locally, checking them on every URL open without any network request in the hot path.
 
-By default, it uses two well-known, trusted sources:
+By default, it uses two sources:
 
-- [URLhaus](https://urlhaus.abuse.ch/) (abuse.ch) — malware distribution URLs
+- [NetAPI compromised domains](https://netapi.com/compromised-urls/) — a current compromised-domain feed, published under CC BY 4.0
 - [Steven Black's hosts](https://github.com/StevenBlack/hosts) — aggregated malware/adware/phishing domains
 
 The blocklists are cached in the config directory (e.g. `~/.config/linkquisition/defang/` on Linux) and refreshed
@@ -170,10 +170,9 @@ sources early. Transient failures are retried with backoff; HTTP 410 (Gone) is r
 The last successful cached list remains in use when a download fails. When a source provides `ETag` or `Last-Modified`, scheduled checks use conditional HTTP requests, avoiding a full list download when the source has not changed. Existing index-based caches are used as a
 fallback until their corresponding sources are successfully downloaded with the new cache format.
 
-The URLhaus host-file URL currently returns HTTP 410 and no longer supplies the default list. Configure another
-hosts-format source if you need that protection; the Steven Black source continues to work independently. The General
-tab's Configuration health check flags this known issue and recorded HTTP 410 responses from other sources, and opens
-the Defang settings for editing. The check uses local state and does not download any lists.
+Earlier configurations may still list the [URLhaus](https://urlhaus.abuse.ch/) host file, which now returns HTTP 410.
+The General tab's Configuration health check flags that obsolete source and recorded HTTP 410 responses from other
+sources, and opens the Defang settings for editing. The check uses local state and does not download any lists.
 
 ### Configuration
 
@@ -187,7 +186,7 @@ the Defang settings for editing. The check uses local state and does not downloa
       "path": "defang.so",
       "settings": {
         "sources": [
-          "https://urlhaus.abuse.ch/downloads/hostfile/",
+          "https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
           "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
         ],
         "updateInterval": "24h",
