@@ -553,7 +553,6 @@
   "config.health_ok": { "other": "No known configuration issues found." },
   "config.health_banner": { "other": "A configuration issue needs attention." },
   "config.health_review": { "other": "Review" },
-  "config.health_urlhaus": { "other": "Defang's URLhaus host-file source is no longer available. Other sources may still be working. Edit the sources to use a supported hosts-format list." },
-  "config.health_edit_plugin": { "other": "Edit Defang settings" },
-  "config.health_source_gone": { "other": "Defang source {{.Number}} returned HTTP 410 and is no longer available. Other sources may still be working. Edit the sources to remove or replace it." }
+  "config.health_edit_plugin": { "other": "Edit plugin settings" },
+  "config.health_check_failed": { "other": "Could not check the health of {{.Name}}. Review its settings." }
 }

@@ -299,6 +299,18 @@ The plugin is a shared object file (`.so`) that is loaded by the main applicatio
 - `Shutdown(ctx context.Context)` — called when the application is about to exit. Plugins with background work (e.g.
   downloads) should use this to finish gracefully before the context deadline expires.
 
+### Optional: PluginHealthChecker interface
+
+Plugins can implement [`PluginHealthChecker`](../plugin.go) to report configuration problems in the settings window:
+
+- `HealthCheck(config map[string]interface{}, configFolderPath string) ([]PluginHealthIssue, error)` receives the
+  current saved plugin settings and config folder. Return actionable issues with a plain-English `Message`, or an error
+  if the check cannot complete. Plugins do not yet have localization support.
+- The host may call this without `Setup` and concurrently with a running plugin. The check must not modify settings
+  or make network requests. Plugins that do not implement the interface are skipped.
+
+See the [Defang health check](./defang/health.go) for an example.
+
 ### Optional: PluginUIHook interface
 
 Plugins can optionally implement the [`PluginUIHook`](../plugin_ui_hook.go) interface to receive a callback when the

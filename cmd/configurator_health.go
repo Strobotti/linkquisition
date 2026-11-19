@@ -1,15 +1,50 @@
 package main
 
 import (
-	"runtime"
+	"path/filepath"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/strobotti/linkquisition/internal/confighealth"
 	"github.com/strobotti/linkquisition/internal/i18n"
 )
+
+type configurationHealthIssue struct {
+	pluginIndex int
+	message     string
+	checkFailed bool
+}
+
+// configurationHealth checks enabled plugins against the current saved settings.
+func (c *Configurator) configurationHealth() []configurationHealthIssue {
+	if noPlugins {
+		return nil
+	}
+	probe := c.healthProbe
+	if probe == nil {
+		probe = c.probePluginHealth
+	}
+	settings := c.settingsService.GetSettings()
+	var results []configurationHealthIssue
+	for index, plugin := range settings.Plugins {
+		if plugin.IsDisabled {
+			continue
+		}
+		issues, err := probe(plugin, c.settingsService.GetConfigFolderPath())
+		if err != nil {
+			if c.logger != nil {
+				c.logger.Warn("Plugin health check failed", "plugin", plugin.Path, "error", err)
+			}
+			results = append(results, configurationHealthIssue{pluginIndex: index, message: filepath.Base(plugin.Path), checkFailed: true})
+			continue
+		}
+		for _, issue := range issues {
+			results = append(results, configurationHealthIssue{pluginIndex: index, message: issue.Message})
+		}
+	}
+	return results
+}
 
 // buildConfigurationHealthSection only checks local settings; it never downloads lists.
 func (c *Configurator) buildConfigurationHealthSection() fyne.CanvasObject {
@@ -17,7 +52,7 @@ func (c *Configurator) buildConfigurationHealthSection() fyne.CanvasObject {
 	title := widget.NewLabel(i18n.T("config.health_title"))
 	title.TextStyle.Bold = true
 	c.healthRefresh = func() {
-		issues := confighealth.Check(c.settingsService.GetSettings(), runtime.GOOS != osWindows, c.settingsService.GetConfigFolderPath())
+		issues := c.configurationHealth()
 		results.RemoveAll()
 		if len(issues) == 0 {
 			results.Add(widget.NewLabel(i18n.T("config.health_ok")))
@@ -29,16 +64,11 @@ func (c *Configurator) buildConfigurationHealthSection() fyne.CanvasObject {
 				c.healthBanner.Show()
 			}
 			for _, issue := range issues {
-				var text string
-				switch issue.Code {
-				case confighealth.IssueDefangURLhaus:
-					text = i18n.T("config.health_urlhaus")
-				case confighealth.IssueDefangSourceGone:
-					text = i18n.T("config.health_source_gone", map[string]interface{}{"Number": issue.SourceIndex + 1})
-				default:
-					continue
+				text := issue.message
+				if issue.checkFailed {
+					text = i18n.T("config.health_check_failed", map[string]interface{}{templateKeyName: issue.message})
 				}
-				index := issue.PluginIndex
+				index := issue.pluginIndex
 				message := widget.NewLabel(text)
 				message.Wrapping = fyne.TextWrapWord
 				button := widget.NewButton(i18n.T("config.health_edit_plugin"), func() { c.openHealthPluginSettings(index) })

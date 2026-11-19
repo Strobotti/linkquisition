@@ -50,6 +50,7 @@ type Configurator struct {
 
 	healthBanner  *fyne.Container
 	healthRefresh func()
+	healthProbe   func(linkquisition.PluginSettings, string) ([]linkquisition.PluginHealthIssue, error)
 	pluginList    *fyne.Container
 	tabs          *container.AppTabs
 }

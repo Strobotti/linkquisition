@@ -131,6 +131,20 @@ type Plugin interface {
 	Shutdown(ctx context.Context)
 }
 
+// PluginHealthIssue describes an actionable problem discovered by a plugin.
+// Message is currently plain English; plugins do not yet have localization support.
+type PluginHealthIssue struct {
+	Message string
+}
+
+// PluginHealthChecker is an optional interface for plugins that can check their configuration.
+// HealthCheck receives the current saved settings and config folder, without requiring Setup.
+// It must be safe to call concurrently with the plugin lifecycle, must not modify settings,
+// and must not perform network requests. Return an error if the check cannot be completed.
+type PluginHealthChecker interface {
+	HealthCheck(config map[string]interface{}, configFolderPath string) ([]PluginHealthIssue, error)
+}
+
 // PluginServiceProvider is an interface that provides the logger and settings to the plugin.
 // This is passed to the plugin as a dependency during Setup.
 type PluginServiceProvider interface {

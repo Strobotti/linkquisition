@@ -1,20 +1,23 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/strobotti/linkquisition/internal/defangconfig"
 )
 
 const (
 	initialRetryDelay   = time.Hour
 	maxRetryDelay       = 24 * time.Hour
 	sourceLockFilePerms = 0600
+	cacheDirName        = "defang"
+	sourceFilePrefix    = "source_"
+	sourceStateExt      = ".json"
 )
 
 // sourceState is stored separately from the last successful hosts file. It never
@@ -31,12 +34,13 @@ type sourceState struct {
 }
 
 func sourceID(source string) string {
-	return defangconfig.SourceID(source)
+	sum := sha256.Sum256([]byte(source))
+	return hex.EncodeToString(sum[:])
 }
 
 func (p *defang) sourcePaths(source string) (cachePath, statePath, lockPath string) {
-	prefix := filepath.Join(p.cacheDir, "source_"+sourceID(source))
-	return prefix + ".txt", prefix + ".json", prefix + ".lock"
+	prefix := filepath.Join(p.cacheDir, sourceFilePrefix+sourceID(source))
+	return prefix + ".txt", prefix + sourceStateExt, prefix + ".lock"
 }
 
 func readSourceState(path string) (sourceState, error) {

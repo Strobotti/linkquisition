@@ -17,11 +17,13 @@ import (
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/strobotti/linkquisition"
-	"github.com/strobotti/linkquisition/internal/defangconfig"
 )
 
 // defaultSources is the list of blocklist URLs used when no custom sources are configured
-var defaultSources = defangconfig.DefaultSources()
+var defaultSources = []string{
+	"https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
+	"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
+}
 
 // DefangPluginSettings holds the configuration for the defang plugin
 type DefangPluginSettings struct {
@@ -136,7 +138,7 @@ func (p *defang) Setup(serviceProvider linkquisition.PluginServiceProvider, conf
 	}
 
 	// Set up cache directory next to config
-	p.cacheDir = filepath.Join(serviceProvider.GetConfigFolderPath(), "defang")
+	p.cacheDir = filepath.Join(serviceProvider.GetConfigFolderPath(), cacheDirName)
 
 	// Load cached blocklists from disk
 	p.loadCachedLists()

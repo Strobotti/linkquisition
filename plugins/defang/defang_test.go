@@ -404,6 +404,10 @@ func TestDefang_Metadata(t *testing.T) {
 	// Verify settings descriptors
 	assert.Equal(t, "sources", meta.Settings[0].Key)
 	assert.Equal(t, linkquisition.SettingTypeStringList, meta.Settings[0].Type)
+	assert.Equal(t, []string{
+		"https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
+		"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
+	}, meta.Settings[0].Default)
 	assert.Equal(t, "updateInterval", meta.Settings[1].Key)
 	assert.Equal(t, linkquisition.SettingTypeDuration, meta.Settings[1].Type)
 	assert.Equal(t, "24h", meta.Settings[1].Default)
