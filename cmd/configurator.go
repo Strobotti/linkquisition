@@ -13,6 +13,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -74,6 +75,7 @@ func (c *Configurator) parentWindow() fyne.Window {
 func (c *Configurator) Run() {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))
 	c.healthBanner = container.NewHBox(
+		widget.NewIcon(theme.WarningIcon()),
 		widget.NewLabel(i18n.T("config.health_banner")),
 		widget.NewButton(i18n.T("config.health_review"), func() {
 			if c.tabs != nil {
