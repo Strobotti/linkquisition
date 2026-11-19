@@ -425,6 +425,7 @@ func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, 
 		if err != nil {
 			return sourceDownloadResult{}, fmt.Errorf(httpRequestFailed+": %w", err)
 		}
+		defer resp.Body.Close()
 	}
 	return saveSourceResponse(resp, destPath)
 }
