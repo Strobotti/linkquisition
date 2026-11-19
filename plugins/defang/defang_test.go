@@ -224,6 +224,11 @@ func TestDefang_ProcessURL_WithCachedBlocklist(t *testing.T) {
 			}
 			err := testedPlugin.Setup(provider, cfg)
 			require.NoError(t, err)
+			defer func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				testedPlugin.Shutdown(ctx)
+			}()
 
 			result := testedPlugin.ProcessURL(context.Background(), tt.inputURL)
 			assert.Equal(t, tt.expectedAction, result.Action)
@@ -401,6 +406,7 @@ func TestDefang_Metadata(t *testing.T) {
 	assert.Equal(t, linkquisition.SettingTypeStringList, meta.Settings[0].Type)
 	assert.Equal(t, "updateInterval", meta.Settings[1].Key)
 	assert.Equal(t, linkquisition.SettingTypeDuration, meta.Settings[1].Type)
+	assert.Equal(t, "24h", meta.Settings[1].Default)
 	assert.Equal(t, "action", meta.Settings[2].Key)
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[2].Type)
 	assert.Equal(t, []string{"block", "warn", "log"}, meta.Settings[2].Options)

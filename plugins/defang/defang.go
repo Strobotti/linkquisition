@@ -28,7 +28,7 @@ type DefangPluginSettings struct {
 	// Sources is a list of URLs to download blocklists from (hosts-file format)
 	Sources []string `json:"sources,omitempty"`
 
-	// UpdateInterval is how often the blocklists should be refreshed (default: "168h" = 7 days)
+	// UpdateInterval is how often the blocklists should be refreshed (default: "24h" = 1 day)
 	UpdateInterval string `json:"updateInterval,omitempty"`
 
 	// Action determines what happens when a blocked URL is detected: "warn", "block", or "log"
@@ -41,6 +41,12 @@ const (
 	actionLog   = "log"
 
 	cacheDirPerms = 0700
+
+	etagHeader            = "ETag"
+	lastModifiedHeader    = "Last-Modified"
+	ifNoneMatchHeader     = "If-None-Match"
+	ifModifiedSinceHeader = "If-Modified-Since"
+	httpRequestFailed     = "HTTP request failed"
 )
 
 var _ linkquisition.Plugin = (*defang)(nil)
@@ -78,9 +84,9 @@ func (p *defang) Metadata() linkquisition.PluginMetadata {
 			{
 				Key:         "updateInterval",
 				Label:       "Update Interval",
-				Description: "How often to refresh the cached blocklists (Go duration format, default: 7 days)",
+				Description: "How often to refresh the cached blocklists (Go duration format, default: 24 hours)",
 				Type:        linkquisition.SettingTypeDuration,
-				Default:     "168h",
+				Default:     "24h",
 			},
 			{
 				Key:         "action",
@@ -98,7 +104,7 @@ func (p *defang) Setup(serviceProvider linkquisition.PluginServiceProvider, conf
 	p.serviceProvider = serviceProvider
 	p.blockedDomains = make(map[string]struct{})
 	p.action = actionBlock
-	p.updateInterval = 168 * time.Hour // 7 days
+	p.updateInterval = 24 * time.Hour // 1 day
 	p.sources = defaultSources
 
 	var settings DefangPluginSettings
@@ -343,7 +349,12 @@ func (p *defang) updateSource(client *http.Client, source string) {
 		p.serviceProvider.GetLogger().Warn("error recording blocklist attempt", "error", err.Error(), "plugin", "defang")
 		return
 	}
-	if err := p.downloadSource(client, source, cachePath); err != nil {
+	var etag, lastModified string
+	if _, err := os.Stat(cachePath); err == nil {
+		etag, lastModified = state.ETag, state.LastModified
+	}
+	result, err := p.downloadSource(client, source, cachePath, etag, lastModified)
+	if err != nil {
 		var httpErr *sourceHTTPError
 		if errors.As(err, &httpErr) {
 			state.HTTPStatus = httpErr.status
@@ -363,49 +374,92 @@ func (p *defang) updateSource(client *http.Client, source string) {
 	state.HTTPStatus = 0
 	state.Gone = false
 	state.NextAttempt = time.Time{}
+	if result.NotModified {
+		if result.ETag != "" {
+			state.ETag = result.ETag
+		}
+		if result.LastModified != "" {
+			state.LastModified = result.LastModified
+		}
+	} else {
+		state.ETag = result.ETag
+		state.LastModified = result.LastModified
+	}
 	if err := writeSourceState(statePath, state); err != nil {
 		p.serviceProvider.GetLogger().Warn("error recording blocklist success", "error", err.Error(), "plugin", "defang")
 	}
 }
 
-// downloadSource downloads a single blocklist source to a file
-func (p *defang) downloadSource(client *http.Client, sourceURL, destPath string) error {
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, sourceURL, http.NoBody)
-	if err != nil {
-		return fmt.Errorf("error creating request: %w", err)
+// downloadSource fetches a source, using conditional requests when cached validators are available.
+func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, lastModified string) (sourceDownloadResult, error) {
+	newRequest := func(useValidators bool) (*http.Request, error) {
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, sourceURL, http.NoBody)
+		if err != nil {
+			return nil, fmt.Errorf("error creating request: %w", err)
+		}
+		if useValidators {
+			if etag != "" {
+				req.Header.Set(ifNoneMatchHeader, etag)
+			}
+			if lastModified != "" {
+				req.Header.Set(ifModifiedSinceHeader, lastModified)
+			}
+		}
+		return req, nil
 	}
 
+	req, err := newRequest(etag != "" || lastModified != "")
+	if err != nil {
+		return sourceDownloadResult{}, err
+	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("HTTP request failed: %w", err)
+		return sourceDownloadResult{}, fmt.Errorf(httpRequestFailed+": %w", err)
+	}
+	if resp.StatusCode == http.StatusNotModified {
+		result := sourceDownloadResult{
+			NotModified:  true,
+			ETag:         resp.Header.Get(etagHeader),
+			LastModified: resp.Header.Get(lastModifiedHeader),
+		}
+		_ = resp.Body.Close()
+		if _, statErr := os.Stat(destPath); statErr == nil {
+			return result, nil
+		}
+		// A validator without a corresponding cache is unusable; retry unconditionally.
+		req, err = newRequest(false)
+		if err != nil {
+			return sourceDownloadResult{}, err
+		}
+		resp, err = client.Do(req)
+		if err != nil {
+			return sourceDownloadResult{}, fmt.Errorf(httpRequestFailed+": %w", err)
+		}
 	}
 	defer resp.Body.Close()
-
 	if resp.StatusCode != http.StatusOK {
-		return &sourceHTTPError{status: resp.StatusCode}
+		return sourceDownloadResult{}, &sourceHTTPError{status: resp.StatusCode}
 	}
 
 	tmpPath := destPath + ".tmp"
 	file, err := os.Create(tmpPath)
 	if err != nil {
-		return fmt.Errorf("error creating temp file: %w", err)
+		return sourceDownloadResult{}, fmt.Errorf("error creating temp file: %w", err)
 	}
-
 	if _, err := io.Copy(file, resp.Body); err != nil {
-		file.Close()
-		os.Remove(tmpPath)
-		return fmt.Errorf("error writing file: %w", err)
+		_ = file.Close()
+		_ = os.Remove(tmpPath)
+		return sourceDownloadResult{}, fmt.Errorf("error writing file: %w", err)
 	}
-
-	file.Close()
-
-	// Atomic rename
+	if err := file.Close(); err != nil {
+		_ = os.Remove(tmpPath)
+		return sourceDownloadResult{}, fmt.Errorf("error closing file: %w", err)
+	}
 	if err := os.Rename(tmpPath, destPath); err != nil {
-		os.Remove(tmpPath)
-		return fmt.Errorf("error renaming temp file: %w", err)
+		_ = os.Remove(tmpPath)
+		return sourceDownloadResult{}, fmt.Errorf("error renaming file: %w", err)
 	}
-
-	return nil
+	return sourceDownloadResult{ETag: resp.Header.Get(etagHeader), LastModified: resp.Header.Get(lastModifiedHeader)}, nil
 }
 
 // Plugin is the exported symbol loaded by the plugin system.

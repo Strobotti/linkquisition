@@ -167,7 +167,7 @@ The blocklists are cached in the config directory (e.g. `~/.config/linkquisition
 in the background when older than the configured update interval. The app never blocks on network I/O — it uses
 whatever is cached and updates lazily. Each source is refreshed independently: a failure does not refresh healthy
 sources early. Transient failures are retried with backoff; HTTP 410 (Gone) is remembered until the source is changed.
-The last successful cached list remains in use when a download fails. Existing index-based caches are used as a
+The last successful cached list remains in use when a download fails. When a source provides `ETag` or `Last-Modified`, scheduled checks use conditional HTTP requests, avoiding a full list download when the source has not changed. Existing index-based caches are used as a
 fallback until their corresponding sources are successfully downloaded with the new cache format.
 
 The URLhaus host-file URL currently returns HTTP 410 and no longer supplies the default list. Configure another
@@ -190,7 +190,7 @@ the Defang settings for editing. The check uses local state and does not downloa
           "https://urlhaus.abuse.ch/downloads/hostfile/",
           "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
         ],
-        "updateInterval": "168h",
+        "updateInterval": "24h",
         "action": "block"
       }
     }
@@ -203,8 +203,10 @@ the Defang settings for editing. The check uses local state and does not downloa
 | Setting          | Type     | Default     | Description                                                                      |
 |------------------|----------|-------------|----------------------------------------------------------------------------------|
 | `sources`        | []string | (see above) | URLs to download hosts-format blocklists from                                    |
-| `updateInterval` | string   | `"168h"`    | How often to refresh the cached blocklists (Go duration format, default: 7 days) |
+| `updateInterval` | string   | `"24h"`     | How often to refresh cached lists (Go duration format, default: 24 hours)       |
 | `action`         | string   | `"block"`   | What to do when a blocked domain is detected: `block`, `warn`, or `log`          |
+
+The 24-hour default applies when `updateInterval` is omitted. Existing explicit values are preserved.
 
 ### Actions
 

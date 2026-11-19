@@ -19,12 +19,14 @@ const (
 // sourceState is stored separately from the last successful hosts file. It never
 // contains the source URL, which may contain credentials or other secrets.
 type sourceState struct {
-	LastAttempt time.Time `json:"lastAttempt"`
-	LastSuccess time.Time `json:"lastSuccess"`
-	NextAttempt time.Time `json:"nextAttempt"`
-	Failures    int       `json:"failures"`
-	HTTPStatus  int       `json:"httpStatus,omitempty"`
-	Gone        bool      `json:"gone,omitempty"`
+	LastAttempt  time.Time `json:"lastAttempt"`
+	LastSuccess  time.Time `json:"lastSuccess"`
+	NextAttempt  time.Time `json:"nextAttempt"`
+	Failures     int       `json:"failures"`
+	HTTPStatus   int       `json:"httpStatus,omitempty"`
+	Gone         bool      `json:"gone,omitempty"`
+	ETag         string    `json:"etag,omitempty"`
+	LastModified string    `json:"lastModified,omitempty"`
 }
 
 func sourceID(source string) string {
@@ -93,6 +95,12 @@ func sourceDue(state sourceState, cachePath string, interval time.Duration, now 
 		return true
 	}
 	return !now.Before(state.LastSuccess.Add(interval))
+}
+
+type sourceDownloadResult struct {
+	NotModified  bool
+	ETag         string
+	LastModified string
 }
 
 type sourceHTTPError struct{ status int }

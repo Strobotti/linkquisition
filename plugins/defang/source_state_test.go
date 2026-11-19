@@ -18,7 +18,7 @@ func runWithSources(t *testing.T, dir string, sources ...string) linkquisition.P
 	t.Helper()
 	p := newPlugin()
 	provider := linkquisition.NewPluginServiceProvider(newTestLogger(), &linkquisition.Settings{}, dir)
-	require.NoError(t, p.Setup(provider, map[string]interface{}{"sources": sources, "updateInterval": "168h"}))
+	require.NoError(t, p.Setup(provider, map[string]interface{}{"sources": sources}))
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	p.Shutdown(ctx)
