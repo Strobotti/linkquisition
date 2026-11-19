@@ -36,7 +36,9 @@ func TestDefangHealthCheck(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, issues, 2)
 	require.Contains(t, issues[0].Message, "URLhaus")
+	require.True(t, issues[0].ResetSettingsToDefaults)
 	require.Contains(t, issues[1].Message, "source 2")
+	require.True(t, issues[1].ResetSettingsToDefaults)
 	require.NotContains(t, issues[1].Message, "secret")
 
 	issues, err = checker.HealthCheck(map[string]interface{}{"sources": []string{"https://other.test"}}, dir)

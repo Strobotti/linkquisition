@@ -73,7 +73,10 @@ func TestHealthTabShowsScrollableIssues(t *testing.T) {
 	c.healthProbe = func(_ linkquisition.PluginSettings, _ string) ([]linkquisition.PluginHealthIssue, error) {
 		issues := make([]linkquisition.PluginHealthIssue, issueCount)
 		for i := range issues {
-			issues[i].Message = fmt.Sprintf("Issue %d", i+1)
+			issues[i] = linkquisition.PluginHealthIssue{
+				Message:                 fmt.Sprintf("Issue %d", i+1),
+				ResetSettingsToDefaults: i == 0,
+			}
 		}
 		return issues, nil
 	}
@@ -91,6 +94,15 @@ func TestHealthTabShowsScrollableIssues(t *testing.T) {
 	list, ok := scroll.Content.(*fyne.Container)
 	require.True(t, ok)
 	require.Len(t, list.Objects, issueCount*2-1)
+	firstIssue, ok := list.Objects[0].(*fyne.Container)
+	require.True(t, ok)
+	require.Len(t, firstIssue.Objects, 3)
+	hint, ok := firstIssue.Objects[1].(*widget.Label)
+	require.True(t, ok)
+	require.Equal(t, i18n.T("config.health_reset_hint"), hint.Text)
+	secondIssue, ok := list.Objects[2].(*fyne.Container)
+	require.True(t, ok)
+	require.Len(t, secondIssue.Objects, 2)
 	last, ok := list.Objects[len(list.Objects)-1].(*fyne.Container)
 	require.True(t, ok)
 	label, ok := last.Objects[0].(*widget.Label)

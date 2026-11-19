@@ -135,6 +135,9 @@ type Plugin interface {
 // Message is currently plain English; plugins do not yet have localization support.
 type PluginHealthIssue struct {
 	Message string
+
+	// ResetSettingsToDefaults indicates that resetting this plugin's settings to their defaults may resolve the issue.
+	ResetSettingsToDefaults bool
 }
 
 // PluginHealthChecker is an optional interface for plugins that can check their configuration.

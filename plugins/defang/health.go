@@ -30,6 +30,7 @@ func (p *defang) HealthCheck(config map[string]interface{}, configFolderPath str
 			issues = append(issues, linkquisition.PluginHealthIssue{
 				Message: "Defang's URLhaus host-file source is no longer available. Other sources may still be working. " +
 					"Edit the sources to use a supported hosts-format list.",
+				ResetSettingsToDefaults: true,
 			})
 			continue
 		}
@@ -39,10 +40,13 @@ func (p *defang) HealthCheck(config map[string]interface{}, configFolderPath str
 			return nil, fmt.Errorf("read blocklist source status: %w", err)
 		}
 		if state.Gone {
-			issues = append(issues, linkquisition.PluginHealthIssue{Message: fmt.Sprintf(
-				"Defang source %d returned HTTP 410 and is no longer available. Other sources may still be working. "+
-					"Edit the sources to remove or replace it.", i+1,
-			)})
+			issues = append(issues, linkquisition.PluginHealthIssue{
+				Message: fmt.Sprintf(
+					"Defang source %d returned HTTP 410 and is no longer available. Other sources may still be working. "+
+						"Edit the sources to remove or replace it.", i+1,
+				),
+				ResetSettingsToDefaults: true,
+			})
 		}
 	}
 	return issues, nil

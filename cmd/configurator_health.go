@@ -24,9 +24,10 @@ func (c *Configurator) buildHealthBanner() *fyne.Container {
 }
 
 type configurationHealthIssue struct {
-	pluginIndex int
-	message     string
-	checkFailed bool
+	pluginIndex             int
+	message                 string
+	checkFailed             bool
+	resetSettingsToDefaults bool
 }
 
 // configurationHealth checks enabled plugins against the current saved settings.
@@ -53,7 +54,11 @@ func (c *Configurator) configurationHealth() []configurationHealthIssue {
 			continue
 		}
 		for _, issue := range issues {
-			results = append(results, configurationHealthIssue{pluginIndex: index, message: issue.Message})
+			results = append(results, configurationHealthIssue{
+				pluginIndex:             index,
+				message:                 issue.Message,
+				resetSettingsToDefaults: issue.ResetSettingsToDefaults,
+			})
 		}
 	}
 	return results
@@ -87,8 +92,16 @@ func (c *Configurator) buildConfigurationHealthTab() fyne.CanvasObject {
 				index := issue.pluginIndex
 				message := widget.NewLabel(text)
 				message.Wrapping = fyne.TextWrapWord
+				issueContent := container.NewVBox(message)
+				if issue.resetSettingsToDefaults {
+					hint := widget.NewLabel(i18n.T("config.health_reset_hint"))
+					hint.Wrapping = fyne.TextWrapWord
+					hint.TextStyle = fyne.TextStyle{Italic: true}
+					issueContent.Add(hint)
+				}
 				button := widget.NewButton(i18n.T("config.health_edit_plugin"), func() { c.openHealthPluginSettings(index) })
-				results.Add(container.NewVBox(message, button))
+				issueContent.Add(button)
+				results.Add(issueContent)
 			}
 		}
 		results.Refresh()

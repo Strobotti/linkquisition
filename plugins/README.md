@@ -306,6 +306,8 @@ Plugins can implement [`PluginHealthChecker`](../plugin.go) to report configurat
 - `HealthCheck(config map[string]interface{}, configFolderPath string) ([]PluginHealthIssue, error)` receives the
   current saved plugin settings and config folder. Return actionable issues with a plain-English `Message`, or an error
   if the check cannot complete. Plugins do not yet have localization support.
+- Set `ResetSettingsToDefaults` when resetting this plugin's settings to defaults may resolve an issue; the host then
+  displays a generic hint alongside that issue.
 - The host may call this without `Setup` and concurrently with a running plugin. The check must not modify settings
   or make network requests. Plugins that do not implement the interface are skipped.
 

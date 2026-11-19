@@ -555,5 +555,6 @@
   "config.health_review": { "other": "Review" },
   "config.health_edit_plugin": { "other": "Edit plugin settings" },
   "config.health_check_failed": { "other": "Could not check the health of {{.Name}}. Review its settings." },
+  "config.health_reset_hint": { "other": "Lisäosan asetusten palauttaminen oletusarvoihin saattaa ratkaista tämän ongelman." },
   "config.tab_health": { "other": "Tila" }
 }
