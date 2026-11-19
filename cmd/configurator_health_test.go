@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/test"
 	"github.com/stretchr/testify/require"
 	"github.com/strobotti/linkquisition"
+	"github.com/strobotti/linkquisition/internal/defangconfig"
 	"github.com/strobotti/linkquisition/internal/i18n"
 )
 
@@ -17,7 +18,10 @@ func TestConfigurationHealthBannerRefreshes(t *testing.T) {
 	defer app.Quit()
 	i18n.Init("en")
 	svc := newTestSettingsService(t)
-	settings := &linkquisition.Settings{Plugins: []linkquisition.PluginSettings{{Path: "defang.so"}}}
+	settings := &linkquisition.Settings{Plugins: []linkquisition.PluginSettings{{
+		Path:     "defang.so",
+		Settings: map[string]interface{}{"sources": []string{defangconfig.URLhausHostFile}},
+	}}}
 	require.NoError(t, svc.WriteSettings(settings))
 	c := &Configurator{fapp: app, settingsService: svc, healthBanner: container.NewVBox()}
 	c.healthBanner.Hide()
