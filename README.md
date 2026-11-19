@@ -47,7 +47,7 @@ Motivation behind this project is:
 - WHOIS lookup — view domain registration details (registrar, age, expiry, DNSSEC status)
   directly from the picker's context menu
 - QR code generation — generate a scannable QR code for the URL to quickly open it on a mobile device
-- Configuration health check in the General tab — review known configuration issues without network access
+- Configuration health check in the Health tab — review known configuration issues without network access
 - Manual update check in the About tab — see if a newer release is available on GitHub
 
 ## Installation

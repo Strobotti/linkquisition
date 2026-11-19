@@ -554,5 +554,6 @@
   "config.health_banner": { "other": "A configuration issue needs attention." },
   "config.health_review": { "other": "Review" },
   "config.health_edit_plugin": { "other": "Edit plugin settings" },
-  "config.health_check_failed": { "other": "Could not check the health of {{.Name}}. Review its settings." }
+  "config.health_check_failed": { "other": "Could not check the health of {{.Name}}. Review its settings." },
+  "config.tab_health": { "other": "Health" }
 }

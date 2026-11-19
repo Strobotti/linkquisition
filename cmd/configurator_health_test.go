@@ -4,10 +4,13 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/test"
+	"fyne.io/fyne/v2/widget"
 	"github.com/stretchr/testify/require"
 
 	"github.com/strobotti/linkquisition"
@@ -17,12 +20,13 @@ import (
 type testHealthChecker struct {
 	settings  map[string]interface{}
 	configDir string
+	err       error
 }
 
 func (checker *testHealthChecker) HealthCheck(settings map[string]interface{}, configDir string) ([]linkquisition.PluginHealthIssue, error) {
 	checker.settings = settings
 	checker.configDir = configDir
-	return []linkquisition.PluginHealthIssue{{Message: "Plugin-provided issue"}}, nil
+	return []linkquisition.PluginHealthIssue{{Message: "Plugin-provided issue"}}, checker.err
 }
 
 func TestOptionalPluginHealthCheckDispatch(t *testing.T) {
@@ -33,9 +37,70 @@ func TestOptionalPluginHealthCheckDispatch(t *testing.T) {
 	require.Equal(t, []linkquisition.PluginHealthIssue{{Message: "Plugin-provided issue"}}, issues)
 	require.Equal(t, settings, checker.settings)
 	require.Equal(t, "config-dir", checker.configDir)
+	checker.err = errors.New("health check failed")
+	_, err = checkPluginHealth(checker, settings, "config-dir")
+	require.ErrorIs(t, err, checker.err)
 	issues, err = checkPluginHealth(struct{}{}, settings, "config-dir")
 	require.NoError(t, err)
 	require.Empty(t, issues)
+}
+
+func TestHealthBannerOpensHealthTab(t *testing.T) {
+	app := test.NewApp()
+	defer app.Quit()
+	i18n.Init("en")
+	c := &Configurator{fapp: app}
+	generalTab := container.NewTabItem("General", widget.NewLabel("General"))
+	otherTab := container.NewTabItem("Other", widget.NewLabel("Other"))
+	c.healthTab = container.NewTabItem("Health", widget.NewLabel("Health"))
+	c.tabs = container.NewAppTabs(generalTab, otherTab, c.healthTab)
+	banner := c.buildHealthBanner()
+	button, ok := banner.Objects[2].(*widget.Button)
+	require.True(t, ok)
+	require.Equal(t, generalTab, c.tabs.Selected())
+	test.Tap(button)
+	require.Equal(t, c.healthTab, c.tabs.Selected())
+}
+
+func TestHealthTabShowsScrollableIssues(t *testing.T) {
+	app := test.NewApp()
+	defer app.Quit()
+	i18n.Init("en")
+	svc := newTestSettingsService(t)
+	require.NoError(t, svc.WriteSettings(&linkquisition.Settings{Plugins: []linkquisition.PluginSettings{{Path: "example.so"}}}))
+	c := &Configurator{fapp: app, settingsService: svc, healthBanner: container.NewVBox()}
+	const issueCount = 12
+	c.healthProbe = func(_ linkquisition.PluginSettings, _ string) ([]linkquisition.PluginHealthIssue, error) {
+		issues := make([]linkquisition.PluginHealthIssue, issueCount)
+		for i := range issues {
+			issues[i].Message = fmt.Sprintf("Issue %d", i+1)
+		}
+		return issues, nil
+	}
+	content, ok := c.buildConfigurationHealthTab().(*fyne.Container)
+	require.True(t, ok)
+	var scroll *container.Scroll
+	for _, object := range content.Objects {
+		if candidate, isScroll := object.(*container.Scroll); isScroll {
+			scroll = candidate
+			break
+		}
+	}
+	require.NotNil(t, scroll)
+	require.Equal(t, fyne.ScrollVerticalOnly, scroll.Direction)
+	list, ok := scroll.Content.(*fyne.Container)
+	require.True(t, ok)
+	require.Len(t, list.Objects, issueCount*2-1)
+	last, ok := list.Objects[len(list.Objects)-1].(*fyne.Container)
+	require.True(t, ok)
+	label, ok := last.Objects[0].(*widget.Label)
+	require.True(t, ok)
+	require.Equal(t, "Issue 12", label.Text)
+	window := test.NewWindow(content)
+	defer window.Close()
+	window.Resize(fyne.NewSize(400, 180))
+	scroll.ScrollToBottom()
+	require.Greater(t, scroll.Offset.Y, float32(0))
 }
 
 func TestConfigurationHealthBannerRefreshes(t *testing.T) {
@@ -55,7 +120,7 @@ func TestConfigurationHealthBannerRefreshes(t *testing.T) {
 		return nil, nil
 	}
 	c.healthBanner.Hide()
-	c.buildConfigurationHealthSection()
+	c.buildConfigurationHealthTab()
 	require.True(t, c.healthBanner.Visible())
 	settings.Plugins[0].Settings["issue"] = false
 	require.NoError(t, svc.WriteSettings(settings))
