@@ -13,7 +13,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/strobotti/linkquisition"
@@ -74,8 +73,9 @@ func (c *Configurator) parentWindow() fyne.Window {
 
 func (c *Configurator) Run() {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))
+	warningIcon := fyne.NewStaticResource("configuration-warning.svg", []byte(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#FFC107" stroke="#B77900" stroke-width="1" d="M12 2 1.5 21h21z"/><path fill="#4A3900" d="M11 8h2v7h-2zm0 9h2v2h-2z"/></svg>`))
 	c.healthBanner = container.NewHBox(
-		widget.NewIcon(theme.WarningIcon()),
+		widget.NewIcon(warningIcon),
 		widget.NewLabel(i18n.T("config.health_banner")),
 		widget.NewButton(i18n.T("config.health_review"), func() {
 			if c.tabs != nil {
@@ -103,7 +103,7 @@ func (c *Configurator) Run() {
 	c.tabs = container.NewAppTabs(tabItems...)
 	c.tabs.SetTabLocation(container.TabLocationTop)
 
-	w.SetContent(container.NewBorder(c.healthBanner, nil, nil, nil, c.tabs))
+	w.SetContent(container.NewBorder(container.NewPadded(c.healthBanner), nil, nil, nil, c.tabs))
 
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
 		if keyEvent.Name == fyne.KeyEscape {
