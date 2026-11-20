@@ -105,8 +105,8 @@ This plugin strips tracking and marketing query parameters (UTM tags, click IDs,
 matched against browser rules or opened in a browser. This keeps your browser history and bookmarks clean from
 clutter like `?utm_source=newsletter&utm_medium=email&fbclid=abc123`.
 
-By default, the plugin removes a comprehensive list of well-known tracking parameters from all major platforms
-(Google Analytics, Meta/Facebook, Microsoft, HubSpot, Mailchimp, Yandex, and more). You can also add your own
+By default, the plugin removes a comprehensive list of well-known tracking parameters from all major platforms (Google
+Analytics, Meta/Facebook, Microsoft, HubSpot, Mailchimp, Yandex, and more). You can also add your own
 parameters or regex patterns, and optionally limit sanitization to specific URLs.
 
 ### Configuration
@@ -158,14 +158,29 @@ Marketo (`mkt_tok`), Adobe (`s_cid`), and common social/affiliate trackers (`igs
 This plugin checks URLs against known-malicious domain blocklists before they reach the browser. It downloads and
 caches hosts-format blocklists locally, checking them on every URL open without any network request in the hot path.
 
-By default, it uses two well-known, trusted sources:
+By default, it uses two sources:
 
-- [URLhaus](https://urlhaus.abuse.ch/) (abuse.ch) — malware distribution URLs
+- [NetAPI compromised domains](https://netapi.com/compromised-urls/) — a current compromised-domain feed, published
+  under CC BY 4.0
 - [Steven Black's hosts](https://github.com/StevenBlack/hosts) — aggregated malware/adware/phishing domains
 
 The blocklists are cached in the config directory (e.g. `~/.config/linkquisition/defang/` on Linux) and refreshed
 in the background when older than the configured update interval. The app never blocks on network I/O — it uses
-whatever is cached and updates lazily.
+whatever is cached and updates lazily. Each source is refreshed independently: a failure does not refresh healthy
+sources early. Transient failures are retried with backoff; HTTP 410 (Gone) is remembered until the source is changed.
+The last successful cached list remains in use when a download fails. When a source provides `ETag` or `Last-Modified`,
+scheduled checks use conditional HTTP requests, avoiding a full list download when the source has not changed.
+Caches and their state are stored per source (keyed by a hash of the source URL), so a cache is never applied to a
+different source. Cache files of sources that are no longer configured, and the index-based caches (`source_0.txt`,
+…) of older versions, are removed after a refresh; the lists are downloaded again on first start after upgrading.
+A corrupt state file is discarded and rewritten.
+
+Earlier configurations may still list the [URLhaus](https://urlhaus.abuse.ch/) host file, which now returns HTTP 410.
+The Health tab's Configuration health check flags that obsolete source and recorded HTTP 410 responses from other
+sources, and opens the Defang settings for editing. The check uses local state and does not download any lists.
+Issue messages are currently shown in English only, as plugins have no localization support yet. A source flagged
+as gone stays skipped until its URL is changed; to retry the same URL, delete its `source_<hash>.json` state file
+from the `defang/` cache folder.
 
 ### Configuration
 
@@ -179,10 +194,10 @@ whatever is cached and updates lazily.
       "path": "defang.so",
       "settings": {
         "sources": [
-          "https://urlhaus.abuse.ch/downloads/hostfile/",
+          "https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
           "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
         ],
-        "updateInterval": "168h",
+        "updateInterval": "24h",
         "action": "block"
       }
     }
@@ -192,11 +207,13 @@ whatever is cached and updates lazily.
 
 ### Settings
 
-| Setting          | Type     | Default     | Description                                                                      |
-|------------------|----------|-------------|----------------------------------------------------------------------------------|
-| `sources`        | []string | (see above) | URLs to download hosts-format blocklists from                                    |
-| `updateInterval` | string   | `"168h"`    | How often to refresh the cached blocklists (Go duration format, default: 7 days) |
-| `action`         | string   | `"block"`   | What to do when a blocked domain is detected: `block`, `warn`, or `log`          |
+| Setting          | Type     | Default     | Description                                                               |
+|------------------|----------|-------------|---------------------------------------------------------------------------|
+| `sources`        | []string | (see above) | URLs to download hosts-format blocklists from                             |
+| `updateInterval` | string   | `"24h"`     | How often to refresh cached lists (Go duration format, default: 24 hours) |
+| `action`         | string   | `"block"`   | What to do when a blocked domain is detected: `block`, `warn`, or `log`   |
+
+The 24-hour default applies when `updateInterval` is omitted. Existing explicit values are preserved.
 
 ### Actions
 
@@ -289,6 +306,20 @@ The plugin is a shared object file (`.so`) that is loaded by the main applicatio
     - `ActionOpenDirect` — bypass browser matching and open in the first available browser
 - `Shutdown(ctx context.Context)` — called when the application is about to exit. Plugins with background work (e.g.
   downloads) should use this to finish gracefully before the context deadline expires.
+
+### Optional: PluginHealthChecker interface
+
+Plugins can implement [`PluginHealthChecker`](../plugin.go) to report configuration problems in the settings window:
+
+- `HealthCheck(config map[string]interface{}, configFolderPath string) ([]PluginHealthIssue, error)` receives the
+  current saved plugin settings and config folder. Return actionable issues with a plain-English `Message`, or an error
+  if the check cannot complete. Plugins do not yet have localization support.
+- Set `ResetSettingsToDefaults` when resetting this plugin's settings to defaults may resolve an issue; the host then
+  displays a generic hint alongside that issue.
+- The host may call this without `Setup` and concurrently with a running plugin. The check must not modify settings
+  or make network requests. Plugins that do not implement the interface are skipped.
+
+See the [Defang health check](./defang/health.go) for an example.
 
 ### Optional: PluginUIHook interface
 

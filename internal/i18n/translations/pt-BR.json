@@ -547,5 +547,35 @@
   },
   "about.bug_report_issues_link": {
     "other": "Reportar um problema no GitHub"
+  },
+  "config.health_title": {
+    "other": "Integridade da configuração"
+  },
+  "config.health_check": {
+    "other": "Verificar configuração"
+  },
+  "config.health_ok": {
+    "other": "Nenhum problema de configuração conhecido foi encontrado."
+  },
+  "config.health_banner": {
+    "other": "Um problema de configuração precisa de atenção."
+  },
+  "config.health_review": {
+    "other": "Revisar"
+  },
+  "config.health_edit_plugin": {
+    "other": "Editar configurações do plugin"
+  },
+  "config.health_check_failed": {
+    "other": "Não foi possível verificar a integridade de {{.Name}}. Revise as configurações."
+  },
+  "config.health_reset_hint": {
+    "other": "Redefinir as configurações do plugin para os padrões pode resolver este problema."
+  },
+  "config.tab_health": {
+    "other": "Estado"
+  },
+  "config.health_checking": {
+    "other": "Verificando a configuração…"
   }
 }

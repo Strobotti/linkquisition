@@ -47,6 +47,7 @@ Motivation behind this project is:
 - WHOIS lookup — view domain registration details (registrar, age, expiry, DNSSEC status)
   directly from the picker's context menu
 - QR code generation — generate a scannable QR code for the URL to quickly open it on a mobile device
+- Configuration health check in the Health tab — review known configuration issues without network access
 - Manual update check in the About tab — see if a newer release is available on GitHub
 
 ## Installation
@@ -352,7 +353,7 @@ the build matrix.
 
 ### Requirements
 
-- Go 1.27.3 (https://go.dev/doc/install)
+- Go 1.27.4 (https://go.dev/doc/install)
 - Taskfile (https://taskfile.dev/#/installation)
 - Build-dependencies:
   ```shell

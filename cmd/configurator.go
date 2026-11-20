@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"sync/atomic"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -23,8 +24,15 @@ import (
 // templateKeyName is the template data key used for name substitution in i18n strings.
 const templateKeyName = "Name"
 
-// osDarwin is the runtime.GOOS value for macOS, extracted to satisfy goconst.
-const osDarwin = "darwin"
+const (
+	osDarwin  = "darwin"
+	osWindows = "windows"
+)
+
+const warningIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+<path fill="#FFC107" stroke="#B77900" stroke-width="1" d="M12 2 1.5 21h21z"/>
+<path fill="#4A3900" d="M11 8h2v7h-2zm0 9h2v2h-2z"/>
+</svg>`
 
 type Configurator struct {
 	fapp            fyne.App
@@ -40,6 +48,16 @@ type Configurator struct {
 	selectedRules map[string]bool
 	// moveRulesBtn is the Rules-tab button that moves the selected rules to another browser.
 	moveRulesBtn *widget.Button
+
+	healthBanner  *fyne.Container
+	healthTab     *container.TabItem
+	healthRefresh func()
+	healthProbe   func(linkquisition.PluginSettings, string) ([]linkquisition.PluginHealthIssue, error)
+	// healthAsync runs a health check off the UI thread; tests replace it to run synchronously.
+	healthAsync      func(func())
+	healthGeneration atomic.Uint64
+	pluginList       *fyne.Container
+	tabs             *container.AppTabs
 }
 
 func NewConfigurator(
@@ -68,6 +86,8 @@ func (c *Configurator) parentWindow() fyne.Window {
 
 func (c *Configurator) Run() {
 	w := c.fapp.NewWindow(i18n.T("config.window_title"))
+	c.healthBanner = c.buildHealthBanner()
+	c.healthBanner.Hide()
 
 	tabItems := []*container.TabItem{
 		container.NewTabItem(i18n.T("config.tab_general"), c.getGeneralTab()),
@@ -79,15 +99,17 @@ func (c *Configurator) Run() {
 	// (pluginTabItems returns nil on Windows).
 	tabItems = append(tabItems, c.pluginTabItems()...)
 
+	c.healthTab = container.NewTabItem(i18n.T("config.tab_health"), c.buildConfigurationHealthTab())
 	tabItems = append(tabItems,
+		c.healthTab,
 		container.NewTabItem(i18n.T("config.tab_security"), c.getSecurityTab(w)),
 		container.NewTabItem(i18n.T("config.tab_about"), c.getAboutTab(w)),
 	)
 
-	tabs := container.NewAppTabs(tabItems...)
-	tabs.SetTabLocation(container.TabLocationTop)
+	c.tabs = container.NewAppTabs(tabItems...)
+	c.tabs.SetTabLocation(container.TabLocationTop)
 
-	w.SetContent(tabs)
+	w.SetContent(container.NewBorder(container.NewPadded(c.healthBanner), nil, nil, nil, c.tabs))
 
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
 		if keyEvent.Name == fyne.KeyEscape {
@@ -552,7 +574,7 @@ func openFileInEditor(path string) error {
 	switch runtime.GOOS {
 	case osDarwin:
 		return exec.CommandContext(ctx, "open", "-t", path).Start()
-	case "windows":
+	case osWindows:
 		// Use rundll32 to avoid a console window flash (cmd.exe is a console app).
 		return exec.CommandContext(ctx, "rundll32", "url.dll,FileProtocolHandler", path).Start()
 	default: // Linux and other Unix-like systems

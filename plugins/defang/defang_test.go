@@ -2,6 +2,9 @@ package main_test
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -30,6 +33,20 @@ func newTestLogger() *slog.Logger {
 // newPlugin creates a fresh plugin instance for testing (avoids sharing mutex state between tests)
 func newPlugin() linkquisition.Plugin {
 	return NewForTesting()
+}
+
+func sourceCachePath(dir, source string) string {
+	sum := sha256.Sum256([]byte(source))
+	return filepath.Join(dir, fmt.Sprintf("source_%x.txt", sum))
+}
+
+func writeCachedSource(t *testing.T, dir, source, hosts string) {
+	t.Helper()
+	path := sourceCachePath(dir, source)
+	require.NoError(t, os.WriteFile(path, []byte(hosts), 0600))
+	data, err := json.Marshal(map[string]interface{}{"lastSuccess": time.Now()})
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(path[:len(path)-4]+".json", data, 0600))
 }
 
 func TestDefang_Setup_Defaults(t *testing.T) {
@@ -98,7 +115,7 @@ func TestDefang_ProcessURL_WithCachedBlocklist(t *testing.T) {
 127.0.0.1 ads.tracker.io
 0.0.0.0 localhost
 `
-	require.NoError(t, os.WriteFile(filepath.Join(cacheDir, "source_0.txt"), []byte(hostsContent), 0600))
+	writeCachedSource(t, cacheDir, "https://dummy.test/hosts", hostsContent)
 
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
@@ -207,6 +224,11 @@ func TestDefang_ProcessURL_WithCachedBlocklist(t *testing.T) {
 			}
 			err := testedPlugin.Setup(provider, cfg)
 			require.NoError(t, err)
+			defer func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				testedPlugin.Shutdown(ctx)
+			}()
 
 			result := testedPlugin.ProcessURL(context.Background(), tt.inputURL)
 			assert.Equal(t, tt.expectedAction, result.Action)
@@ -257,7 +279,7 @@ func TestDefang_BackgroundFetch(t *testing.T) {
 	assert.Equal(t, "https://safe.test/page", safeResult.URL)
 
 	// Verify the cache file was written
-	_, statErr := os.Stat(filepath.Join(tmpDir, "defang", "source_0.txt"))
+	_, statErr := os.Stat(sourceCachePath(filepath.Join(tmpDir, "defang"), server.URL))
 	assert.NoError(t, statErr)
 }
 
@@ -296,7 +318,7 @@ func TestDefang_Shutdown_NoUpdate(t *testing.T) {
 	// Pre-create cache so no update is triggered
 	cacheDir := filepath.Join(tmpDir, "defang")
 	require.NoError(t, os.MkdirAll(cacheDir, 0700))
-	require.NoError(t, os.WriteFile(filepath.Join(cacheDir, "source_0.txt"), []byte(""), 0600))
+	writeCachedSource(t, cacheDir, "https://dummy.test/hosts", "")
 
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
@@ -323,7 +345,7 @@ func TestDefang_CaseInsensitive(t *testing.T) {
 
 	hostsContent := `0.0.0.0 Malware.Example.COM
 `
-	require.NoError(t, os.WriteFile(filepath.Join(cacheDir, "source_0.txt"), []byte(hostsContent), 0600))
+	writeCachedSource(t, cacheDir, "https://dummy.test/hosts", hostsContent)
 
 	provider := linkquisition.NewPluginServiceProvider(logger, &linkquisition.Settings{}, tmpDir)
 
@@ -382,8 +404,13 @@ func TestDefang_Metadata(t *testing.T) {
 	// Verify settings descriptors
 	assert.Equal(t, "sources", meta.Settings[0].Key)
 	assert.Equal(t, linkquisition.SettingTypeStringList, meta.Settings[0].Type)
+	assert.Equal(t, []string{
+		"https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
+		"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
+	}, meta.Settings[0].Default)
 	assert.Equal(t, "updateInterval", meta.Settings[1].Key)
 	assert.Equal(t, linkquisition.SettingTypeDuration, meta.Settings[1].Type)
+	assert.Equal(t, "24h", meta.Settings[1].Default)
 	assert.Equal(t, "action", meta.Settings[2].Key)
 	assert.Equal(t, linkquisition.SettingTypeChoice, meta.Settings[2].Type)
 	assert.Equal(t, []string{"block", "warn", "log"}, meta.Settings[2].Options)

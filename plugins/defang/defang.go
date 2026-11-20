@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 
 // defaultSources is the list of blocklist URLs used when no custom sources are configured
 var defaultSources = []string{
-	"https://urlhaus.abuse.ch/downloads/hostfile/",
+	"https://netapi.com/api2/?method=compromised&dataset_type=url&format=hosts",
 	"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
 }
 
@@ -29,7 +30,7 @@ type DefangPluginSettings struct {
 	// Sources is a list of URLs to download blocklists from (hosts-file format)
 	Sources []string `json:"sources,omitempty"`
 
-	// UpdateInterval is how often the blocklists should be refreshed (default: "168h" = 7 days)
+	// UpdateInterval is how often the blocklists should be refreshed (default: "24h" = 1 day)
 	UpdateInterval string `json:"updateInterval,omitempty"`
 
 	// Action determines what happens when a blocked URL is detected: "warn", "block", or "log"
@@ -42,6 +43,12 @@ const (
 	actionLog   = "log"
 
 	cacheDirPerms = 0700
+
+	etagHeader            = "ETag"
+	lastModifiedHeader    = "Last-Modified"
+	ifNoneMatchHeader     = "If-None-Match"
+	ifModifiedSinceHeader = "If-Modified-Since"
+	httpRequestFailed     = "HTTP request failed"
 )
 
 var _ linkquisition.Plugin = (*defang)(nil)
@@ -79,9 +86,9 @@ func (p *defang) Metadata() linkquisition.PluginMetadata {
 			{
 				Key:         "updateInterval",
 				Label:       "Update Interval",
-				Description: "How often to refresh the cached blocklists (Go duration format, default: 7 days)",
+				Description: "How often to refresh the cached blocklists (Go duration format, default: 24 hours)",
 				Type:        linkquisition.SettingTypeDuration,
-				Default:     "168h",
+				Default:     "24h",
 			},
 			{
 				Key:         "action",
@@ -99,7 +106,7 @@ func (p *defang) Setup(serviceProvider linkquisition.PluginServiceProvider, conf
 	p.serviceProvider = serviceProvider
 	p.blockedDomains = make(map[string]struct{})
 	p.action = actionBlock
-	p.updateInterval = 168 * time.Hour // 7 days
+	p.updateInterval = 24 * time.Hour // 1 day
 	p.sources = defaultSources
 
 	var settings DefangPluginSettings
@@ -131,7 +138,7 @@ func (p *defang) Setup(serviceProvider linkquisition.PluginServiceProvider, conf
 	}
 
 	// Set up cache directory next to config
-	p.cacheDir = filepath.Join(serviceProvider.GetConfigFolderPath(), "defang")
+	p.cacheDir = filepath.Join(serviceProvider.GetConfigFolderPath(), cacheDirName)
 
 	// Load cached blocklists from disk
 	p.loadCachedLists()
@@ -225,47 +232,30 @@ func (p *defang) isDomainBlocked(host string) bool {
 	return false
 }
 
-// loadCachedLists loads blocklists from the cache directory
+// loadCachedLists atomically replaces the in-memory list with the cached lists of the current sources.
+// Caches are keyed by source, so a cache is never applied to a different source.
 func (p *defang) loadCachedLists() {
-	if _, err := os.Stat(p.cacheDir); os.IsNotExist(err) {
-		return
-	}
-
-	entries, err := os.ReadDir(p.cacheDir)
-	if err != nil {
-		p.serviceProvider.GetLogger().Warn("error reading cache directory", "error", err.Error(), "plugin", "defang")
-		return
-	}
-
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".txt") {
+	domains := make(map[string]struct{})
+	for _, source := range p.sources {
+		path, _, _ := p.sourcePaths(source)
+		file, err := os.Open(path)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				p.serviceProvider.GetLogger().Warn("error opening hosts file", "path", path, "error", err.Error(), "plugin", "defang")
+			}
 			continue
 		}
-
-		filePath := filepath.Join(p.cacheDir, entry.Name())
-		p.loadHostsFile(filePath)
+		parseHostsReader(file, domains)
+		_ = file.Close()
 	}
-
-	p.serviceProvider.GetLogger().Debug(
-		fmt.Sprintf("loaded %d blocked domains from cache", len(p.blockedDomains)),
-		"plugin", "defang",
-	)
+	p.mu.Lock()
+	p.blockedDomains = domains
+	p.mu.Unlock()
+	p.serviceProvider.GetLogger().Debug(fmt.Sprintf("loaded %d blocked domains from cache", len(domains)), "plugin", "defang")
 }
 
-// loadHostsFile parses a hosts-format file and adds domains to the blocklist
-func (p *defang) loadHostsFile(path string) {
-	file, err := os.Open(path)
-	if err != nil {
-		p.serviceProvider.GetLogger().Warn("error opening hosts file", "path", path, "error", err.Error(), "plugin", "defang")
-		return
-	}
-	defer file.Close()
-
-	p.parseHostsReader(file)
-}
-
-// parseHostsReader parses a hosts-format reader and adds domains to the blocklist
-func (p *defang) parseHostsReader(reader io.Reader) {
+// parseHostsReader parses a hosts-format reader and adds domains to the blocklist.
+func parseHostsReader(reader io.Reader, domains map[string]struct{}) {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -295,44 +285,23 @@ func (p *defang) parseHostsReader(reader io.Reader) {
 			continue
 		}
 
-		p.blockedDomains[domain] = struct{}{}
+		domains[domain] = struct{}{}
 	}
 }
 
-// maybeStartUpdate checks if any cached list is stale and starts a background update
+// maybeStartUpdate schedules a background pass; each source is checked independently.
 func (p *defang) maybeStartUpdate() {
-	needsUpdate := false
-
-	if _, err := os.Stat(p.cacheDir); os.IsNotExist(err) {
-		// No cache at all — need to fetch
-		needsUpdate = true
-	} else {
-		// Check if any source file is missing or older than updateInterval
-		for i := range p.sources {
-			fileName := fmt.Sprintf("source_%d.txt", i)
-			filePath := filepath.Join(p.cacheDir, fileName)
-
-			info, err := os.Stat(filePath)
-			if err != nil || time.Since(info.ModTime()) > p.updateInterval {
-				needsUpdate = true
-				break
-			}
-		}
-	}
-
-	if !needsUpdate {
+	p.mu.Lock()
+	if p.updating {
+		p.mu.Unlock()
 		return
 	}
-
-	p.mu.Lock()
 	p.updating = true
 	p.done = make(chan struct{})
 	p.mu.Unlock()
-
 	go p.fetchUpdates()
 }
 
-// fetchUpdates downloads all configured blocklist sources to the cache directory
 func (p *defang) fetchUpdates() {
 	defer func() {
 		p.mu.Lock()
@@ -341,89 +310,171 @@ func (p *defang) fetchUpdates() {
 		p.mu.Unlock()
 	}()
 
-	p.serviceProvider.GetLogger().Debug("starting blocklist update", "plugin", "defang")
-
 	if err := os.MkdirAll(p.cacheDir, cacheDirPerms); err != nil {
 		p.serviceProvider.GetLogger().Warn("error creating cache directory", "error", err.Error(), "plugin", "defang")
 		return
 	}
-
-	client := &http.Client{
-		Timeout: 30 * time.Second,
+	client := &http.Client{Timeout: 30 * time.Second}
+	for _, source := range p.sources {
+		p.updateSource(client, source)
 	}
-
-	for i, source := range p.sources {
-		fileName := fmt.Sprintf("source_%d.txt", i)
-		filePath := filepath.Join(p.cacheDir, fileName)
-
-		if err := p.downloadSource(client, source, filePath); err != nil {
-			p.serviceProvider.GetLogger().Warn(
-				fmt.Sprintf("error downloading blocklist from %s", source),
-				"error", err.Error(),
-				"plugin", "defang",
-			)
-			continue
-		}
-
-		// Load the newly downloaded list into memory
-		p.loadHostsFile(filePath)
-	}
-
-	p.mu.Lock()
-	domainCount := len(p.blockedDomains)
-	p.mu.Unlock()
-
-	p.serviceProvider.GetLogger().Debug(
-		fmt.Sprintf("blocklist update complete, %d domains blocked", domainCount),
-		"plugin", "defang",
-	)
+	pruneSourceFiles(p.cacheDir, p.sources)
+	p.loadCachedLists()
 }
 
-// downloadSource downloads a single blocklist source to a file
-func (p *defang) downloadSource(client *http.Client, sourceURL, destPath string) error {
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, sourceURL, http.NoBody)
+func (p *defang) updateSource(client *http.Client, source string) {
+	cachePath, statePath, lockPath := p.sourcePaths(source)
+	lock, err := trySourceLock(lockPath)
 	if err != nil {
-		return fmt.Errorf("error creating request: %w", err)
+		// Another process may already be updating this source.
+		return
 	}
+	defer unlockSource(lock)
+	state, err := readSourceState(statePath)
+	if err != nil {
+		p.serviceProvider.GetLogger().Warn("error reading blocklist state", "error", err.Error(), "plugin", "defang")
+		return
+	}
+	now := time.Now()
+	if !sourceDue(&state, cachePath, p.updateInterval, now) {
+		return
+	}
+	// Persist the attempt before networking, so an interrupted process doesn't
+	// immediately retry on every link open. The attempt is pessimistically counted
+	// as a failure and backed off; a successful download below resets both.
+	state.LastAttempt = now
+	state.Failures++
+	state.NextAttempt = now.Add(retryDelay(state.Failures))
+	if writeErr := writeSourceState(statePath, &state); writeErr != nil {
+		p.serviceProvider.GetLogger().Warn("error recording blocklist attempt", "error", writeErr.Error(), "plugin", "defang")
+		return
+	}
+	var etag, lastModified string
+	if _, statErr := os.Stat(cachePath); statErr == nil {
+		etag, lastModified = state.ETag, state.LastModified
+	}
+	result, err := p.downloadSource(client, source, cachePath, etag, lastModified)
+	if err != nil {
+		var httpErr *sourceHTTPError
+		if errors.As(err, &httpErr) {
+			state.HTTPStatus = httpErr.status
+			state.Gone = httpErr.status == http.StatusGone
+		} else {
+			state.HTTPStatus = 0
+		}
+		if stateErr := writeSourceState(statePath, &state); stateErr != nil {
+			p.serviceProvider.GetLogger().Warn("error recording blocklist failure", "error", stateErr.Error(), "plugin", "defang")
+		}
+		// Network errors may embed the URL, including credentials or query parameters.
+		p.serviceProvider.GetLogger().Warn(
+			"error downloading blocklist",
+			"source_id", sourceID(source),
+			"http_status", state.HTTPStatus,
+			"plugin", "defang",
+		)
+		return
+	}
+	state.LastSuccess = time.Now()
+	state.Failures = 0
+	state.HTTPStatus = 0
+	state.Gone = false
+	state.NextAttempt = time.Time{}
+	if result.NotModified {
+		if result.ETag != "" {
+			state.ETag = result.ETag
+		}
+		if result.LastModified != "" {
+			state.LastModified = result.LastModified
+		}
+	} else {
+		state.ETag = result.ETag
+		state.LastModified = result.LastModified
+	}
+	if writeErr := writeSourceState(statePath, &state); writeErr != nil {
+		p.serviceProvider.GetLogger().Warn("error recording blocklist success", "error", writeErr.Error(), "plugin", "defang")
+	}
+}
 
+// downloadSource fetches a source, using conditional requests when cached validators are available.
+func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, lastModified string) (sourceDownloadResult, error) {
+	req, err := newSourceRequest(sourceURL, etag, lastModified)
+	if err != nil {
+		return sourceDownloadResult{}, err
+	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("HTTP request failed: %w", err)
+		return sourceDownloadResult{}, fmt.Errorf(httpRequestFailed+": %w", err)
 	}
+	if resp.StatusCode == http.StatusNotModified {
+		result := sourceDownloadResult{
+			NotModified:  true,
+			ETag:         resp.Header.Get(etagHeader),
+			LastModified: resp.Header.Get(lastModifiedHeader),
+		}
+		_ = resp.Body.Close()
+		if _, statErr := os.Stat(destPath); statErr == nil {
+			return result, nil
+		}
+		// A validator without a corresponding cache is unusable; retry unconditionally.
+		req, err = newSourceRequest(sourceURL, "", "")
+		if err != nil {
+			return sourceDownloadResult{}, err
+		}
+		resp, err = client.Do(req)
+		if err != nil {
+			return sourceDownloadResult{}, fmt.Errorf(httpRequestFailed+": %w", err)
+		}
+		defer resp.Body.Close()
+	}
+	return saveSourceResponse(resp, destPath)
+}
+
+func newSourceRequest(sourceURL, etag, lastModified string) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, sourceURL, http.NoBody)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+	if etag != "" {
+		req.Header.Set(ifNoneMatchHeader, etag)
+	}
+	if lastModified != "" {
+		req.Header.Set(ifModifiedSinceHeader, lastModified)
+	}
+	return req, nil
+}
+
+// saveSourceResponse writes a successful response to destPath atomically and closes the response body.
+func saveSourceResponse(resp *http.Response, destPath string) (sourceDownloadResult, error) {
 	defer resp.Body.Close()
-
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("HTTP %d from %s", resp.StatusCode, sourceURL)
+		return sourceDownloadResult{}, &sourceHTTPError{status: resp.StatusCode}
 	}
-
 	tmpPath := destPath + ".tmp"
 	file, err := os.Create(tmpPath)
 	if err != nil {
-		return fmt.Errorf("error creating temp file: %w", err)
+		return sourceDownloadResult{}, fmt.Errorf("error creating temp file: %w", err)
 	}
-
 	if _, err := io.Copy(file, resp.Body); err != nil {
-		file.Close()
-		os.Remove(tmpPath)
-		return fmt.Errorf("error writing file: %w", err)
+		_ = file.Close()
+		_ = os.Remove(tmpPath)
+		return sourceDownloadResult{}, fmt.Errorf("error writing file: %w", err)
 	}
-
-	file.Close()
-
-	// Atomic rename
+	if err := file.Close(); err != nil {
+		_ = os.Remove(tmpPath)
+		return sourceDownloadResult{}, fmt.Errorf("error closing file: %w", err)
+	}
 	if err := os.Rename(tmpPath, destPath); err != nil {
-		os.Remove(tmpPath)
-		return fmt.Errorf("error renaming temp file: %w", err)
+		_ = os.Remove(tmpPath)
+		return sourceDownloadResult{}, fmt.Errorf("error renaming file: %w", err)
 	}
-
-	return nil
+	return sourceDownloadResult{ETag: resp.Header.Get(etagHeader), LastModified: resp.Header.Get(lastModifiedHeader)}, nil
 }
 
 // Plugin is the exported symbol loaded by the plugin system.
 // plugin.Lookup("Plugin") returns *defang which satisfies linkquisition.Plugin (pointer receiver methods).
 var Plugin defang
 
-// NewForTesting creates a fresh defang instance for use in tests (avoids mutex copy issues with the global Plugin var)
+// NewForTesting creates a fresh defang instance for use in tests (avoids mutex copy issues with the global Plugin var).
 func NewForTesting() linkquisition.Plugin {
 	return &defang{}
 }

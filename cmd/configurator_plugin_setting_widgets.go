@@ -106,7 +106,7 @@ func buildStringSetting(
 	entry.SetText(current)
 
 	if desc.Type == linkquisition.SettingTypeDuration {
-		entry.SetPlaceHolder("e.g. 5s, 168h")
+		entry.SetPlaceHolder("e.g. 5s, 24h")
 	}
 
 	item = widget.NewFormItem(desc.Label, entry)
