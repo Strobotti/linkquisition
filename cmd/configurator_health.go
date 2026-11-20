@@ -65,12 +65,14 @@ func (c *Configurator) configurationHealth() []configurationHealthIssue {
 }
 
 // buildConfigurationHealthTab only checks local settings; it never downloads lists.
+// The checks run in the background so that opening plugins never blocks the UI thread.
 func (c *Configurator) buildConfigurationHealthTab() fyne.CanvasObject {
 	results := container.NewVBox()
 	title := widget.NewLabel(i18n.T("config.health_title"))
 	title.TextStyle.Bold = true
-	c.healthRefresh = func() {
-		issues := c.configurationHealth()
+	check := widget.NewButton(i18n.T("config.health_check"), func() { c.healthRefresh() })
+
+	render := func(issues []configurationHealthIssue) {
 		results.RemoveAll()
 		if len(issues) == 0 {
 			results.Add(widget.NewLabel(i18n.T("config.health_ok")))
@@ -85,28 +87,53 @@ func (c *Configurator) buildConfigurationHealthTab() fyne.CanvasObject {
 				if i > 0 {
 					results.Add(widget.NewSeparator())
 				}
-				text := issue.message
-				if issue.checkFailed {
-					text = i18n.T("config.health_check_failed", map[string]interface{}{templateKeyName: issue.message})
-				}
-				index := issue.pluginIndex
-				message := widget.NewLabel(text)
-				message.Wrapping = fyne.TextWrapWord
-				issueContent := container.NewVBox(message)
-				if issue.resetSettingsToDefaults {
-					hint := widget.NewLabel(i18n.T("config.health_reset_hint"))
-					hint.Wrapping = fyne.TextWrapWord
-					hint.TextStyle = fyne.TextStyle{Italic: true}
-					issueContent.Add(hint)
-				}
-				button := widget.NewButton(i18n.T("config.health_edit_plugin"), func() { c.openHealthPluginSettings(index) })
-				issueContent.Add(button)
-				results.Add(issueContent)
+				results.Add(c.buildHealthIssue(issue))
 			}
 		}
 		results.Refresh()
 	}
-	check := widget.NewButton(i18n.T("config.health_check"), func() { c.healthRefresh() })
+
+	c.healthRefresh = func() {
+		// Results of a superseded check (e.g. settings changed meanwhile) are discarded.
+		generation := c.healthGeneration.Add(1)
+		check.Disable()
+		results.RemoveAll()
+		results.Add(widget.NewLabel(i18n.T("config.health_checking")))
+		results.Refresh()
+		async := c.healthAsync
+		if async == nil {
+			async = func(f func()) { go f() }
+		}
+		async(func() {
+			issues := c.configurationHealth()
+			fyne.Do(func() {
+				if c.healthGeneration.Load() != generation {
+					return
+				}
+				render(issues)
+				check.Enable()
+			})
+		})
+	}
 	c.healthRefresh()
 	return container.NewBorder(title, container.NewHBox(check), nil, nil, container.NewVScroll(results))
+}
+
+func (c *Configurator) buildHealthIssue(issue configurationHealthIssue) fyne.CanvasObject {
+	text := issue.message
+	if issue.checkFailed {
+		text = i18n.T("config.health_check_failed", map[string]interface{}{templateKeyName: issue.message})
+	}
+	index := issue.pluginIndex
+	message := widget.NewLabel(text)
+	message.Wrapping = fyne.TextWrapWord
+	content := container.NewVBox(message)
+	if issue.resetSettingsToDefaults {
+		hint := widget.NewLabel(i18n.T("config.health_reset_hint"))
+		hint.Wrapping = fyne.TextWrapWord
+		hint.TextStyle = fyne.TextStyle{Italic: true}
+		content.Add(hint)
+	}
+	content.Add(widget.NewButton(i18n.T("config.health_edit_plugin"), func() { c.openHealthPluginSettings(index) }))
+	return content
 }

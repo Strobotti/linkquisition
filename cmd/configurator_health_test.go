@@ -17,6 +17,9 @@ import (
 	"github.com/strobotti/linkquisition/internal/i18n"
 )
 
+// runSync makes the asynchronous health check deterministic in tests.
+func runSync(f func()) { f() }
+
 type testHealthChecker struct {
 	settings  map[string]interface{}
 	configDir string
@@ -68,7 +71,7 @@ func TestHealthTabShowsScrollableIssues(t *testing.T) {
 	i18n.Init("en")
 	svc := newTestSettingsService(t)
 	require.NoError(t, svc.WriteSettings(&linkquisition.Settings{Plugins: []linkquisition.PluginSettings{{Path: "example.so"}}}))
-	c := &Configurator{fapp: app, settingsService: svc, healthBanner: container.NewVBox()}
+	c := &Configurator{fapp: app, settingsService: svc, healthBanner: container.NewVBox(), healthAsync: runSync}
 	const issueCount = 12
 	c.healthProbe = func(_ linkquisition.PluginSettings, _ string) ([]linkquisition.PluginHealthIssue, error) {
 		issues := make([]linkquisition.PluginHealthIssue, issueCount)
@@ -124,7 +127,7 @@ func TestConfigurationHealthBannerRefreshes(t *testing.T) {
 		Path: "example.so", Settings: map[string]interface{}{"issue": true},
 	}}}
 	require.NoError(t, svc.WriteSettings(settings))
-	c := &Configurator{fapp: app, settingsService: svc, healthBanner: container.NewVBox()}
+	c := &Configurator{fapp: app, settingsService: svc, healthBanner: container.NewVBox(), healthAsync: runSync}
 	c.healthProbe = func(plugin linkquisition.PluginSettings, _ string) ([]linkquisition.PluginHealthIssue, error) {
 		if plugin.Settings["issue"] == true {
 			return []linkquisition.PluginHealthIssue{{Message: "Plugin issue"}}, nil

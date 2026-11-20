@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"sync/atomic"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -52,8 +53,11 @@ type Configurator struct {
 	healthTab     *container.TabItem
 	healthRefresh func()
 	healthProbe   func(linkquisition.PluginSettings, string) ([]linkquisition.PluginHealthIssue, error)
-	pluginList    *fyne.Container
-	tabs          *container.AppTabs
+	// healthAsync runs a health check off the UI thread; tests replace it to run synchronously.
+	healthAsync      func(func())
+	healthGeneration atomic.Uint64
+	pluginList       *fyne.Container
+	tabs             *container.AppTabs
 }
 
 func NewConfigurator(
