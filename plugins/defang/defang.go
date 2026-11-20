@@ -232,17 +232,13 @@ func (p *defang) isDomainBlocked(host string) bool {
 	return false
 }
 
-// loadCachedLists atomically replaces the in-memory list with the current sources.
-// Legacy index-based files are retained as a fallback until each source is fetched.
+// loadCachedLists atomically replaces the in-memory list with the cached lists of the current sources.
+// Caches are keyed by source, so a cache is never applied to a different source.
 func (p *defang) loadCachedLists() {
 	domains := make(map[string]struct{})
-	for i, source := range p.sources {
+	for _, source := range p.sources {
 		path, _, _ := p.sourcePaths(source)
 		file, err := os.Open(path)
-		if os.IsNotExist(err) {
-			path = filepath.Join(p.cacheDir, fmt.Sprintf("source_%d.txt", i))
-			file, err = os.Open(path)
-		}
 		if err != nil {
 			if !os.IsNotExist(err) {
 				p.serviceProvider.GetLogger().Warn("error opening hosts file", "path", path, "error", err.Error(), "plugin", "defang")
@@ -322,6 +318,7 @@ func (p *defang) fetchUpdates() {
 	for _, source := range p.sources {
 		p.updateSource(client, source)
 	}
+	pruneSourceFiles(p.cacheDir, p.sources)
 	p.loadCachedLists()
 }
 
@@ -343,7 +340,8 @@ func (p *defang) updateSource(client *http.Client, source string) {
 		return
 	}
 	// Persist the attempt before networking, so an interrupted process doesn't
-	// immediately retry on every link open.
+	// immediately retry on every link open. The attempt is pessimistically counted
+	// as a failure and backed off; a successful download below resets both.
 	state.LastAttempt = now
 	state.Failures++
 	state.NextAttempt = now.Add(retryDelay(state.Failures))
@@ -407,7 +405,6 @@ func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, 
 	if err != nil {
 		return sourceDownloadResult{}, fmt.Errorf(httpRequestFailed+": %w", err)
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotModified {
 		result := sourceDownloadResult{
 			NotModified:  true,
@@ -427,8 +424,8 @@ func (p *defang) downloadSource(client *http.Client, sourceURL, destPath, etag, 
 		if err != nil {
 			return sourceDownloadResult{}, fmt.Errorf(httpRequestFailed+": %w", err)
 		}
-		defer resp.Body.Close()
 	}
+	// saveSourceResponse takes ownership of the response body and closes it.
 	return saveSourceResponse(resp, destPath)
 }
 
@@ -446,6 +443,7 @@ func newSourceRequest(sourceURL, etag, lastModified string) (*http.Request, erro
 	return req, nil
 }
 
+// saveSourceResponse writes a successful response to destPath atomically and closes the response body.
 func saveSourceResponse(resp *http.Response, destPath string) (sourceDownloadResult, error) {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {

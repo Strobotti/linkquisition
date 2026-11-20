@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -43,6 +44,9 @@ func (p *defang) sourcePaths(source string) (cachePath, statePath, lockPath stri
 	return prefix + ".txt", prefix + sourceStateExt, prefix + ".lock"
 }
 
+// readSourceState loads the persisted state of a source. A missing or corrupt state file
+// yields an empty state: the state is only a cache of scheduling hints, and treating
+// corruption as fatal would stop the source from ever being refreshed again.
 func readSourceState(path string) (sourceState, error) {
 	var state sourceState
 	data, err := os.ReadFile(path)
@@ -53,9 +57,33 @@ func readSourceState(path string) (sourceState, error) {
 		return state, err
 	}
 	if err := json.Unmarshal(data, &state); err != nil {
-		return state, err
+		return sourceState{}, nil //nolint:nilerr // corrupt state is discarded and rewritten on the next attempt
 	}
 	return state, nil
+}
+
+// pruneSourceFiles removes cache, state and lock files that don't belong to any of the
+// given sources (e.g. sources that were removed from the configuration), as well as the
+// legacy index-based cache files from earlier versions.
+func pruneSourceFiles(cacheDir string, sources []string) {
+	keep := make(map[string]struct{}, len(sources))
+	for _, source := range sources {
+		keep[sourceFilePrefix+sourceID(source)] = struct{}{}
+	}
+	entries, err := os.ReadDir(cacheDir)
+	if err != nil {
+		return
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() || !strings.HasPrefix(name, sourceFilePrefix) || strings.HasSuffix(name, ".tmp") {
+			continue
+		}
+		if _, ok := keep[strings.TrimSuffix(name, filepath.Ext(name))]; ok {
+			continue
+		}
+		_ = os.Remove(filepath.Join(cacheDir, name))
+	}
 }
 
 func writeSourceState(path string, state *sourceState) error {

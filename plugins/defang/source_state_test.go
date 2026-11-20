@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -106,4 +107,72 @@ func TestSourceCacheFollowsSourceNotPosition(t *testing.T) {
 	p := runWithSources(t, dir, server.URL+"/second")
 	require.Equal(t, linkquisition.ActionBlock, p.ProcessURL(context.Background(), "https://second.test").Action)
 	require.Equal(t, linkquisition.ActionContinue, p.ProcessURL(context.Background(), "https://first.test").Action)
+}
+
+func TestCorruptStateIsDiscardedAndRewritten(t *testing.T) {
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests.Add(1)
+		_, _ = w.Write([]byte("0.0.0.0 malware.test\n"))
+	}))
+	defer server.Close()
+	dir := t.TempDir()
+	cacheDir := filepath.Join(dir, "defang")
+	require.NoError(t, os.MkdirAll(cacheDir, 0700))
+	cachePath := sourceCachePath(cacheDir, server.URL)
+	statePath := cachePath[:len(cachePath)-len(".txt")] + ".json"
+	require.NoError(t, os.WriteFile(statePath, []byte("{not json"), 0600))
+
+	p := runWithSources(t, dir, server.URL)
+
+	require.EqualValues(t, 1, requests.Load())
+	require.Equal(t, linkquisition.ActionBlock, p.ProcessURL(context.Background(), "https://malware.test").Action)
+	data, err := os.ReadFile(statePath)
+	require.NoError(t, err)
+	require.True(t, json.Valid(data))
+}
+
+func TestInterruptedAttemptIsBackedOff(t *testing.T) {
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests.Add(1)
+	}))
+	defer server.Close()
+	dir := t.TempDir()
+	cacheDir := filepath.Join(dir, "defang")
+	require.NoError(t, os.MkdirAll(cacheDir, 0700))
+	cachePath := sourceCachePath(cacheDir, server.URL)
+	statePath := cachePath[:len(cachePath)-len(".txt")] + ".json"
+	// A process that was killed mid-download leaves a recorded attempt with a pending backoff.
+	state, err := json.Marshal(map[string]interface{}{
+		"lastAttempt": time.Now(), "nextAttempt": time.Now().Add(time.Hour), "failures": 1,
+	})
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(statePath, state, 0600))
+
+	runWithSources(t, dir, server.URL)
+
+	require.EqualValues(t, 0, requests.Load())
+}
+
+func TestUnusedSourceFilesAreRemoved(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("0.0.0.0 malware.test\n"))
+	}))
+	defer server.Close()
+	dir := t.TempDir()
+	cacheDir := filepath.Join(dir, "defang")
+	require.NoError(t, os.MkdirAll(cacheDir, 0700))
+	removedSource := sourceCachePath(cacheDir, "https://removed.test/hosts")
+	legacy := filepath.Join(cacheDir, "source_0.txt")
+	require.NoError(t, os.WriteFile(removedSource, []byte("0.0.0.0 old.test\n"), 0600))
+	require.NoError(t, os.WriteFile(legacy, []byte("0.0.0.0 legacy.test\n"), 0600))
+
+	p := runWithSources(t, dir, server.URL)
+
+	require.NoFileExists(t, removedSource)
+	require.NoFileExists(t, legacy)
+	require.FileExists(t, sourceCachePath(cacheDir, server.URL))
+	// Legacy index-based caches must never be applied to a different source.
+	require.Equal(t, linkquisition.ActionContinue, p.ProcessURL(context.Background(), "https://legacy.test").Action)
 }

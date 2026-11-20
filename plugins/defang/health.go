@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"path/filepath"
+	"slices"
 
 	"github.com/mitchellh/mapstructure"
 
@@ -25,7 +27,7 @@ func (p *defang) HealthCheck(config map[string]interface{}, configFolderPath str
 	}
 
 	var issues []linkquisition.PluginHealthIssue
-	for i, source := range sources {
+	for _, source := range sources {
 		if source == urlhausHostFile {
 			issues = append(issues, linkquisition.PluginHealthIssue{
 				Message: "Defang's URLhaus host-file source is no longer available. Other sources may still be working. " +
@@ -42,12 +44,21 @@ func (p *defang) HealthCheck(config map[string]interface{}, configFolderPath str
 		if state.Gone {
 			issues = append(issues, linkquisition.PluginHealthIssue{
 				Message: fmt.Sprintf(
-					"Defang source %d returned HTTP 410 and is no longer available. Other sources may still be working. "+
-						"Edit the sources to remove or replace it.", i+1,
+					"Defang source %s returned HTTP 410 and is no longer available. Other sources may still be working. "+
+						"Edit the sources to remove or replace it.", describeSource(source),
 				),
-				ResetSettingsToDefaults: true,
+				// Only a built-in source can be fixed by resetting; resetting would discard a user's custom list.
+				ResetSettingsToDefaults: slices.Contains(defaultSources, source),
 			})
 		}
 	}
 	return issues, nil
+}
+
+// describeSource identifies a source by host only, as the full URL may contain credentials or tokens.
+func describeSource(source string) string {
+	if parsed, err := url.Parse(source); err == nil && parsed.Hostname() != "" {
+		return parsed.Hostname()
+	}
+	return "(unparseable URL)"
 }

@@ -37,8 +37,8 @@ func TestDefangHealthCheck(t *testing.T) {
 	require.Len(t, issues, 2)
 	require.Contains(t, issues[0].Message, "URLhaus")
 	require.True(t, issues[0].ResetSettingsToDefaults)
-	require.Contains(t, issues[1].Message, "source 2")
-	require.True(t, issues[1].ResetSettingsToDefaults)
+	require.Contains(t, issues[1].Message, "example.test")
+	require.False(t, issues[1].ResetSettingsToDefaults, "custom sources must not suggest resetting")
 	require.NotContains(t, issues[1].Message, "secret")
 
 	issues, err = checker.HealthCheck(map[string]interface{}{"sources": []string{"https://other.test"}}, dir)
@@ -46,8 +46,10 @@ func TestDefangHealthCheck(t *testing.T) {
 	require.Empty(t, issues)
 
 	require.NoError(t, os.WriteFile(path, []byte("not json"), 0600))
-	_, err = checker.HealthCheck(map[string]interface{}{"sources": []string{source}}, dir)
-	require.Error(t, err)
+	// A corrupt state file is treated as no state rather than failing the whole check.
+	issues, err = checker.HealthCheck(map[string]interface{}{"sources": []string{source}}, dir)
+	require.NoError(t, err)
+	require.Empty(t, issues)
 
 	_, err = checker.HealthCheck(map[string]interface{}{"sources": []interface{}{map[string]interface{}{}}}, dir)
 	require.Error(t, err)
