@@ -548,13 +548,34 @@
   "about.bug_report_issues_link": {
     "other": "Hiba jelentése a GitHubon"
   },
-  "config.health_title": { "other": "Configuration health" },
-  "config.health_check": { "other": "Check configuration" },
-  "config.health_ok": { "other": "No known configuration issues found." },
-  "config.health_banner": { "other": "A configuration issue needs attention." },
-  "config.health_review": { "other": "Review" },
-  "config.health_edit_plugin": { "other": "Edit plugin settings" },
-  "config.health_check_failed": { "other": "Could not check the health of {{.Name}}. Review its settings." },
-  "config.health_reset_hint": { "other": "A bővítmény beállításainak alapértelmezettre állítása megoldhatja ezt a problémát." },
-  "config.tab_health": { "other": "Állapot" }
+  "config.health_title": {
+    "other": "Konfiguráció állapota"
+  },
+  "config.health_check": {
+    "other": "Konfiguráció ellenőrzése"
+  },
+  "config.health_ok": {
+    "other": "Nem található ismert konfigurációs probléma."
+  },
+  "config.health_banner": {
+    "other": "Egy konfigurációs problémára figyelni kell."
+  },
+  "config.health_review": {
+    "other": "Áttekintés"
+  },
+  "config.health_edit_plugin": {
+    "other": "Bővítmény beállításainak szerkesztése"
+  },
+  "config.health_check_failed": {
+    "other": "A(z) {{.Name}} állapota nem ellenőrizhető. Tekintse át a beállításait."
+  },
+  "config.health_reset_hint": {
+    "other": "A bővítmény beállításainak alapértelmezettre állítása megoldhatja ezt a problémát."
+  },
+  "config.tab_health": {
+    "other": "Állapot"
+  },
+  "config.health_checking": {
+    "other": "Konfiguráció ellenőrzése…"
+  }
 }
