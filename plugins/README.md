@@ -178,6 +178,9 @@ A corrupt state file is discarded and rewritten.
 Earlier configurations may still list the [URLhaus](https://urlhaus.abuse.ch/) host file, which now returns HTTP 410.
 The Health tab's Configuration health check flags that obsolete source and recorded HTTP 410 responses from other
 sources, and opens the Defang settings for editing. The check uses local state and does not download any lists.
+Issue messages are currently shown in English only, as plugins have no localization support yet. A source flagged
+as gone stays skipped until its URL is changed; to retry the same URL, delete its `source_<hash>.json` state file
+from the `defang/` cache folder.
 
 ### Configuration
 

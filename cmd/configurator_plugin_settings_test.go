@@ -40,7 +40,7 @@ func testPluginMetadata() *linkquisition.PluginMetadata {
 			{
 				Key:     "duration",
 				Type:    linkquisition.SettingTypeDuration,
-				Default: "168h",
+				Default: "24h",
 			},
 		},
 	}
@@ -62,8 +62,8 @@ func TestBuildDefaultSettings_ScalarTypes(t *testing.T) {
 		t.Errorf("expected choiceVal = 'option1', got %v", v)
 	}
 
-	if v, ok := defaults["duration"]; !ok || v != "168h" {
-		t.Errorf("expected duration = '168h', got %v", v)
+	if v, ok := defaults["duration"]; !ok || v != "24h" {
+		t.Errorf("expected duration = '24h', got %v", v)
 	}
 }
 

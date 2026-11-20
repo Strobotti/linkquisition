@@ -167,6 +167,20 @@ Plugin locations:
 support Windows, so all plugin-related commands and the Plugins tab in the
 configurator are hidden on that platform.
 
+# CONFIGURATION HEALTH
+
+The Health tab in the configuration screen lists known problems in the
+configuration, such as a plugin source that is no longer available (HTTP 410).
+When a problem is found, a warning banner is also shown above the tabs.
+
+Checks are provided by the enabled plugins, run in the background using the
+saved settings and local state only, and never perform network requests.
+Issues from plugins are currently shown in English. The *Check configuration*
+button re-runs the checks; they also re-run when plugins are enabled, disabled
+or reconfigured. If a plugin has an issue that resetting its settings to the
+defaults may resolve, a hint is shown. No checks are run when plugins are
+disabled with *--no-plugins* or on Windows, where plugins are not supported.
+
 # URL SAFETY CHECKING
 
 When enabled in the configuration (see *linkquisition*(5)), the picker shows a
