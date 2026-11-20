@@ -14,8 +14,9 @@ func trySourceLock(path string) (*os.File, error) {
 		return nil, err
 	}
 	var overlapped windows.Overlapped
-	if err = windows.LockFileEx(windows.Handle(file.Fd()), windows.LOCKFILE_EXCLUSIVE_LOCK|windows.LOCKFILE_FAIL_IMMEDIATELY, 0, 1, 0, &overlapped); err != nil {
-		file.Close()
+	const flags = windows.LOCKFILE_EXCLUSIVE_LOCK | windows.LOCKFILE_FAIL_IMMEDIATELY
+	if err = windows.LockFileEx(windows.Handle(file.Fd()), flags, 0, 1, 0, &overlapped); err != nil {
+		_ = file.Close()
 		return nil, err
 	}
 	return file, nil

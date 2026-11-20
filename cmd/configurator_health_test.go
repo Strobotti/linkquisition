@@ -26,7 +26,9 @@ type testHealthChecker struct {
 	err       error
 }
 
-func (checker *testHealthChecker) HealthCheck(settings map[string]interface{}, configDir string) ([]linkquisition.PluginHealthIssue, error) {
+func (checker *testHealthChecker) HealthCheck(
+	settings map[string]interface{}, configDir string,
+) ([]linkquisition.PluginHealthIssue, error) {
 	checker.settings = settings
 	checker.configDir = configDir
 	return []linkquisition.PluginHealthIssue{{Message: "Plugin-provided issue"}}, checker.err
